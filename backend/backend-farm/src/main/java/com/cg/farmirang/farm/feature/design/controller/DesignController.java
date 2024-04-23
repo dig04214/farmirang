@@ -1,6 +1,7 @@
 package com.cg.farmirang.farm.feature.design.controller;
 
 import com.cg.farmirang.farm.feature.design.dto.request.DesignSaveRequestDto;
+import com.cg.farmirang.farm.feature.design.dto.request.PesticideAndFertilizerCreateDto;
 import com.cg.farmirang.farm.feature.design.dto.request.RecommendedDesignCreateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.request.EmptyFarmCreateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.response.DesignDetailResponseDto;
@@ -46,7 +47,7 @@ public class DesignController {
         return SuccessResponse.builder().data(result).status(SuccessCode.INSERT_SUCCESS).build();
     }
 
-    @PostMapping("/emptyfarm")
+    @PostMapping("/farm")
     @Operation(summary = "디자인용 텃밭 생성", description = "입력된 내용으로 디자인용 텃밭을 생성합니다.")
     @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "디자인용 텃밭 생성을 성공하였습니다."),
             @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
@@ -107,9 +108,16 @@ public class DesignController {
         return SuccessResponse.builder().data(result).status(SuccessCode.DELETE_SUCCESS).build();
     }
 
-
-
-
+    @PostMapping("/{designId}")
+    @Operation(summary = "농약, 비료 선택", description = "선택된 농약과 비료를 생성합니다.")
+    @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "농약과 비료 생성에 성공했습니다."),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    public SuccessResponse<?> createPesticideAndFertilizerSelection(@PathVariable Long designId, @RequestBody PesticideAndFertilizerCreateDto request){
+        Boolean result =designService.insertPesticideAndFertilizerSelection(request);
+        return SuccessResponse.builder().data(result).status(SuccessCode.INSERT_SUCCESS).build();
+    }
 
 
 }
