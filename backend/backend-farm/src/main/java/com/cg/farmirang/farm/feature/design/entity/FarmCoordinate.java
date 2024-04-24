@@ -3,7 +3,7 @@ package com.cg.farmirang.farm.feature.design.entity;
 import jakarta.persistence.*;
 
 @Entity
-public class Coordinate {
+public class FarmCoordinate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "coordinate_id")

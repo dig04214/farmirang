@@ -5,7 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Builder
-@Getter
 @Setter
-public class PesticideAndFertilizerCreateDto {
+@Getter
+public class DesignNameUpdateRequestDto {
+    private String name;
 }

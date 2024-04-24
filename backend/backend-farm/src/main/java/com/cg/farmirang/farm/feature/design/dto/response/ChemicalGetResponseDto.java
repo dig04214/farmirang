@@ -4,9 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-@Builder
-@Getter
-@Setter
-public class DesignDetailResponseDto {
-    private String arrangement;
+@Builder @Getter @Setter
+public class ChemicalGetResponseDto {
+
 }

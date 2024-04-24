@@ -7,6 +7,7 @@ import lombok.Setter;
 @Builder
 @Getter
 @Setter
-public class DesignDetailResponseDto {
+public class EmptyFarmCreateResponseDto {
+    private Long designId;
     private String arrangement;
 }

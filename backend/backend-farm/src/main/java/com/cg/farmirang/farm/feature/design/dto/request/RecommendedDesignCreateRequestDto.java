@@ -1,17 +1,17 @@
 package com.cg.farmirang.farm.feature.design.dto.request;
 
+import com.cg.farmirang.farm.feature.design.entity.Crop;
 import com.cg.farmirang.farm.feature.design.entity.Location;
 import com.cg.farmirang.farm.feature.design.entity.StartMonth;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
-@Getter
+import java.util.List;
+
+@Getter @Setter
+@Builder
 public class RecommendedDesignCreateRequestDto {
-    private EmptyFarmCreateRequestDto emptyFarmDto;
-    private Integer area;
-    private StartMonth startMonth;
-    private Location location;
-    private Integer furrowWidth;
-    private Boolean isHorizontal;
-
-
+    private Integer cropId;
+    private Integer quantity;
 }

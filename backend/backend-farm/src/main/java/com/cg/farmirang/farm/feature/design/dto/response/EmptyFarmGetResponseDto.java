@@ -4,9 +4,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-@Builder
-@Getter
-@Setter
-public class DesignDetailResponseDto {
+import java.util.List;
+
+@Builder @Getter @Setter
+public class EmptyFarmGetResponseDto {
     private String arrangement;
+    List<CropGetResponseDto> crops;
 }

@@ -1,12 +1,7 @@
 package com.cg.farmirang.farm.feature.design.controller;
 
-import com.cg.farmirang.farm.feature.design.dto.request.DesignSaveRequestDto;
-import com.cg.farmirang.farm.feature.design.dto.request.PesticideAndFertilizerCreateDto;
-import com.cg.farmirang.farm.feature.design.dto.request.RecommendedDesignCreateRequestDto;
-import com.cg.farmirang.farm.feature.design.dto.request.EmptyFarmCreateRequestDto;
-import com.cg.farmirang.farm.feature.design.dto.response.DesignDetailResponseDto;
-import com.cg.farmirang.farm.feature.design.entity.Crop;
-import com.cg.farmirang.farm.feature.design.entity.Design;
+import com.cg.farmirang.farm.feature.design.dto.request.*;
+import com.cg.farmirang.farm.feature.design.dto.response.*;
 import com.cg.farmirang.farm.feature.design.service.DesignService;
 import com.cg.farmirang.farm.global.common.code.SuccessCode;
 import com.cg.farmirang.farm.global.common.response.ErrorResponse;
@@ -34,43 +29,92 @@ public class DesignController {
     private final DesignService designService;
 
     @PostMapping
-    @Operation(summary = "디자인 생성", description = "입력된 내용으로 추천 디자인을 생성합니다.")
-    @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "추천 디자인 생성을 성공하였습니다."),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    })
-    public SuccessResponse<?> createRecommendedDesign(@Validated @RequestBody RecommendedDesignCreateRequestDto request){
-        Crop[][] emptyFarm=designService.insertEmptyFarm(request.getEmptyFarmDto());
-        Boolean result= designService.insertRecommendedDesign(emptyFarm, request);
-
-        // 임시, MongoDB 공부 후 그 데이터 넘겨줄 예정
-        return SuccessResponse.builder().data(result).status(SuccessCode.INSERT_SUCCESS).build();
-    }
-
-    @PostMapping("/farm")
     @Operation(summary = "디자인용 텃밭 생성", description = "입력된 내용으로 디자인용 텃밭을 생성합니다.")
     @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "디자인용 텃밭 생성을 성공하였습니다."),
             @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public SuccessResponse<?> createEmptyFarm(@Validated @RequestBody EmptyFarmCreateRequestDto request){
-        Crop[][] emptyField=designService.insertEmptyFarm(request);
+        EmptyFarmCreateResponseDto response=designService.insertEmptyFarm(request);
 
-        return SuccessResponse.builder().data(emptyField).status(SuccessCode.INSERT_SUCCESS).build();
+        // 내부에서 빈 2차원 배열을 몽고디비에 저장해서 그 상태로 보내버리자
+        return SuccessResponse.builder().data(response).status(SuccessCode.INSERT_SUCCESS).build();
     }
 
-
-    @PutMapping("/{designId}")
-    @Operation(summary = "디자인 수정", description = "선택된 디자인을 수정합니다.")
-    @ApiResponses(value = {@ApiResponse(responseCode = "204", description = "디자인 수정에 성공했습니다."),
+    @GetMapping("/{designId}/crop")
+    @Operation(summary = "작물 정보 조회", description = "작물 선택을 위해 작물 정보를 조회합니다.")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "작물 정보 조회에 성공했습니다."),
             @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public SuccessResponse<?> updateDesign(@PathVariable Long designId, DesignSaveRequestDto request){
-        DesignDetailResponseDto response = designService.updateDesign(designId, request);
-        return SuccessResponse.builder().data(response).status(SuccessCode.UPDATE_SUCCESS).build();
+    public SuccessResponse<?> getCrops(@PathVariable Long designId){
+        List<CropGetResponseDto> response=designService.selectCropList(designId);
+        return SuccessResponse.builder().data(response).status(SuccessCode.SELECT_SUCCESS).build();
     }
 
+    @PostMapping("/{designId}/recommend")
+    @Operation(summary = "추천 디자인 생성", description = "입력된 내용으로 추천 디자인을 생성합니다.")
+    @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "추천 디자인 생성을 성공하였습니다."),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    public SuccessResponse<?> createRecommendedDesign(@PathVariable Long designId, @Validated @RequestBody List<RecommendedDesignCreateRequestDto> request){
+        Boolean response= designService.insertRecommendedDesign(designId, request);
+
+        // 임시, MongoDB 공부 후 그 데이터 넘겨줄 예정
+        return SuccessResponse.builder().data(response).status(SuccessCode.INSERT_SUCCESS).build();
+    }
+
+
+    @GetMapping("/{designId}/custom")
+    @Operation(summary = "빈 밭 조회", description = "밭 커스텀을 위해 빈 밭을 조회합니다.")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "빈 밭 조회에 성공했습니다."),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    public SuccessResponse<?> getFarm(@PathVariable Long designId){
+        EmptyFarmGetResponseDto response=designService.selectEmptyFarm(designId);
+        return SuccessResponse.builder().data(response).status(SuccessCode.SELECT_SUCCESS).build();
+    }
+
+    @PostMapping("/{designId}/custom")
+    @Operation(summary = "커스텀 디자인 생성", description = "입력된 내용으로 커스텀 디자인을 생성합니다.")
+    @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "커스텀 디자인 생성을 성공하였습니다."),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    public SuccessResponse<?> createCustomDesign(@PathVariable Long designId, @Validated @RequestBody CustomDesignCreateRequestDto request){
+        Boolean response= designService.insertCustomDesign(designId, request);
+
+        // 임시, MongoDB 공부 후 그 데이터 넘겨줄 예정
+        return SuccessResponse.builder().data(response).status(SuccessCode.INSERT_SUCCESS).build();
+    }
+
+
+
+    @PutMapping("/{designId}/name")
+    @Operation(summary = "디자인 이름 수정", description = "디자인 이름을 수정합니다.")
+    @ApiResponses(value = {@ApiResponse(responseCode = "204", description = "디자인 이름 수정에 성공했습니다."),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    public SuccessResponse<?> updateDesignName(@PathVariable Long designId, DesignNameUpdateRequestDto request){
+        Boolean result = designService.updateDesignName(designId, request);
+        return SuccessResponse.builder().data(result).status(SuccessCode.UPDATE_SUCCESS).build();
+    }
+
+    @GetMapping("/{designId}/chemical")
+    @Operation(summary = "농약, 비료 조회", description = "추천 농약, 비료를 조회합니다.")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "추천 농약, 비료 조회에 성공했습니다."),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    public SuccessResponse<?> getChemical(@PathVariable Long designId){
+
+        ChemicalGetResponseDto response=designService.selectChemical(designId);
+
+        return SuccessResponse.builder().data(response).status(SuccessCode.SELECT_SUCCESS).build();
+    }
 
     @GetMapping("/list")
     @Operation(summary = "디자인 리스트 조회", description = "회원의 디자인 리스트를 조회합니다.")
@@ -96,6 +140,16 @@ public class DesignController {
         return SuccessResponse.builder().data(response).status(SuccessCode.SELECT_SUCCESS).build();
     }
 
+    @PutMapping("/{designId}/update")
+    @Operation(summary = "디자인 수정", description = "디자인을 수정합니다.")
+    @ApiResponses(value = {@ApiResponse(responseCode = "204", description = "디자인 수정에 성공했습니다."),
+            @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    })
+    public SuccessResponse<?> updateDesign(@PathVariable Long designId, DesignUpdateRequestDto request){
+        Boolean result = designService.updateDesign(designId, request);
+        return SuccessResponse.builder().data(result).status(SuccessCode.UPDATE_SUCCESS).build();
+    }
 
     @DeleteMapping("/{designId}")
     @Operation(summary = "디자인 삭제", description = "선택된 디자인을 삭제합니다.")
@@ -108,16 +162,7 @@ public class DesignController {
         return SuccessResponse.builder().data(result).status(SuccessCode.DELETE_SUCCESS).build();
     }
 
-    @PostMapping("/{designId}")
-    @Operation(summary = "농약, 비료 선택", description = "선택된 농약과 비료를 생성합니다.")
-    @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "농약과 비료 생성에 성공했습니다."),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    })
-    public SuccessResponse<?> createPesticideAndFertilizerSelection(@PathVariable Long designId, @RequestBody PesticideAndFertilizerCreateDto request){
-        Boolean result =designService.insertPesticideAndFertilizerSelection(request);
-        return SuccessResponse.builder().data(result).status(SuccessCode.INSERT_SUCCESS).build();
-    }
-
-
 }
+
+
+

@@ -14,7 +14,6 @@ public class Design {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     @Column(name = "design_id")
     private Long id;
 
@@ -23,7 +22,7 @@ public class Design {
     private Member member;
 
     @OneToMany(mappedBy = "design")
-    private List<Coordinate> coordinates;
+    private List<FarmCoordinate> farmCoordinates;
 
     private String arrangementId;
     private Integer area;
@@ -36,8 +35,8 @@ public class Design {
     private Location location;
 
     private Integer ridgeWidth;
-    private Boolean isHorizontal;
     private Integer furrowWidth;
+    private Boolean isHorizontal;
 
     @OneToMany(mappedBy = "design")
     private List<CropSelection> cropSelections;

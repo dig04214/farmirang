@@ -3,6 +3,8 @@ package com.cg.farmirang.farm.feature.design.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -21,4 +23,7 @@ public class CropSelection {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "crop_id")
     private Crop crop;
+
+    @OneToMany(mappedBy = "cropSelection")
+    private List<CropCoordination> cropCoordinations;
 }
