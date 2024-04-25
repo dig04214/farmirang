@@ -15,8 +15,17 @@ public class Crop {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "crop_id")
     private Integer id;
+
     private String name;
-    private String time;
+    private Integer ridgeSpacing;
+    private Integer cropSpacing;
+    private String companionPlant;
+    private String competetivePlant;
+    private String sowingTime;
+    private String harvestingTime;
+    private Boolean isRepeated;
+    private Integer height;
 
-
+    @Enumerated(EnumType.STRING)
+    private Difficulty difficulty;
 }
