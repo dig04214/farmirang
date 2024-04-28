@@ -7,9 +7,6 @@ import java.util.List;
 
 @Entity
 @NoArgsConstructor(access=AccessLevel.PROTECTED)
-@AllArgsConstructor
-@Data
-@Builder
 public class Design {
 
     @Id
@@ -40,4 +37,19 @@ public class Design {
 
     @OneToMany(mappedBy = "design")
     private List<CropSelection> cropSelections;
+
+    @Builder
+    public Design(Member member, Integer area, StartMonth startMonth, Location location, Integer ridgeWidth, Integer furrowWidth, Boolean isHorizontal) {
+        this.member = member;
+        this.area = area;
+        this.startMonth = startMonth;
+        this.location = location;
+        this.ridgeWidth = ridgeWidth;
+        this.furrowWidth = furrowWidth;
+        this.isHorizontal = isHorizontal;
+    }
+
+    public void addFarmCoordinate(FarmCoordinate farmCoordinate){
+        farmCoordinates.add(farmCoordinate);
+    }
 }

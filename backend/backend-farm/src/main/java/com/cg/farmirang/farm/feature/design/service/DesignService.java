@@ -2,11 +2,12 @@ package com.cg.farmirang.farm.feature.design.service;
 
 import com.cg.farmirang.farm.feature.design.dto.request.*;
 import com.cg.farmirang.farm.feature.design.dto.response.*;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
 
 public interface DesignService {
-    public EmptyFarmCreateResponseDto insertEmptyFarm(EmptyFarmCreateRequestDto request);
+    public EmptyFarmCreateResponseDto insertEmptyFarm(HttpServletRequest token, EmptyFarmCreateRequestDto request);
 
     public Boolean insertRecommendedDesign(Long emptyField, List<RecommendedDesignCreateRequestDto> request);
 
