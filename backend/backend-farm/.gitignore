@@ -9,7 +9,7 @@ build/
 application.yml
 
 ### 테스트 파일 ###
-!**/src/test
+/src/test
 
 ### STS ###
 .apt_generated
