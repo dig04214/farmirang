@@ -8,6 +8,9 @@ build/
 ### yml ###
 application.yml
 
+### 테스트 파일 ###
+!**/src/test
+
 ### STS ###
 .apt_generated
 .classpath
