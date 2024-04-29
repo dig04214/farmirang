@@ -10,6 +10,8 @@ import com.cg.farmirang.farm.feature.design.repository.ArrangementRepository;
 import com.cg.farmirang.farm.feature.design.repository.DesignRepository;
 import com.cg.farmirang.farm.feature.design.repository.FarmCoordinateRepository;
 import com.cg.farmirang.farm.feature.design.repository.MemberRepository;
+import com.cg.farmirang.farm.global.common.code.ErrorCode;
+import com.cg.farmirang.farm.global.exception.BusinessExceptionHandler;
 import com.google.gson.Gson;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -80,9 +82,9 @@ public class DesignServiceImpl implements DesignService {
         Arrangement arrangement = arrangementRepository.save(Arrangement.builder().arrangement(farm).build());
         String arrangementId = arrangement.getId();
         Gson gson=new Gson();
-        
-        // TODO : findBy로 배열 찾아서 바꾸기=>exception 처리 어케 할지 생각
-        String farmArrangement= gson.toJson(arrangement.getArrangement());
+
+        Arrangement selectedArrangement = arrangementRepository.findById(arrangementId)
+                .orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.ARRANGEMENT_NOT_FOUND));
 
         // design에 arrangementId 추가
         savedDesign.addArrangementId(arrangementId);
@@ -90,7 +92,7 @@ public class DesignServiceImpl implements DesignService {
 
         return EmptyFarmCreateResponseDto.builder()
                 .designId(savedDesign.getDesignId())
-                .arrangement(farmArrangement)
+                .arrangement(gson.toJson(selectedArrangement))
                 .build();
     }
 
