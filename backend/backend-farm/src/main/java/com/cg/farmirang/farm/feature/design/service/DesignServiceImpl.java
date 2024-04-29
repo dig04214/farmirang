@@ -26,15 +26,16 @@ import java.util.List;
 public class DesignServiceImpl implements DesignService {
 
     private final DesignRepository designRepository;
-    private final MemberService memberService;
+    private final MemberRepository memberRepository;
     private final FarmCoordinateRepository farmCoordinateRepository;
     private final ArrangementRepository arrangementRepository;
 
     @Override
     public EmptyFarmCreateResponseDto insertEmptyFarm(HttpServletRequest token, EmptyFarmCreateRequestDto request) {
 
-        // 회원 확인
-        Member member=memberService.selectMember(token);
+        // TODO : 회원 확인 -> 이후에 통신 예정
+        Member member = memberRepository.save(Member.builder().nickname("test").build());
+
         // DB에 design 저장
         Design design = Design.builder()
                 .member(member)
@@ -92,7 +93,7 @@ public class DesignServiceImpl implements DesignService {
 
         return EmptyFarmCreateResponseDto.builder()
                 .designId(savedDesign.getDesignId())
-                .arrangement(gson.toJson(selectedArrangement))
+                .arrangement(gson.toJson(selectedArrangement.getArrangement()))
                 .build();
     }
 
