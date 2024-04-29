@@ -30,6 +30,13 @@ public class DesignServiceImpl implements DesignService {
     private final FarmCoordinateRepository farmCoordinateRepository;
     private final ArrangementRepository arrangementRepository;
 
+    /**
+     * 빈 밭 생성
+     *
+     * @param token
+     * @param request
+     * @return
+     */
     @Override
     public EmptyFarmCreateResponseDto insertEmptyFarm(HttpServletRequest token, EmptyFarmCreateRequestDto request) {
 
@@ -135,9 +142,19 @@ public class DesignServiceImpl implements DesignService {
         return null;
     }
 
+    /**
+     * 작물 리스트 조회 - 지역, 시기 별로 추천
+     *
+     * @param designId
+     * @return
+     */
     @Override
     @Transactional(readOnly = true)
     public List<CropGetResponseDto> selectCropList(Long designId) {
+        
+        // TODO : 지역을 어떻게 할 것인지 꼬옥,,물어보기-> 조사 결과 빼는 것이 맞다고 본다
+
+        
         return null;
     }
 

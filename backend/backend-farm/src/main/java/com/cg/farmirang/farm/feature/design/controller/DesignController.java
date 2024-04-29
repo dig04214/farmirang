@@ -33,22 +33,22 @@ public class DesignController {
 
     @PostMapping
     @Operation(summary = "디자인용 텃밭 생성", description = "입력된 내용으로 디자인용 텃밭을 생성합니다.")
-    @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "디자인용 텃밭 생성을 성공하였습니다.",
-            content = {@Content(schema = @Schema(implementation = EmptyFarmCreateResponseDto.class))}),
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "디자인용 텃밭 생성을 성공하였습니다.", content = {@Content(schema = @Schema(implementation = EmptyFarmCreateResponseDto.class))}),
             @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "404", description = "없는 배열입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public SuccessResponse<?> createEmptyFarm(@Validated @RequestBody EmptyFarmCreateRequestDto request, @Nullable HttpServletRequest token){
         EmptyFarmCreateResponseDto response=designService.insertEmptyFarm(token, request);
 
-        // 내부에서 빈 2차원 배열을 몽고디비에 저장해서 그 상태로 보내버리자
         return SuccessResponse.builder().data(response).status(SuccessCode.INSERT_SUCCESS).build();
     }
 
     @GetMapping("/{designId}/crop")
     @Operation(summary = "작물 정보 조회", description = "작물 선택을 위해 작물 정보를 조회합니다.")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "작물 정보 조회에 성공했습니다.",
-            content = {@Content(array=@ArraySchema(schema = @Schema(implementation = CropGetResponseDto.class)))}),
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "작물 정보 조회에 성공했습니다.", content = {@Content(array=@ArraySchema(schema = @Schema(implementation = CropGetResponseDto.class)))}),
             @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })

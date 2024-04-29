@@ -1,16 +1,13 @@
 package com.cg.farmirang.farm.feature.design.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Data
 public class Crop {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "crop_id")
@@ -28,4 +25,18 @@ public class Crop {
 
     @Enumerated(EnumType.STRING)
     private Difficulty difficulty;
+
+    @Builder
+    public Crop(String name, Integer ridgeSpacing, Integer cropSpacing, String companionPlant, String competetivePlant, String sowingTime, String harvestingTime, Boolean isRepeated, Integer height, Difficulty difficulty) {
+        this.name = name;
+        this.ridgeSpacing = ridgeSpacing;
+        this.cropSpacing = cropSpacing;
+        this.companionPlant = companionPlant;
+        this.competetivePlant = competetivePlant;
+        this.sowingTime = sowingTime;
+        this.harvestingTime = harvestingTime;
+        this.isRepeated = isRepeated;
+        this.height = height;
+        this.difficulty = difficulty;
+    }
 }
