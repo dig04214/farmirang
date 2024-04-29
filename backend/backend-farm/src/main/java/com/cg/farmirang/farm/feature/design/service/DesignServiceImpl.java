@@ -2,12 +2,15 @@ package com.cg.farmirang.farm.feature.design.service;
 
 import com.cg.farmirang.farm.feature.design.dto.request.*;
 import com.cg.farmirang.farm.feature.design.dto.response.*;
+import com.cg.farmirang.farm.feature.design.entity.Arrangement;
 import com.cg.farmirang.farm.feature.design.entity.Design;
 import com.cg.farmirang.farm.feature.design.entity.FarmCoordinate;
 import com.cg.farmirang.farm.feature.design.entity.Member;
+import com.cg.farmirang.farm.feature.design.repository.ArrangementRepository;
 import com.cg.farmirang.farm.feature.design.repository.DesignRepository;
 import com.cg.farmirang.farm.feature.design.repository.FarmCoordinateRepository;
 import com.cg.farmirang.farm.feature.design.repository.MemberRepository;
+import com.google.gson.Gson;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,6 +26,7 @@ public class DesignServiceImpl implements DesignService {
     private final DesignRepository designRepository;
     private final MemberService memberService;
     private final FarmCoordinateRepository farmCoordinateRepository;
+    private final ArrangementRepository arrangementRepository;
 
     @Override
     public EmptyFarmCreateResponseDto insertEmptyFarm(HttpServletRequest token, EmptyFarmCreateRequestDto request) {
@@ -71,12 +75,23 @@ public class DesignServiceImpl implements DesignService {
             savedDesign.addFarmCoordinate(save);
 
         }
-        designRepository.save(savedDesign);
 
         // 몽고DB에 배열 저장
+        Arrangement arrangement = arrangementRepository.save(Arrangement.builder().arrangement(farm).build());
+        String arrangementId = arrangement.getId();
+        Gson gson=new Gson();
+        
+        // TODO : findBy로 배열 찾아서 바꾸기=>exception 처리 어케 할지 생각
+        String farmArrangement= gson.toJson(arrangement.getArrangement());
 
+        // design에 arrangementId 추가
+        savedDesign.addArrangementId(arrangementId);
+        designRepository.save(savedDesign);
 
-        return null;
+        return EmptyFarmCreateResponseDto.builder()
+                .designId(savedDesign.getDesignId())
+                .arrangement(farmArrangement)
+                .build();
     }
 
 

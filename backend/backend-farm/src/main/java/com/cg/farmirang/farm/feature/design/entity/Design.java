@@ -54,8 +54,7 @@ public class Design {
     public void addFarmCoordinate(FarmCoordinate farmCoordinate){
         this.farmCoordinates.add(farmCoordinate);
     }
+    public void addArrangementId(String arrangementId){ this.arrangementId=arrangementId;}
+    public Long getDesignId(){ return this.id;}
 
-    public List<FarmCoordinate> getFarmCoordinates(){
-        return this.farmCoordinates;
-    }
 }
