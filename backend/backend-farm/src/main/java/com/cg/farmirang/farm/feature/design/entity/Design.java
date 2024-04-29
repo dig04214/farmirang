@@ -3,6 +3,7 @@ package com.cg.farmirang.farm.feature.design.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -47,9 +48,14 @@ public class Design {
         this.ridgeWidth = ridgeWidth;
         this.furrowWidth = furrowWidth;
         this.isHorizontal = isHorizontal;
+        this.farmCoordinates=new ArrayList<>();
     }
 
     public void addFarmCoordinate(FarmCoordinate farmCoordinate){
-        farmCoordinates.add(farmCoordinate);
+        this.farmCoordinates.add(farmCoordinate);
+    }
+
+    public List<FarmCoordinate> getFarmCoordinates(){
+        return this.farmCoordinates;
     }
 }

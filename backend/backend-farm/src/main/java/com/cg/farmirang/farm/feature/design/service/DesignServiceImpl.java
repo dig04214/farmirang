@@ -20,16 +20,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class DesignServiceImpl implements DesignService {
 
-//    private final JwtUtil jwtUtil;
     private final DesignRepository designRepository;
-    private final MemberRepository memberRepository;
+    private final MemberService memberService;
     private final FarmCoordinateRepository farmCoordinateRepository;
 
     @Override
     public EmptyFarmCreateResponseDto insertEmptyFarm(HttpServletRequest token, EmptyFarmCreateRequestDto request) {
 
         // 회원 확인
-        Member member=searchMember(token);
+        Member member=memberService.selectMember(token);
         // DB에 design 저장
         Design design = Design.builder()
                 .member(member)
@@ -43,23 +42,36 @@ public class DesignServiceImpl implements DesignService {
 
         Design savedDesign = designRepository.save(design);
 
-        // 좌표 DB 저장
+        // 배열 생성
         List<CoordinateRequestDto> coordinates = request.getCoordinates();
+        int minX=100; int maxX=0; int minY=100; int maxY=0;
+
+        // X, Y 최대 최소 구하기
+        for (CoordinateRequestDto coordinate : coordinates) {
+            minX=Math.min(minX,coordinate.getX());
+            maxX=Math.max(maxX,coordinate.getX());
+            minY=Math.min(minY,coordinate.getY());
+            maxY=Math.max(maxY,coordinate.getY());
+        }
+
+        int row=maxY-minY;
+        int column=maxX-minX;
+
+        int[][] farm=new int[row][column];
+
+        // 좌표값에서 최소값 빼고 좌표 DB에 저장
         for (CoordinateRequestDto coordinate : coordinates) {
             FarmCoordinate farmCoordinate = FarmCoordinate.builder()
                     .design(savedDesign)
-                    .x(coordinate.getX())
-                    .y(coordinate.getY())
+                    .x(coordinate.getX()-minX)
+                    .y(coordinate.getY()-minY)
                     .sequence(coordinate.getSequence())
                     .build();
-            savedDesign.addFarmCoordinate(farmCoordinate);
-            farmCoordinateRepository.save(farmCoordinate);
+            FarmCoordinate save = farmCoordinateRepository.save(farmCoordinate);
+            savedDesign.addFarmCoordinate(save);
+
         }
-
         designRepository.save(savedDesign);
-
-        // 좌표로 2차원 배열 생성
-
 
         // 몽고DB에 배열 저장
 
@@ -67,9 +79,6 @@ public class DesignServiceImpl implements DesignService {
         return null;
     }
 
-    private Member searchMember(HttpServletRequest token) {
-        return null;
-    }
 
     @Override
     public Boolean insertRecommendedDesign(Long emptyField, List<RecommendedDesignCreateRequestDto> request) {
