@@ -1,5 +1,6 @@
 package com.cg.farmirang.farm.feature.design.entity;
 
+import com.cg.farmirang.farm.feature.design.dto.RecommendedDesignInfoDto;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -51,5 +52,12 @@ public class Design {
     public Long getDesignId(){ return this.id;}
     public Integer getStartMonth(){ return this.startMonth;}
     public String getArrangementId(){ return this.arrangementId;}
+    public RecommendedDesignInfoDto getDesignInfo(){
+        return RecommendedDesignInfoDto.builder()
+                .ridgeWidth(this.ridgeWidth)
+                .furrowWidth(this.furrowWidth)
+                .isHorizontal(this.isHorizontal)
+                .build();
+    }
 
 }

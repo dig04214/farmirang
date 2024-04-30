@@ -1,5 +1,7 @@
 package com.cg.farmirang.farm.feature.design.service;
 
+import com.cg.farmirang.farm.feature.design.dto.RecommendedDesignInfoDto;
+import com.cg.farmirang.farm.feature.design.dto.TotalRidgeDto;
 import com.cg.farmirang.farm.feature.design.dto.request.*;
 import com.cg.farmirang.farm.feature.design.dto.response.*;
 import com.cg.farmirang.farm.feature.design.entity.Arrangement;
@@ -122,7 +124,23 @@ public class DesignServiceImpl implements DesignService {
         Arrangement selectedArrangement = arrangementRepository.findById(design.getArrangementId()).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.ARRANGEMENT_NOT_FOUND));
         int[][] arrangement = selectedArrangement.getArrangement();
 
-        // 알고리즘 만들어서 추천 배치
+        // 이랑 배열 생성
+        RecommendedDesignInfoDto designInfo = design.getDesignInfo();
+
+        TotalRidgeDto[] totalRidges;
+        int ridgeQuantity=0;
+
+        if (designInfo.getIsHorizontal()==true){
+            // 세로 방향 밭
+            ridgeQuantity = (arrangement[0].length) * 10 % (designInfo.getFurrowWidth() + designInfo.getRidgeWidth());
+        }else {
+            // 가로 방향 밭
+            ridgeQuantity = (arrangement.length) * 10 % (designInfo.getFurrowWidth() + designInfo.getRidgeWidth());
+        }
+
+        totalRidges = new TotalRidgeDto[ridgeQuantity];
+
+        // 두둑에서 알고리즘으로 배치하기
 
 
         // 몽고디비에 다시 업데이트

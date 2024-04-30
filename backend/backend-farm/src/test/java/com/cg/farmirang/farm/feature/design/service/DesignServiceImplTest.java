@@ -1,8 +1,10 @@
 package com.cg.farmirang.farm.feature.design.service;
 
 import com.cg.farmirang.farm.feature.design.dto.request.CoordinateRequestDto;
+import com.cg.farmirang.farm.feature.design.dto.request.EmptyFarmCreateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.request.RecommendedDesignCreateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.response.CropGetResponseDto;
+import com.cg.farmirang.farm.feature.design.dto.response.EmptyFarmCreateResponseDto;
 import com.cg.farmirang.farm.feature.design.entity.*;
 import com.cg.farmirang.farm.feature.design.repository.*;
 import com.cg.farmirang.farm.global.common.code.ErrorCode;
@@ -96,59 +98,27 @@ class DesignServiceImplTest {
     @Test
     public void 밭배열생성(){
         // given
-        Member member = memberRepository.save(Member.builder().nickname("test").build());
-        Design design = Design.builder()
-                .member(member)
-                .area(100)
-                .startMonth(4)
-                .ridgeWidth(10)
-                .furrowWidth(20)
-                .isHorizontal(false)
-                .build();
-        Design savedDesign = designRepository.save(design);
 
         List<CoordinateRequestDto> list=new ArrayList<>();
-        list.add(CoordinateRequestDto.builder().x(1).y(4).sequence(1).build());
-        list.add(CoordinateRequestDto.builder().x(3).y(6).sequence(2).build());
-        list.add(CoordinateRequestDto.builder().x(7).y(8).sequence(3).build());
-        list.add(CoordinateRequestDto.builder().x(9).y(5).sequence(4).build());
+        list.add(CoordinateRequestDto.builder().x(0).y(0).sequence(1).build());
+        list.add(CoordinateRequestDto.builder().x(0).y(100).sequence(2).build());
+        list.add(CoordinateRequestDto.builder().x(100).y(0).sequence(3).build());
+        list.add(CoordinateRequestDto.builder().x(100).y(100).sequence(4).build());
 
-        int minX=100; int maxX=0; int minY=100; int maxY=0;
-
-        for (CoordinateRequestDto coordinate : list) {
-            minX=Math.min(minX,coordinate.getX());
-            maxX=Math.max(maxX,coordinate.getX());
-            minY=Math.min(minY,coordinate.getY());
-            maxY=Math.max(maxY,coordinate.getY());
-        }
-
-        int row=maxY-minY;
-        int column=maxX-minX;
-
-        int[][] farm=new int[row][column];
-
-        for (CoordinateRequestDto coordinate : list) {
-            FarmCoordinate farmCoordinate = FarmCoordinate.builder()
-                    .design(savedDesign)
-                    .x(coordinate.getX()-minX)
-                    .y(coordinate.getY()-minY)
-                    .sequence(coordinate.getSequence())
-                    .build();
-            FarmCoordinate save = farmCoordinateRepository.save(farmCoordinate);
-            savedDesign.addFarmCoordinate(save);
-
-        }
-        designRepository.save(savedDesign);
+        EmptyFarmCreateRequestDto request = EmptyFarmCreateRequestDto.builder()
+                .coordinates(list)
+                .area(10000)
+                .isHorizontal(false)
+                .furrowWidth(100)
+                .ridgeWidth(50)
+                .startMonth(4)
+                .build();
 
         // when
-        Arrangement savedArrangement = arrangementRepository.save(Arrangement.builder().arrangement(farm).build());
-        Gson gson=new Gson();
-        Arrangement arrangement = arrangementRepository.findById(savedArrangement.getId()).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.ARRANGEMENT_NOT_FOUND));
-
+        EmptyFarmCreateResponseDto response = designService.insertEmptyFarm(null, request);
 
         // then
-        assertEquals(savedArrangement.getId(), arrangement.getId());
-
+        assertEquals(100, response.getArrangement().length());
     }
 
 
