@@ -65,7 +65,7 @@ public class DesignController {
             @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public SuccessResponse<?> createRecommendedDesign(@PathVariable Long designId, @Validated @RequestBody List<RecommendedDesignCreateRequestDto> request){
-        Boolean response= designService.insertRecommendedDesign(designId, request);
+        RecommendedDesignCreateResponseDto response= designService.insertRecommendedDesign(designId, request);
 
         // 임시, MongoDB 공부 후 그 데이터 넘겨줄 예정
         return SuccessResponse.builder().data(response).status(SuccessCode.INSERT_SUCCESS).build();

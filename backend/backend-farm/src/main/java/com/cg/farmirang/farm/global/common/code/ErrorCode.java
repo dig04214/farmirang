@@ -78,11 +78,14 @@ public enum ErrorCode {
      * ================= Design Error CodeList =================
      */
 
+    // Member Not Found
+    MEMBER_NOT_FOUND(404, "M001", "해당 회원을 찾을 수 없습니다."),
+
     // Design Not Found
-    DESIGN_NOT_FOUND(404, "BD001", "해당 디자인을 찾을 수 없습니다."),
+    DESIGN_NOT_FOUND(404, "D001", "해당 디자인을 찾을 수 없습니다."),
 
     // Arrangement Not Found
-    ARRANGEMENT_NOT_FOUND(404, "BD002", "해당 디자인의 배열을 찾을 수 없습니다."),
+    ARRANGEMENT_NOT_FOUND(404, "D002", "해당 디자인의 배열을 찾을 수 없습니다."),
 
     ; // End
 

@@ -45,7 +45,7 @@ public class DesignServiceImpl implements DesignService {
     public EmptyFarmCreateResponseDto insertEmptyFarm(HttpServletRequest token, EmptyFarmCreateRequestDto request) {
 
         // TODO : 회원 확인 -> 이후에 통신 예정
-        Member member = memberRepository.save(Member.builder().nickname("test").build());
+        Member member = memberRepository.findById(1).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.MEMBER_NOT_FOUND));
 
         // DB에 design 저장
         Design design = Design.builder()
@@ -107,9 +107,27 @@ public class DesignServiceImpl implements DesignService {
                 .build();
     }
 
-
+    /**
+     * 디자인 추천 생성
+     *
+     * @param designId
+     * @param request
+     * @return
+     */
     @Override
-    public Boolean insertRecommendedDesign(Long emptyField, List<RecommendedDesignCreateRequestDto> request) {
+    public RecommendedDesignCreateResponseDto insertRecommendedDesign(Long designId, List<RecommendedDesignCreateRequestDto> request) {
+        Design design = designRepository.findById(designId).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.DESIGN_NOT_FOUND));
+
+        // 밭 불러오기
+        Arrangement selectedArrangement = arrangementRepository.findById(design.getArrangementId()).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.ARRANGEMENT_NOT_FOUND));
+        int[][] arrangement = selectedArrangement.getArrangement();
+
+        // 알고리즘 만들어서 추천 배치
+
+
+        // 몽고디비에 다시 업데이트
+
+
         return null;
     }
 

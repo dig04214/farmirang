@@ -50,5 +50,6 @@ public class Design {
     public void setArrangementId(String arrangementId){ this.arrangementId=arrangementId;}
     public Long getDesignId(){ return this.id;}
     public Integer getStartMonth(){ return this.startMonth;}
+    public String getArrangementId(){ return this.arrangementId;}
 
 }

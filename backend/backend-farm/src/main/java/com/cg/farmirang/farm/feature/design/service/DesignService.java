@@ -9,7 +9,7 @@ import java.util.List;
 public interface DesignService {
     public EmptyFarmCreateResponseDto insertEmptyFarm(HttpServletRequest token, EmptyFarmCreateRequestDto request);
 
-    public Boolean insertRecommendedDesign(Long emptyField, List<RecommendedDesignCreateRequestDto> request);
+    public RecommendedDesignCreateResponseDto insertRecommendedDesign(Long designId, List<RecommendedDesignCreateRequestDto> request);
 
     Boolean insertDesign(DesignUpdateRequestDto request);
 
