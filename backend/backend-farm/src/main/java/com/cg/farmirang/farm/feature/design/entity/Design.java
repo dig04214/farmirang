@@ -25,13 +25,7 @@ public class Design {
     private String arrangementId;
     private Integer area;
     private String name;
-
-    @Enumerated(EnumType.STRING)
-    private StartMonth startMonth;
-
-    @Enumerated(EnumType.STRING)
-    private Location location;
-
+    private Integer startMonth;
     private Integer ridgeWidth;
     private Integer furrowWidth;
     private Boolean isHorizontal;
@@ -40,11 +34,10 @@ public class Design {
     private List<CropSelection> cropSelections;
 
     @Builder
-    public Design(Member member, Integer area, StartMonth startMonth, Location location, Integer ridgeWidth, Integer furrowWidth, Boolean isHorizontal) {
+    public Design(Member member, Integer area, Integer startMonth, Integer ridgeWidth, Integer furrowWidth, Boolean isHorizontal) {
         this.member = member;
         this.area = area;
         this.startMonth = startMonth;
-        this.location = location;
         this.ridgeWidth = ridgeWidth;
         this.furrowWidth = furrowWidth;
         this.isHorizontal = isHorizontal;
@@ -54,7 +47,8 @@ public class Design {
     public void addFarmCoordinate(FarmCoordinate farmCoordinate){
         this.farmCoordinates.add(farmCoordinate);
     }
-    public void addArrangementId(String arrangementId){ this.arrangementId=arrangementId;}
+    public void setArrangementId(String arrangementId){ this.arrangementId=arrangementId;}
     public Long getDesignId(){ return this.id;}
+    public Integer getStartMonth(){ return this.startMonth;}
 
 }

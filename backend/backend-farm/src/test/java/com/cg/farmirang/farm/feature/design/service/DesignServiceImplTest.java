@@ -52,8 +52,7 @@ class DesignServiceImplTest {
         Design design = Design.builder()
                 .member(member)
                 .area(100)
-                .startMonth(StartMonth.APRIL)
-                .location(Location.CHUNGCHEONG)
+                .startMonth(4)
                 .ridgeWidth(10)
                 .furrowWidth(20)
                 .isHorizontal(false)
@@ -74,8 +73,7 @@ class DesignServiceImplTest {
         Design design = Design.builder()
                 .member(member)
                 .area(100)
-                .startMonth(StartMonth.APRIL)
-                .location(Location.CHUNGCHEONG)
+                .startMonth(4)
                 .ridgeWidth(10)
                 .furrowWidth(20)
                 .isHorizontal(false)
@@ -131,7 +129,6 @@ class DesignServiceImplTest {
     @Rollback(value = false)
     public void 작물리스트조회(){
         // given
-
         List<Crop> list=new ArrayList<>();
 
         list.add(Crop.builder().name("감자").ridgeSpacing(50).cropSpacing(20).companionPlant("15").competetivePlant("4,7,14").sowingTime("3,4").harvestingTime("6").isRepeated(false).height(100).difficulty(Difficulty.EASY).build());
@@ -155,7 +152,22 @@ class DesignServiceImplTest {
             cropRepository.save(crop);
         }
 
+        Member member = memberRepository.save(Member.builder().nickname("test").build());
+        Design savedDesign = designRepository.save(
+                Design.builder()
+                .member(member)
+                .area(100)
+                .startMonth(4)
+                .ridgeWidth(10)
+                .furrowWidth(20)
+                .isHorizontal(false)
+                .build());
+
         // when
+        Design design = designRepository.findById(savedDesign.getDesignId()).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.DESIGN_NOT_FOUND));
+        Integer startMonth = design.getStartMonth();
+
+
 
 
         // then

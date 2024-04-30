@@ -1,7 +1,5 @@
 package com.cg.farmirang.farm.feature.design.dto.request;
 
-import com.cg.farmirang.farm.feature.design.entity.Location;
-import com.cg.farmirang.farm.feature.design.entity.StartMonth;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,9 +14,7 @@ public class EmptyFarmCreateRequestDto {
     @NotNull
     private Integer area;
     @NotNull
-    private StartMonth startMonth;
-    @NotNull
-    private Location location;
+    private Integer startMonth;
     @NotNull
     private Integer ridgeWidth;
     @NotNull

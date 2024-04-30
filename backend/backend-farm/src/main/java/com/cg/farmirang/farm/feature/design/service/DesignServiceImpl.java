@@ -48,7 +48,6 @@ public class DesignServiceImpl implements DesignService {
                 .member(member)
                 .area(request.getArea())
                 .startMonth(request.getStartMonth())
-                .location(request.getLocation())
                 .ridgeWidth(request.getRidgeWidth())
                 .furrowWidth(request.getFurrowWidth())
                 .isHorizontal(request.getIsHorizontal())
@@ -95,7 +94,7 @@ public class DesignServiceImpl implements DesignService {
                 .orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.ARRANGEMENT_NOT_FOUND));
 
         // design에 arrangementId 추가
-        savedDesign.addArrangementId(arrangementId);
+        savedDesign.setArrangementId(arrangementId);
         designRepository.save(savedDesign);
 
         return EmptyFarmCreateResponseDto.builder()
@@ -152,7 +151,6 @@ public class DesignServiceImpl implements DesignService {
     @Transactional(readOnly = true)
     public List<CropGetResponseDto> selectCropList(Long designId) {
         
-        // TODO : 지역을 어떻게 할 것인지 꼬옥,,물어보기-> 조사 결과 빼는 것이 맞다고 본다
 
         
         return null;
