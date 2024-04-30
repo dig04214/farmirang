@@ -13,13 +13,16 @@ import com.cg.farmirang.farm.feature.design.repository.MemberRepository;
 import com.cg.farmirang.farm.global.common.code.ErrorCode;
 import com.cg.farmirang.farm.global.exception.BusinessExceptionHandler;
 import com.google.gson.Gson;
+import jakarta.persistence.EntityManager;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
-
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -29,6 +32,7 @@ public class DesignServiceImpl implements DesignService {
     private final MemberRepository memberRepository;
     private final FarmCoordinateRepository farmCoordinateRepository;
     private final ArrangementRepository arrangementRepository;
+    private final EntityManager em;
 
     /**
      * 빈 밭 생성
@@ -142,7 +146,7 @@ public class DesignServiceImpl implements DesignService {
     }
 
     /**
-     * 작물 리스트 조회 - 지역, 시기 별로 추천
+     * 작물 리스트 조회 - 심는 시기에 맞는 작물 우선 정렬
      *
      * @param designId
      * @return
@@ -150,10 +154,25 @@ public class DesignServiceImpl implements DesignService {
     @Override
     @Transactional(readOnly = true)
     public List<CropGetResponseDto> selectCropList(Long designId) {
-        
+        Design design = designRepository.findById(designId).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.DESIGN_NOT_FOUND));
+        String startMonth = Integer.toString(design.getStartMonth());
 
-        
-        return null;
+        // 시작 달이 추천 파종시기인 작물부터 정렬
+        List<Object[]> results = em.createQuery("SELECT t.name, CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN true ELSE false END AS isRecommended, t.ridgeSpacing * t.cropSpacing AS area FROM Crop t ORDER BY CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN 0 ELSE 1 END, t.sowingTime")
+                .setParameter("substring", startMonth)
+                .getResultList();
+
+        List<CropGetResponseDto> list = new ArrayList<>();
+
+        for (Object[] result : results) {
+            CropGetResponseDto cropDto = CropGetResponseDto.builder()
+                    .name((String) result[0])
+                    .isRecommended((boolean) result[1])
+                    .cellQuantity((int) (Math.ceil(((Integer) result[2]).intValue()) / 100))
+                    .build();
+            list.add(cropDto);
+        }
+        return list;
     }
 
     @Override
