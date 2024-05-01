@@ -1,9 +1,10 @@
 package com.cg.farmirang.farm.feature.design.dto;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Builder @Setter
+@Getter
+@ToString
 public class FurrowDto {
     private Integer width;
     private Integer height;

@@ -1,6 +1,8 @@
 package com.cg.farmirang.farm.feature.design.service;
 
+import com.cg.farmirang.farm.feature.design.dto.FurrowDto;
 import com.cg.farmirang.farm.feature.design.dto.RecommendedDesignInfoDto;
+import com.cg.farmirang.farm.feature.design.dto.RidgeDto;
 import com.cg.farmirang.farm.feature.design.dto.TotalRidgeDto;
 import com.cg.farmirang.farm.feature.design.dto.request.*;
 import com.cg.farmirang.farm.feature.design.dto.response.*;
@@ -110,6 +112,36 @@ public class DesignServiceImpl implements DesignService {
     }
 
     /**
+     * 작물 리스트 조회 - 심는 시기에 맞는 작물 우선 정렬
+     *
+     * @param designId
+     * @return
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<CropGetResponseDto> selectCropList(Long designId) {
+        Design design = getDesign(designId);
+        String startMonth = Integer.toString(design.getStartMonth());
+
+        // 시작 달이 추천 파종시기인 작물부터 정렬
+        List<Object[]> results = em.createQuery("SELECT t.name, CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN true ELSE false END AS isRecommended, t.ridgeSpacing * t.cropSpacing AS area FROM Crop t ORDER BY CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN 0 ELSE 1 END, t.sowingTime")
+                .setParameter("substring", startMonth)
+                .getResultList();
+
+        List<CropGetResponseDto> list = new ArrayList<>();
+
+        for (Object[] result : results) {
+            CropGetResponseDto cropDto = CropGetResponseDto.builder()
+                    .name((String) result[0])
+                    .isRecommended((boolean) result[1])
+                    .cellQuantity((int) (Math.ceil(((Integer) result[2]).intValue()) / 100))
+                    .build();
+            list.add(cropDto);
+        }
+        return list;
+    }
+
+    /**
      * 디자인 추천 생성
      *
      * @param designId
@@ -118,27 +150,23 @@ public class DesignServiceImpl implements DesignService {
      */
     @Override
     public RecommendedDesignCreateResponseDto insertRecommendedDesign(Long designId, List<RecommendedDesignCreateRequestDto> request) {
-        Design design = designRepository.findById(designId).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.DESIGN_NOT_FOUND));
+        Design design = getDesign(designId);
 
         // 밭 불러오기
-        Arrangement selectedArrangement = arrangementRepository.findById(design.getArrangementId()).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.ARRANGEMENT_NOT_FOUND));
+        Arrangement selectedArrangement = getSelectedArrangement(design);
         int[][] arrangement = selectedArrangement.getArrangement();
 
         // 이랑 배열 생성
         RecommendedDesignInfoDto designInfo = design.getDesignInfo();
 
-        TotalRidgeDto[] totalRidges;
-        int ridgeQuantity=0;
+        Integer furrowWidth = designInfo.getFurrowWidth();
+        Integer ridgeWidth = designInfo.getRidgeWidth();
+        int farmWidthCell = arrangement[0].length;
+        int farmHeightCell = arrangement.length;
 
-        if (designInfo.getIsHorizontal()==true){
-            // 세로 방향 밭
-            ridgeQuantity = (arrangement[0].length) * 10 % (designInfo.getFurrowWidth() + designInfo.getRidgeWidth());
-        }else {
-            // 가로 방향 밭
-            ridgeQuantity = (arrangement.length) * 10 % (designInfo.getFurrowWidth() + designInfo.getRidgeWidth());
-        }
 
-        totalRidges = new TotalRidgeDto[ridgeQuantity];
+
+        TotalRidgeDto[] totalRidges=getTotalRidge(farmWidthCell,farmHeightCell, ridgeWidth/10, furrowWidth, (furrowWidth + ridgeWidth),designInfo.getIsHorizontal());
 
         // 두둑에서 알고리즘으로 배치하기
 
@@ -147,6 +175,40 @@ public class DesignServiceImpl implements DesignService {
 
 
         return null;
+    }
+
+    private TotalRidgeDto[] getTotalRidge(int farmWidthCell, int farmHeightCell, int ridgeWidthCell, Integer furrowWidth, int totalRidgeLength, Boolean isHorizontal) {
+        TotalRidgeDto[] totalRidges;
+
+        // 세로로 자른 밭
+        if (isHorizontal) {
+            totalRidges = new TotalRidgeDto[farmWidthCell * 10 % totalRidgeLength];
+
+            for (TotalRidgeDto totalRidge : totalRidges) {
+                totalRidge.setRidge(RidgeDto.builder().grid(new int[ridgeWidthCell][farmWidthCell]).build());
+                totalRidge.setFurrow(FurrowDto.builder().width(furrowWidth).height(farmHeightCell*10).build());
+            }
+
+        }
+        // 가로로 자른 밭
+        else {
+            totalRidges = new TotalRidgeDto[farmHeightCell * 10 % totalRidgeLength];
+
+            for (TotalRidgeDto totalRidge : totalRidges) {
+                totalRidge.setRidge(RidgeDto.builder().grid(new int[farmHeightCell][ridgeWidthCell]).build());
+                totalRidge.setFurrow(FurrowDto.builder().width(farmWidthCell*10).height(furrowWidth).build());
+            }
+        }
+        return totalRidges;
+    }
+
+
+    private Arrangement getSelectedArrangement(Design design) {
+        return arrangementRepository.findById(design.getArrangementId()).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.ARRANGEMENT_NOT_FOUND));
+    }
+
+    private Design getDesign(Long designId) {
+        return designRepository.findById(designId).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.DESIGN_NOT_FOUND));
     }
 
     @Override
@@ -181,35 +243,7 @@ public class DesignServiceImpl implements DesignService {
         return null;
     }
 
-    /**
-     * 작물 리스트 조회 - 심는 시기에 맞는 작물 우선 정렬
-     *
-     * @param designId
-     * @return
-     */
-    @Override
-    @Transactional(readOnly = true)
-    public List<CropGetResponseDto> selectCropList(Long designId) {
-        Design design = designRepository.findById(designId).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.DESIGN_NOT_FOUND));
-        String startMonth = Integer.toString(design.getStartMonth());
 
-        // 시작 달이 추천 파종시기인 작물부터 정렬
-        List<Object[]> results = em.createQuery("SELECT t.name, CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN true ELSE false END AS isRecommended, t.ridgeSpacing * t.cropSpacing AS area FROM Crop t ORDER BY CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN 0 ELSE 1 END, t.sowingTime")
-                .setParameter("substring", startMonth)
-                .getResultList();
-
-        List<CropGetResponseDto> list = new ArrayList<>();
-
-        for (Object[] result : results) {
-            CropGetResponseDto cropDto = CropGetResponseDto.builder()
-                    .name((String) result[0])
-                    .isRecommended((boolean) result[1])
-                    .cellQuantity((int) (Math.ceil(((Integer) result[2]).intValue()) / 100))
-                    .build();
-            list.add(cropDto);
-        }
-        return list;
-    }
 
     @Override
     @Transactional(readOnly = true)

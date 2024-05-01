@@ -190,9 +190,11 @@ class DesignServiceImplTest {
 
 
         // when
+        int[][] arrangement = arrangementRepository.findById(design.getArrangementId()).get().getArrangement();
 
 
         // then
+        assertEquals(10,arrangement.length);
 
     }
 }
