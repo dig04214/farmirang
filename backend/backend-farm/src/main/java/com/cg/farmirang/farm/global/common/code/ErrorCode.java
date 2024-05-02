@@ -87,7 +87,7 @@ public enum ErrorCode {
     // Arrangement Not Found
     ARRANGEMENT_NOT_FOUND(404, "D002", "해당 디자인의 배열을 찾을 수 없습니다."),
 
-    ; // End
+    CROP_NOT_FOUND(404, "D003", "해당 작물을 찾을 수 없습니다."); // End
 
     /**
      * ******************************* Error Code Constructor ***************************************

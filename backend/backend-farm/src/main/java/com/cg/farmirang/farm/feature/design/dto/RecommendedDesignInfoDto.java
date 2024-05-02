@@ -9,4 +9,5 @@ public class RecommendedDesignInfoDto {
     private Integer ridgeWidth;
     private Integer furrowWidth;
     private Boolean isHorizontal;
+    private Integer startMonth;
 }

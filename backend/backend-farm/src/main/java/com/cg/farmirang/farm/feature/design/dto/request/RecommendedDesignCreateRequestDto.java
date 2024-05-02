@@ -9,4 +9,5 @@ import lombok.Setter;
 public class RecommendedDesignCreateRequestDto {
     private Integer cropId;
     private Integer quantity;
+    private Integer priority;
 }

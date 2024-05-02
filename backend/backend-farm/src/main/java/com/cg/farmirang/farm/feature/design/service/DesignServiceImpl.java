@@ -6,14 +6,8 @@ import com.cg.farmirang.farm.feature.design.dto.RidgeDto;
 import com.cg.farmirang.farm.feature.design.dto.TotalRidgeDto;
 import com.cg.farmirang.farm.feature.design.dto.request.*;
 import com.cg.farmirang.farm.feature.design.dto.response.*;
-import com.cg.farmirang.farm.feature.design.entity.Arrangement;
-import com.cg.farmirang.farm.feature.design.entity.Design;
-import com.cg.farmirang.farm.feature.design.entity.FarmCoordinate;
-import com.cg.farmirang.farm.feature.design.entity.Member;
-import com.cg.farmirang.farm.feature.design.repository.ArrangementRepository;
-import com.cg.farmirang.farm.feature.design.repository.DesignRepository;
-import com.cg.farmirang.farm.feature.design.repository.FarmCoordinateRepository;
-import com.cg.farmirang.farm.feature.design.repository.MemberRepository;
+import com.cg.farmirang.farm.feature.design.entity.*;
+import com.cg.farmirang.farm.feature.design.repository.*;
 import com.cg.farmirang.farm.global.common.code.ErrorCode;
 import com.cg.farmirang.farm.global.exception.BusinessExceptionHandler;
 import com.google.gson.Gson;
@@ -25,18 +19,22 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+
 @Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class DesignServiceImpl implements DesignService {
 
+    private final EntityManager em;
     private final DesignRepository designRepository;
     private final MemberRepository memberRepository;
     private final FarmCoordinateRepository farmCoordinateRepository;
     private final ArrangementRepository arrangementRepository;
-    private final EntityManager em;
+    private final CropRepository cropRepository;
+    private final CropSelectionRepository cropSelectionRepository;
 
     /**
      * 빈 밭 생성
@@ -106,7 +104,7 @@ public class DesignServiceImpl implements DesignService {
         designRepository.save(savedDesign);
 
         return EmptyFarmCreateResponseDto.builder()
-                .designId(savedDesign.getDesignId())
+                .designId(savedDesign.getId())
                 .arrangement(gson.toJson(selectedArrangement.getArrangement()))
                 .build();
     }
@@ -166,7 +164,22 @@ public class DesignServiceImpl implements DesignService {
 
         TotalRidgeDto[] totalRidges=getTotalRidge(farmWidthCell,farmHeightCell, ridgeWidth/10, furrowWidth, (furrowWidth + ridgeWidth),designInfo.getIsHorizontal());
 
+        // 선택작물 DB 저장
+        for (RecommendedDesignCreateRequestDto selectedCrop : request) {
+            Crop crop = cropRepository.findById(selectedCrop.getCropId()).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.CROP_NOT_FOUND));
+            CropSelection cropSelection = CropSelection.builder()
+                    .crop(crop)
+                    .quantity(selectedCrop.getQuantity())
+                    .priority(selectedCrop.getPriority())
+                    .design(design)
+                    .build();
+            CropSelection savedCropSelection = cropSelectionRepository.save(cropSelection);
+            design.addCropSelection(savedCropSelection);
+        }
+
         // 두둑에서 알고리즘으로 배치하기
+        List<CropSelection> cropList=design.getCropSelections();
+        TotalRidgeDto[] updatedTotalRidges= createDesign(cropList, totalRidges, designInfo.getStartMonth());
 
 
         // 몽고디비에 다시 업데이트
@@ -175,6 +188,29 @@ public class DesignServiceImpl implements DesignService {
         return null;
     }
 
+    /**
+     * 디자인 추천 배치
+     */
+    private TotalRidgeDto[] createDesign(List<CropSelection> cropList, TotalRidgeDto[] totalRidges, Integer startMonth) {
+        List<Crop> crops = new ArrayList<>();
+        for (CropSelection cropSelection : cropList) {
+            Crop crop = cropSelection.getCrop();
+            crops.add(crop);
+        }
+
+        // 기본적으로 키 내림차순, 연작 가능(true가 먼저) 순으로 정렬됨
+        Collections.sort(crops,new CropComparator());
+
+        // TODO : 수확시기를 생각해 비슷한 수확시기의 작물끼리 모으기
+
+
+
+        return null;
+    }
+
+    /**
+     * 이랑 초기화
+     */
     private TotalRidgeDto[] getTotalRidge(int farmWidthCell, int farmHeightCell, int ridgeWidthCell, Integer furrowWidth, int totalRidgeLength, Boolean isHorizontal) {
         TotalRidgeDto[] totalRidges;
 

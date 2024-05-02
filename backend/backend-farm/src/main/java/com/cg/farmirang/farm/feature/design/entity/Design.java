@@ -14,6 +14,7 @@ public class Design {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "design_id")
+    @Getter
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -23,14 +24,18 @@ public class Design {
     @OneToMany(mappedBy = "design")
     private List<FarmCoordinate> farmCoordinates;
 
+    @Getter
+    @Setter
     private String arrangementId;
     private Integer area;
     private String name;
+    @Getter
     private Integer startMonth;
     private Integer ridgeWidth;
     private Integer furrowWidth;
     private Boolean isHorizontal;
 
+    @Getter
     @OneToMany(mappedBy = "design")
     private List<CropSelection> cropSelections;
 
@@ -43,21 +48,25 @@ public class Design {
         this.furrowWidth = furrowWidth;
         this.isHorizontal = isHorizontal;
         this.farmCoordinates=new ArrayList<>();
+        this.cropSelections = new ArrayList<>();
     }
 
     public void addFarmCoordinate(FarmCoordinate farmCoordinate){
         this.farmCoordinates.add(farmCoordinate);
     }
-    public void setArrangementId(String arrangementId){ this.arrangementId=arrangementId;}
-    public Long getDesignId(){ return this.id;}
-    public Integer getStartMonth(){ return this.startMonth;}
-    public String getArrangementId(){ return this.arrangementId;}
+
+
     public RecommendedDesignInfoDto getDesignInfo(){
         return RecommendedDesignInfoDto.builder()
                 .ridgeWidth(this.ridgeWidth)
                 .furrowWidth(this.furrowWidth)
                 .isHorizontal(this.isHorizontal)
+                .startMonth(this.startMonth)
                 .build();
     }
+    public void addCropSelection(CropSelection cropSelection){
+        this.cropSelections.add(cropSelection);
+    }
+
 
 }

@@ -8,8 +8,6 @@ import java.util.List;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Data
-@Builder
 public class CropSelection {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,10 +18,23 @@ public class CropSelection {
     @JoinColumn(name = "design_id")
     private Design design;
 
+    @Getter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "crop_id")
     private Crop crop;
 
     @OneToMany(mappedBy = "cropSelection")
     private List<CropCoordination> cropCoordinations;
+
+    private Integer priority;
+    private Integer quantity;
+
+    @Builder
+    public CropSelection(Design design, Crop crop, List<CropCoordination> cropCoordinations, Integer priority, Integer quantity) {
+        this.design = design;
+        this.crop = crop;
+        this.cropCoordinations = cropCoordinations;
+        this.priority = priority;
+        this.quantity = quantity;
+    }
 }
