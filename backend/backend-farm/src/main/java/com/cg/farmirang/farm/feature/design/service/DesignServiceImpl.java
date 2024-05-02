@@ -164,8 +164,6 @@ public class DesignServiceImpl implements DesignService {
         int farmWidthCell = arrangement[0].length;
         int farmHeightCell = arrangement.length;
 
-
-
         TotalRidgeDto[] totalRidges=getTotalRidge(farmWidthCell,farmHeightCell, ridgeWidth/10, furrowWidth, (furrowWidth + ridgeWidth),designInfo.getIsHorizontal());
 
         // 두둑에서 알고리즘으로 배치하기
@@ -182,21 +180,24 @@ public class DesignServiceImpl implements DesignService {
 
         // 세로로 자른 밭
         if (isHorizontal) {
-            totalRidges = new TotalRidgeDto[farmWidthCell * 10 % totalRidgeLength];
+            totalRidges = new TotalRidgeDto[(farmWidthCell * 10) / totalRidgeLength];
 
-            for (TotalRidgeDto totalRidge : totalRidges) {
-                totalRidge.setRidge(RidgeDto.builder().grid(new int[ridgeWidthCell][farmWidthCell]).build());
-                totalRidge.setFurrow(FurrowDto.builder().width(furrowWidth).height(farmHeightCell*10).build());
+            for (int i = 0; i < totalRidges.length; i++) {
+                totalRidges[i] = TotalRidgeDto.builder()
+                        .ridge(RidgeDto.builder().grid(new int[farmHeightCell][ridgeWidthCell]).build())
+                        .furrow(FurrowDto.builder().width(furrowWidth).height(farmHeightCell * 10).build())
+                        .build();
             }
-
         }
         // 가로로 자른 밭
         else {
-            totalRidges = new TotalRidgeDto[farmHeightCell * 10 % totalRidgeLength];
+            totalRidges = new TotalRidgeDto[(farmHeightCell * 10) / totalRidgeLength];
 
-            for (TotalRidgeDto totalRidge : totalRidges) {
-                totalRidge.setRidge(RidgeDto.builder().grid(new int[farmHeightCell][ridgeWidthCell]).build());
-                totalRidge.setFurrow(FurrowDto.builder().width(farmWidthCell*10).height(furrowWidth).build());
+            for (int i = 0; i < totalRidges.length; i++) {
+                totalRidges[i] = TotalRidgeDto.builder()
+                        .ridge(RidgeDto.builder().grid(new int[ridgeWidthCell][farmWidthCell]).build())
+                        .furrow(FurrowDto.builder().width(farmWidthCell * 10).height(furrowWidth).build())
+                        .build();
             }
         }
         return totalRidges;

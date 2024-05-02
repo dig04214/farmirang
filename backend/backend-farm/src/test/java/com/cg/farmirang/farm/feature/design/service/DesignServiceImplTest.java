@@ -1,5 +1,9 @@
 package com.cg.farmirang.farm.feature.design.service;
 
+import com.cg.farmirang.farm.feature.design.dto.FurrowDto;
+import com.cg.farmirang.farm.feature.design.dto.RecommendedDesignInfoDto;
+import com.cg.farmirang.farm.feature.design.dto.RidgeDto;
+import com.cg.farmirang.farm.feature.design.dto.TotalRidgeDto;
 import com.cg.farmirang.farm.feature.design.dto.request.CoordinateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.request.EmptyFarmCreateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.request.RecommendedDesignCreateRequestDto;
@@ -186,15 +190,52 @@ class DesignServiceImplTest {
         // given
         Design design = designRepository.findById(1L).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.DESIGN_NOT_FOUND));
         List<RecommendedDesignCreateRequestDto> request = new ArrayList<>();
-
+        int[][] arrangement = arrangementRepository.findById(design.getArrangementId()).get().getArrangement();
+        RecommendedDesignInfoDto designInfo = design.getDesignInfo();
+        Integer furrowWidth = designInfo.getFurrowWidth();
+        Integer ridgeWidth = designInfo.getRidgeWidth();
+        int farmWidthCell = arrangement[0].length;
+        int farmHeightCell = arrangement.length;
+        Boolean isHorizontal=designInfo.getIsHorizontal();
+        int totalRidgeLength=furrowWidth+ridgeWidth;
+        int ridgeWidthCell=ridgeWidth/10;
 
 
         // when
-        int[][] arrangement = arrangementRepository.findById(design.getArrangementId()).get().getArrangement();
+        TotalRidgeDto[] totalRidges;
 
+        // 세로로 자른 밭
+        if (isHorizontal) {
+            totalRidges = new TotalRidgeDto[(farmWidthCell * 10) / totalRidgeLength];
+
+            for (int i = 0; i < totalRidges.length; i++) {
+                totalRidges[i] = TotalRidgeDto.builder()
+                        .ridge(RidgeDto.builder().grid(new int[farmHeightCell][ridgeWidthCell]).build())
+                        .furrow(FurrowDto.builder().width(furrowWidth).height(farmHeightCell * 10).build())
+                        .build();
+            }
+        }
+        // 가로로 자른 밭
+        else {
+            totalRidges = new TotalRidgeDto[(farmHeightCell * 10) / totalRidgeLength];
+
+            for (int i = 0; i < totalRidges.length; i++) {
+                totalRidges[i] = TotalRidgeDto.builder()
+                        .ridge(RidgeDto.builder().grid(new int[ridgeWidthCell][farmWidthCell]).build())
+                        .furrow(FurrowDto.builder().width(farmWidthCell * 10).height(furrowWidth).build())
+                        .build();
+            }
+        }
 
         // then
-        assertEquals(10,arrangement.length);
+        System.out.println("totalRidges[0] = " + totalRidges[0]);
+        for (int[] ints : totalRidges[0].getRidge().getGrid()) {
+            System.out.println(Arrays.toString(ints));
+        }
+
+
+//        assertEquals(2, totalRidges[0].getRidge().getGrid()[0].length);
+
 
     }
 }
