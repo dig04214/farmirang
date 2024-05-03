@@ -91,8 +91,18 @@ public class DesignServiceImpl implements DesignService {
 
         }
 
+        // 이랑 배열 생성
+        RecommendedDesignInfoDto designInfo = savedDesign.getDesignInfo();
+
+        Integer furrowWidth = designInfo.getFurrowWidth();
+        Integer ridgeWidth = designInfo.getRidgeWidth();
+        int farmWidthCell = farm[0].length;
+        int farmHeightCell = farm.length;
+
+        TotalRidgeDto[] totalRidges=getTotalRidge(farmWidthCell,farmHeightCell, ridgeWidth/10, furrowWidth, (furrowWidth + ridgeWidth),designInfo.getIsHorizontal());
+
         // 몽고DB에 배열 저장
-        Arrangement arrangement = arrangementRepository.save(Arrangement.builder().arrangement(farm).build());
+        Arrangement arrangement = arrangementRepository.save(Arrangement.builder().arrangement(totalRidges).build());
         String arrangementId = arrangement.getId();
         Gson gson=new Gson();
 
@@ -152,17 +162,7 @@ public class DesignServiceImpl implements DesignService {
 
         // 밭 불러오기
         Arrangement selectedArrangement = getSelectedArrangement(design);
-        int[][] arrangement = selectedArrangement.getArrangement();
-
-        // 이랑 배열 생성
-        RecommendedDesignInfoDto designInfo = design.getDesignInfo();
-
-        Integer furrowWidth = designInfo.getFurrowWidth();
-        Integer ridgeWidth = designInfo.getRidgeWidth();
-        int farmWidthCell = arrangement[0].length;
-        int farmHeightCell = arrangement.length;
-
-        TotalRidgeDto[] totalRidges=getTotalRidge(farmWidthCell,farmHeightCell, ridgeWidth/10, furrowWidth, (furrowWidth + ridgeWidth),designInfo.getIsHorizontal());
+        TotalRidgeDto[] arrangement = selectedArrangement.getArrangement();
 
         // 선택작물 DB 저장
         for (RecommendedDesignCreateRequestDto selectedCrop : request) {
@@ -179,8 +179,7 @@ public class DesignServiceImpl implements DesignService {
 
         // 두둑에서 알고리즘으로 배치하기
         List<CropSelection> cropList=design.getCropSelections();
-        TotalRidgeDto[] updatedTotalRidges= createDesign(cropList, totalRidges, designInfo.getStartMonth());
-
+        TotalRidgeDto[] updatedTotalRidges= createDesign(cropList, arrangement, design.getStartMonth());
 
         // 몽고디비에 다시 업데이트
 
@@ -201,7 +200,8 @@ public class DesignServiceImpl implements DesignService {
         // 기본적으로 키 내림차순, 연작 가능(true가 먼저) 순으로 정렬됨
         Collections.sort(crops,new CropComparator());
 
-        // TODO : 수확시기를 생각해 비슷한 수확시기의 작물끼리 모으기
+        // TODO : 수확시기를 생각해 비슷한 수확시기의 작물끼리 모으기 => 이랑 별로 하도록!
+
 
 
 
@@ -211,7 +211,7 @@ public class DesignServiceImpl implements DesignService {
     /**
      * 이랑 초기화
      */
-    private TotalRidgeDto[] getTotalRidge(int farmWidthCell, int farmHeightCell, int ridgeWidthCell, Integer furrowWidth, int totalRidgeLength, Boolean isHorizontal) {
+    private TotalRidgeDto[]getTotalRidge(int farmWidthCell, int farmHeightCell, int ridgeWidthCell, Integer furrowWidth, int totalRidgeLength, Boolean isHorizontal) {
         TotalRidgeDto[] totalRidges;
 
         // 세로로 자른 밭

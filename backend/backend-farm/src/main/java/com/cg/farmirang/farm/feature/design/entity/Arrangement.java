@@ -1,5 +1,6 @@
 package com.cg.farmirang.farm.feature.design.entity;
 
+import com.cg.farmirang.farm.feature.design.dto.TotalRidgeDto;
 import jakarta.persistence.Id;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,10 +13,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Arrangement {
     @Id
     private String id;
-    private int[][] arrangement;
+    private TotalRidgeDto[] arrangement;
 
     @Builder
-    public Arrangement(int[][] arrangement) {
+    public Arrangement(TotalRidgeDto[] arrangement) {
         this.arrangement = arrangement;
     }
 }
