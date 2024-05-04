@@ -170,7 +170,7 @@ class DesignServiceImplTest {
         // given
         Design design = designRepository.findById(1L).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.DESIGN_NOT_FOUND));
         List<RecommendedDesignCreateRequestDto> request = new ArrayList<>();
-        int[][] arrangement = arrangementRepository.findById(design.getArrangementId()).get().getArrangement();
+        TotalRidgeDto[] arrangement = arrangementRepository.findById(design.getArrangementId()).get().getArrangement();
         RecommendedDesignInfoDto designInfo = design.getDesignInfo();
 
         /* 이랑 생성 */

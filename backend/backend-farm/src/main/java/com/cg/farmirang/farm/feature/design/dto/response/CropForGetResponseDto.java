@@ -6,11 +6,13 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.util.List;
-
-@Builder @Setter @Getter @ToString
-public class CropGetResponseDto {
-    private List<CropForGetResponseDto> cropList;
-    private Integer totalRidgeArea;
-    private Integer ridgeWidth;
+@Builder
+@Setter
+@Getter
+@ToString
+public class CropForGetResponseDto {
+    private Integer cropId;
+    private String name;
+    private Boolean isRecommended;
+    private CropLengthAndAreaDto cropLengthAndAreaDto;
 }

@@ -24,7 +24,7 @@ public interface DesignService {
 
     Boolean insertPesticideAndFertilizerSelection(PesticideAndFertilizerCreateDto request);
 
-    List<CropGetResponseDto> selectCropList(Long designId);
+    CropGetResponseDto selectCropList(Long designId);
 
     EmptyFarmGetResponseDto selectEmptyFarm(Long designId);
 

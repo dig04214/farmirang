@@ -1,9 +1,6 @@
 package com.cg.farmirang.farm.feature.design.service;
 
-import com.cg.farmirang.farm.feature.design.dto.FurrowDto;
-import com.cg.farmirang.farm.feature.design.dto.RecommendedDesignInfoDto;
-import com.cg.farmirang.farm.feature.design.dto.RidgeDto;
-import com.cg.farmirang.farm.feature.design.dto.TotalRidgeDto;
+import com.cg.farmirang.farm.feature.design.dto.*;
 import com.cg.farmirang.farm.feature.design.dto.request.*;
 import com.cg.farmirang.farm.feature.design.dto.response.*;
 import com.cg.farmirang.farm.feature.design.entity.*;
@@ -104,18 +101,16 @@ public class DesignServiceImpl implements DesignService {
         // 몽고DB에 배열 저장
         Arrangement arrangement = arrangementRepository.save(Arrangement.builder().arrangement(totalRidges).build());
         String arrangementId = arrangement.getId();
-        Gson gson=new Gson();
 
-        Arrangement selectedArrangement = arrangementRepository.findById(arrangementId)
-                .orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.ARRANGEMENT_NOT_FOUND));
 
         // design에 arrangementId 추가
         savedDesign.setArrangementId(arrangementId);
         designRepository.save(savedDesign);
 
+        Gson gson=new Gson();
         return EmptyFarmCreateResponseDto.builder()
                 .designId(savedDesign.getId())
-                .arrangement(gson.toJson(selectedArrangement.getArrangement()))
+                .arrangement(gson.toJson(arrangement.getArrangement()))
                 .build();
     }
 
@@ -127,26 +122,37 @@ public class DesignServiceImpl implements DesignService {
      */
     @Override
     @Transactional(readOnly = true)
-    public List<CropGetResponseDto> selectCropList(Long designId) {
+    public CropGetResponseDto selectCropList(Long designId) {
         Design design = getDesign(designId);
         String startMonth = Integer.toString(design.getStartMonth());
 
         // 시작 달이 추천 파종시기인 작물부터 정렬
-        List<Object[]> results = em.createQuery("SELECT t.name, CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN true ELSE false END AS isRecommended, t.ridgeSpacing * t.cropSpacing AS area FROM Crop t ORDER BY CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN 0 ELSE 1 END, t.sowingTime")
+        List<Object[]> results = em.createQuery("SELECT t.id,t.name, CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN true ELSE false END AS isRecommended, t.ridgeSpacing, t.cropSpacing,t.ridgeSpacing * t.cropSpacing AS area FROM Crop t ORDER BY CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN 0 ELSE 1 END, t.sowingTime")
                 .setParameter("substring", startMonth)
                 .getResultList();
 
-        List<CropGetResponseDto> list = new ArrayList<>();
+        List<CropForGetResponseDto> list = new ArrayList<>();
 
         for (Object[] result : results) {
-            CropGetResponseDto cropDto = CropGetResponseDto.builder()
-                    .name((String) result[0])
-                    .isRecommended((boolean) result[1])
-                    .cellQuantity((int) (Math.ceil(((Integer) result[2]).intValue()) / 100))
+            CropForGetResponseDto cropDto = CropForGetResponseDto.builder()
+                    .cropId((Integer)result[0] )
+                    .name((String) result[1])
+                    .isRecommended((boolean) result[2])
+                    .cropLengthAndAreaDto(CropLengthAndAreaDto.builder()
+                            .ridgeSpacing((Integer) result[3])
+                            .cropSpacing((Integer) result[4])
+                            .area((Integer) result[5])
+                            .build()
+                    )
                     .build();
             list.add(cropDto);
         }
-        return list;
+
+        return CropGetResponseDto.builder()
+                .cropList(list)
+                .totalRidgeArea(1) // TODO : 두둑 총 넓이 제대로 보내주기!!!!!
+                .ridgeWidth(design.getRidgeWidth())
+                .build();
     }
 
     /**
