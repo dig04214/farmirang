@@ -188,8 +188,12 @@ public class DesignServiceImpl implements DesignService {
         String startMonth = Integer.toString(design.getStartMonth());
 
         // 시작 달이 추천 파종시기인 작물부터 정렬
+        return getCropGetResponseDto(design);
+    }
+
+    private CropGetResponseDto getCropGetResponseDto(Design design) {
         List<Object[]> results = em.createQuery("SELECT t.id,t.name, CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN true ELSE false END AS isRecommended, t.ridgeSpacing, t.cropSpacing,t.ridgeSpacing * t.cropSpacing AS area FROM Crop t ORDER BY CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN 0 ELSE 1 END, t.sowingTime")
-                .setParameter("substring", startMonth)
+                .setParameter("substring", design.getStartMonth())
                 .getResultList();
 
         List<CropForGetResponseDto> list = new ArrayList<>();
@@ -349,10 +353,21 @@ public class DesignServiceImpl implements DesignService {
     }
 
 
-
+    /**
+     * 밭 조회
+     *
+     * @param designId
+     * @return
+     */
     @Override
     public EmptyFarmGetResponseDto selectEmptyFarm(Long designId) {
-        return null;
+        Design design = getDesign(designId);
+
+        Arrangement selectedArrangement = getSelectedArrangement(design);
+        return EmptyFarmGetResponseDto.builder()
+                        .farm(selectedArrangement.getArrangement())
+                        .crops(getCropGetResponseDto(design))
+                        .build();
     }
 
     @Override

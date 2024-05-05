@@ -8,6 +8,6 @@ import java.util.List;
 
 @Builder @Getter @Setter
 public class EmptyFarmGetResponseDto {
-    private String arrangement;
-    List<CropGetResponseDto> crops;
+    private char[][] farm;
+    private CropGetResponseDto crops;
 }
