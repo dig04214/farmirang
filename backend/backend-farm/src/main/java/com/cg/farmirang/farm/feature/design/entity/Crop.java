@@ -7,7 +7,6 @@ import java.util.Comparator;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
 @Getter
 @ToString
 public class Crop {

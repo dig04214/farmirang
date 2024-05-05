@@ -326,15 +326,16 @@ public class DesignServiceImpl implements DesignService {
      * @return
      */
     @Override
-    public List<DesignDetailResponseDto> selectDesignList(Integer memberId) {
+    public List<DesignListResponseDto> selectDesignList(Integer memberId) {
         Member member = getMember(memberId);
-        List<DesignDetailResponseDto> list = new ArrayList<>();
+        List<DesignListResponseDto> list = new ArrayList<>();
 
         for (Design design : member.getDesigns()) {
             Arrangement selectedArrangement = getSelectedArrangement(design);
-            list.add(DesignDetailResponseDto.builder()
+            list.add(DesignListResponseDto.builder()
                     .arrangement(selectedArrangement.getArrangement())
                     .name(design.getName())
+                    .savedTime(design.getUpdatedAt())
                     .build()
             );
         }
@@ -351,11 +352,19 @@ public class DesignServiceImpl implements DesignService {
     public DesignDetailResponseDto selectDesign(Long designId) {
         Design design = getDesign(designId);
         Arrangement selectedArrangement = getSelectedArrangement(design);
+        List<String> cropList = new ArrayList<>();
 
+        List<CropSelection> cropSelections = design.getCropSelections();
+
+        for (CropSelection cropSelection : cropSelections) {
+            cropList.add(cropSelection.getCrop().getName());
+        }
 
         return DesignDetailResponseDto.builder()
                 .arrangement(selectedArrangement.getArrangement())
                 .name(design.getName())
+                .savedTime(design.getUpdatedAt())
+                .cropList(cropList)
                 .build();
     }
 
@@ -368,7 +377,17 @@ public class DesignServiceImpl implements DesignService {
     @Override
     @Transactional
     public Boolean deleteDesign(Long designId) {
-        return null;
+        Design design = getDesign(designId);
+        String arrangementId = design.getArrangementId();
+
+        try {
+            designRepository.delete(design);
+            arrangementRepository.deleteById(arrangementId);
+            return true;
+        } catch (Exception e) {
+            throw new BusinessExceptionHandler(ErrorCode.DELETE_ERROR);
+        }
+
     }
 
     @Override

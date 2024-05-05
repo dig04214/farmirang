@@ -98,8 +98,6 @@ public class DesignController {
         return SuccessResponse.builder().data(response).status(SuccessCode.INSERT_SUCCESS).build();
     }
 
-
-
     @PutMapping("/{designId}/name")
     @Operation(summary = "디자인 이름 수정", description = "디자인 이름을 수정합니다.")
     @ApiResponses(value = {@ApiResponse(responseCode = "204", description = "디자인 이름 수정에 성공했습니다.",
@@ -136,14 +134,14 @@ public class DesignController {
     public SuccessResponse<?> getDesignList(/*회원정보 뽑아오기*/){
         Integer memberId=0;
 
-        List<DesignDetailResponseDto> response=designService.selectDesignList(memberId);
+        List<DesignListResponseDto> response=designService.selectDesignList(memberId);
         return SuccessResponse.builder().data(response).status(SuccessCode.SELECT_SUCCESS).build();
     }
 
     @GetMapping("/{designId}")
     @Operation(summary = "디자인 상세조회", description = "선택된 디자인을 상세조회합니다.")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "디자인 상세조회에 성공했습니다.",
-            content = {@Content(schema = @Schema(implementation = DesignDetailResponseDto.class))}),
+            content = {@Content(schema = @Schema(implementation = DesignListResponseDto.class))}),
             @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })

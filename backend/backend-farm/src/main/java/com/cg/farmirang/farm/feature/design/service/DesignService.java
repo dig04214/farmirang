@@ -14,7 +14,7 @@ public interface DesignService {
     Boolean insertDesign(DesignUpdateRequestDto request);
 
 
-    List<DesignDetailResponseDto> selectDesignList(Integer memberId);
+    List<DesignListResponseDto> selectDesignList(Integer memberId);
 
     DesignDetailResponseDto selectDesign(Long designId);
 

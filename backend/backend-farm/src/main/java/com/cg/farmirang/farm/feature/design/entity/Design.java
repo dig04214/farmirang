@@ -4,13 +4,20 @@ import com.cg.farmirang.farm.feature.design.dto.RecommendedDesignInfoDto;
 import jakarta.persistence.*;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @NoArgsConstructor(access=AccessLevel.PROTECTED)
 @Getter
+@EntityListeners(AuditingEntityListener.class)
 public class Design {
 
     @Id
@@ -22,21 +29,29 @@ public class Design {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @OneToMany(mappedBy = "design")
+    @OneToMany(mappedBy = "design", orphanRemoval = true)
     private List<FarmCoordinate> farmCoordinates;
 
     private String arrangementId;
     private Integer totalArea;
-    @Setter
     private Integer ridgeArea;
+
+    @Column(columnDefinition = "varchar(255) default '제목 없음'")
     private String name;
+
     private Integer startMonth;
     private Integer ridgeWidth;
     private Integer furrowWidth;
     private Boolean isHorizontal;
+    @CreatedDate
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
 
     @Getter
-    @OneToMany(mappedBy = "design")
+    @OneToMany(mappedBy = "design", orphanRemoval = true)
     private List<CropSelection> cropSelections;
 
     @Builder

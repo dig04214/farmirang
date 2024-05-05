@@ -5,14 +5,12 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Builder
 @Getter
 @Setter
-public class DesignDetailResponseDto {
+public class DesignListResponseDto {
     private char[][] arrangement;
     private String name;
-    private List<String> cropList;
     private LocalDateTime savedTime;
 }
