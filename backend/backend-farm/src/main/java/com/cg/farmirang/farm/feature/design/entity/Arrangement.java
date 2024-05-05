@@ -13,10 +13,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Arrangement {
     @Id
     private String id;
-    private TotalRidgeDto[] arrangement;
+    private char[][] arrangement;
 
     @Builder
-    public Arrangement(TotalRidgeDto[] arrangement) {
+    public Arrangement(char[][] arrangement) {
         this.arrangement = arrangement;
     }
 }

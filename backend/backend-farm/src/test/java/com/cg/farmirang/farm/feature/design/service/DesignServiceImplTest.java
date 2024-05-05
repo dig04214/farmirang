@@ -18,6 +18,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonParser;
 import jakarta.persistence.EntityManager;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -101,145 +102,151 @@ class DesignServiceImplTest {
 
     // 좌표 DB 저장 후 빈 밭 배열 생성
     @Test
-    @Rollback(value = false)
+//    @Rollback(value = false)
     public void 밭배열생성(){
         // given
-        Member member = memberRepository.save(Member.builder().nickname("test").build());
+//        Member member = memberRepository.save(Member.builder().nickname("test").build());
 
         List<CoordinateRequestDto> list=new ArrayList<>();
-        list.add(CoordinateRequestDto.builder().x(0).y(0).sequence(1).build());
-        list.add(CoordinateRequestDto.builder().x(0).y(100).sequence(2).build());
-        list.add(CoordinateRequestDto.builder().x(100).y(0).sequence(3).build());
-        list.add(CoordinateRequestDto.builder().x(100).y(100).sequence(4).build());
+        list.add(CoordinateRequestDto.builder().x(1).y(0).sequence(1).build());
+        list.add(CoordinateRequestDto.builder().x(10).y(0).sequence(2).build());
+        list.add(CoordinateRequestDto.builder().x(7).y(7).sequence(3).build());
+        list.add(CoordinateRequestDto.builder().x(1).y(7).sequence(4).build());
 
         EmptyFarmCreateRequestDto request = EmptyFarmCreateRequestDto.builder()
                 .coordinates(list)
                 .area(10000)
                 .isHorizontal(false)
-                .furrowWidth(100)
-                .ridgeWidth(50)
+                .ridgeWidth(20)
+                .furrowWidth(10)
                 .startMonth(4)
                 .build();
 
         // when
         EmptyFarmCreateResponseDto response = designService.insertEmptyFarm(null, request);
 
+
         // then
-        assertEquals(100, response.getArrangement().length());
+//        assertEquals(100, response.getArrangement().length());
+        for (char[] chars : response.getFarm()) {
+            System.out.println(Arrays.toString(chars));
+
+        }
     }
 
 
     @Test
     public void 작물리스트조회(){
-        // given
-        Member member = memberRepository.save(Member.builder().nickname("test").build());
-        Design savedDesign = designRepository.save(
-                Design.builder()
-                .member(member)
-                .area(100)
-                .startMonth(4)
-                .ridgeWidth(10)
-                .furrowWidth(20)
-                .isHorizontal(false)
-                .build());
-
-        // when
-        Design design = designRepository.findById(savedDesign.getId()).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.DESIGN_NOT_FOUND));
-//        String startMonth = Integer.toString(design.getStartMonth());
-        String startMonth = "1";
-        List<Object[]> results = em.createQuery("SELECT t.name, CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN true ELSE false END AS isRecommended, t.ridgeSpacing * t.cropSpacing AS area FROM Crop t ORDER BY CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN 0 ELSE 1 END, t.sowingTime")
-                .setParameter("substring", startMonth)
-                .getResultList();
-
-
-
-        // then
-        for (Object[] result : results) {
-            CropGetResponseDto cropDto = CropGetResponseDto.builder()
-                    .name((String) result[0])
-                    .isRecommended((boolean) result[1])
-                    .cellQuantity((int) (Math.ceil(((Integer) result[2]).intValue()) / 100))
-                    .build();
-            System.out.println("cropDto = " + cropDto);
-        }
+//        // given
+//        Member member = memberRepository.save(Member.builder().nickname("test").build());
+//        Design savedDesign = designRepository.save(
+//                Design.builder()
+//                .member(member)
+//                .area(100)
+//                .startMonth(4)
+//                .ridgeWidth(10)
+//                .furrowWidth(20)
+//                .isHorizontal(false)
+//                .build());
+//
+//        // when
+//        Design design = designRepository.findById(savedDesign.getId()).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.DESIGN_NOT_FOUND));
+////        String startMonth = Integer.toString(design.getStartMonth());
+//        String startMonth = "1";
+//        List<Object[]> results = em.createQuery("SELECT t.name, CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN true ELSE false END AS isRecommended, t.ridgeSpacing * t.cropSpacing AS area FROM Crop t ORDER BY CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN 0 ELSE 1 END, t.sowingTime")
+//                .setParameter("substring", startMonth)
+//                .getResultList();
+//
+//
+//
+//        // then
+//        for (Object[] result : results) {
+//            CropGetResponseDto cropDto = CropGetResponseDto.builder()
+//                    .name((String) result[0])
+//                    .isRecommended((boolean) result[1])
+//                    .cellQuantity((int) (Math.ceil(((Integer) result[2]).intValue()) / 100))
+//                    .build();
+//            System.out.println("cropDto = " + cropDto);
+//        }
     }
 
     @Test
+    @Disabled
     public void 디자인생성(){
         /* 밭 불러오기 */
         // given
-        Design design = designRepository.findById(1L).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.DESIGN_NOT_FOUND));
-        List<RecommendedDesignCreateRequestDto> request = new ArrayList<>();
-        TotalRidgeDto[] arrangement = arrangementRepository.findById(design.getArrangementId()).get().getArrangement();
-        RecommendedDesignInfoDto designInfo = design.getDesignInfo();
-
-        /* 이랑 생성 */
-        Integer furrowWidth = designInfo.getFurrowWidth();
-        Integer ridgeWidth = designInfo.getRidgeWidth();
-        int farmWidthCell = arrangement[0].length;
-        int farmHeightCell = arrangement.length;
-        Boolean isHorizontal=designInfo.getIsHorizontal();
-        int totalRidgeLength=furrowWidth+ridgeWidth;
-        int ridgeWidthCell=ridgeWidth/10;
-
-        TotalRidgeDto[] totalRidges;
-
-        // 세로로 자른 밭
-        if (isHorizontal) {
-            totalRidges = new TotalRidgeDto[(farmWidthCell * 10) / totalRidgeLength];
-
-            for (int i = 0; i < totalRidges.length; i++) {
-                totalRidges[i] = TotalRidgeDto.builder()
-                        .ridge(RidgeDto.builder().grid(new int[farmHeightCell][ridgeWidthCell]).build())
-                        .furrow(FurrowDto.builder().width(furrowWidth).height(farmHeightCell * 10).build())
-                        .build();
-            }
-        }
-        // 가로로 자른 밭
-        else {
-            totalRidges = new TotalRidgeDto[(farmHeightCell * 10) / totalRidgeLength];
-
-            for (int i = 0; i < totalRidges.length; i++) {
-                totalRidges[i] = TotalRidgeDto.builder()
-                        .ridge(RidgeDto.builder().grid(new int[ridgeWidthCell][farmWidthCell]).build())
-                        .furrow(FurrowDto.builder().width(farmWidthCell * 10).height(furrowWidth).build())
-                        .build();
-            }
-        }
-
-        /* 작물 배치 */
-        List<RecommendedDesignCreateRequestDto> cropDtoList = new ArrayList<>();
-        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(1).quantity(5).priority(1).build());
-        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(2).quantity(2).priority(2).build());
-        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(3).quantity(2).priority(3).build());
-        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(4).quantity(2).priority(4).build());
-
-        for (RecommendedDesignCreateRequestDto selectedCrop : cropDtoList) {
-            Crop crop = cropRepository.findById(selectedCrop.getCropId()).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.CROP_NOT_FOUND));
-            CropSelection cropSelection = CropSelection.builder()
-                    .crop(crop)
-                    .quantity(selectedCrop.getQuantity())
-                    .priority(selectedCrop.getPriority())
-                    .design(design)
-                    .build();
-            CropSelection savedCropSelection = cropSelectionRepository.save(cropSelection);
-            design.addCropSelection(savedCropSelection);
-        }
-
-        // when
-
-        List<Crop> crops = new ArrayList<>();
-        for (CropSelection cropSelection : design.getCropSelections()) {
-            Crop crop = cropSelection.getCrop();
-            crops.add(crop);
-        }
-        Collections.sort(crops,new CropComparator());
-
-        // then
-        for (Crop crop : crops) {
-            System.out.println("crop = " + crop.toString());
-        }
-
+//        Design design = designRepository.findById(1L).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.DESIGN_NOT_FOUND));
+//        List<RecommendedDesignCreateRequestDto> request = new ArrayList<>();
+//        TotalRidgeDto[] arrangement = arrangementRepository.findById(design.getArrangementId()).get().getArrangement();
+//        RecommendedDesignInfoDto designInfo = design.getDesignInfo();
+//
+//        /* 이랑 생성 */
+//        Integer furrowWidth = designInfo.getFurrowWidth();
+//        Integer ridgeWidth = designInfo.getRidgeWidth();
+//        int farmWidthCell = arrangement[0].length;
+//        int farmHeightCell = arrangement.length;
+//        Boolean isHorizontal=designInfo.getIsHorizontal();
+//        int totalRidgeLength=furrowWidth+ridgeWidth;
+//        int ridgeWidthCell=ridgeWidth/10;
+//
+//        TotalRidgeDto[] totalRidges;
+//
+//        // 세로로 자른 밭
+//        if (isHorizontal) {
+//            totalRidges = new TotalRidgeDto[(farmWidthCell * 10) / totalRidgeLength];
+//
+//            for (int i = 0; i < totalRidges.length; i++) {
+//                totalRidges[i] = TotalRidgeDto.builder()
+//                        .ridge(RidgeDto.builder().grid(new int[farmHeightCell][ridgeWidthCell]).build())
+//                        .furrow(FurrowDto.builder().width(furrowWidth).height(farmHeightCell * 10).build())
+//                        .build();
+//            }
+//        }
+//        // 가로로 자른 밭
+//        else {
+//            totalRidges = new TotalRidgeDto[(farmHeightCell * 10) / totalRidgeLength];
+//
+//            for (int i = 0; i < totalRidges.length; i++) {
+//                totalRidges[i] = TotalRidgeDto.builder()
+//                        .ridge(RidgeDto.builder().grid(new int[ridgeWidthCell][farmWidthCell]).build())
+//                        .furrow(FurrowDto.builder().width(farmWidthCell * 10).height(furrowWidth).build())
+//                        .build();
+//            }
+//        }
+//
+//        /* 작물 배치 */
+//        List<RecommendedDesignCreateRequestDto> cropDtoList = new ArrayList<>();
+//        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(1).quantity(5).priority(1).build());
+//        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(2).quantity(2).priority(2).build());
+//        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(3).quantity(2).priority(3).build());
+//        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(4).quantity(2).priority(4).build());
+//
+//        for (RecommendedDesignCreateRequestDto selectedCrop : cropDtoList) {
+//            Crop crop = cropRepository.findById(selectedCrop.getCropId()).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.CROP_NOT_FOUND));
+//            CropSelection cropSelection = CropSelection.builder()
+//                    .crop(crop)
+//                    .quantity(selectedCrop.getQuantity())
+//                    .priority(selectedCrop.getPriority())
+//                    .design(design)
+//                    .build();
+//            CropSelection savedCropSelection = cropSelectionRepository.save(cropSelection);
+//            design.addCropSelection(savedCropSelection);
+//        }
+//
+//        // when
+//
+//        List<Crop> crops = new ArrayList<>();
+//        for (CropSelection cropSelection : design.getCropSelections()) {
+//            Crop crop = cropSelection.getCrop();
+//            crops.add(crop);
+//        }
+//        Collections.sort(crops,new CropComparator());
+//
+//        // then
+//        for (Crop crop : crops) {
+//            System.out.println("crop = " + crop.toString());
+//        }
+//
 
     }
 

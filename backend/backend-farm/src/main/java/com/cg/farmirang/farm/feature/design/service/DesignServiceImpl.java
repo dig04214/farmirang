@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -73,20 +74,28 @@ public class DesignServiceImpl implements DesignService {
         int row=maxY-minY;
         int column=maxX-minX;
 
-        int[][] farm=new int[row][column];
+        char[][] farm=new char[row][column];
+        Polygon polygon=new Polygon();
 
         // 좌표값에서 최소값 빼고 좌표 DB에 저장
         for (CoordinateRequestDto coordinate : coordinates) {
+            int x = coordinate.getX() - minX;
+            int y = coordinate.getY() - minY;
+
+            polygon.addPoint(x,Math.abs(column-y));
+
             FarmCoordinate farmCoordinate = FarmCoordinate.builder()
                     .design(savedDesign)
-                    .x(coordinate.getX()-minX)
-                    .y(coordinate.getY()-minY)
+                    .x(x)
+                    .y(y)
                     .sequence(coordinate.getSequence())
                     .build();
             FarmCoordinate save = farmCoordinateRepository.save(farmCoordinate);
             savedDesign.addFarmCoordinate(save);
 
         }
+
+
 
         // 이랑 배열 생성
         RecommendedDesignInfoDto designInfo = savedDesign.getDesignInfo();
@@ -96,10 +105,10 @@ public class DesignServiceImpl implements DesignService {
         int farmWidthCell = farm[0].length;
         int farmHeightCell = farm.length;
 
-        TotalRidgeDto[] totalRidges=getTotalRidge(farmWidthCell,farmHeightCell, ridgeWidth/10, furrowWidth, (furrowWidth + ridgeWidth),designInfo.getIsHorizontal());
+        farm=checkRidgeAndFurrow(farm, polygon, farmWidthCell,farmHeightCell, ridgeWidth/10, furrowWidth/10 ,designInfo.getIsHorizontal());
 
         // 몽고DB에 배열 저장
-        Arrangement arrangement = arrangementRepository.save(Arrangement.builder().arrangement(totalRidges).build());
+        Arrangement arrangement = arrangementRepository.save(Arrangement.builder().arrangement(farm).build());
         String arrangementId = arrangement.getId();
 
 
@@ -111,7 +120,78 @@ public class DesignServiceImpl implements DesignService {
         return EmptyFarmCreateResponseDto.builder()
                 .designId(savedDesign.getId())
                 .arrangement(gson.toJson(arrangement.getArrangement()))
+                .farm(farm)
                 .build();
+    }
+
+    /**
+     * 이랑, 고랑, 그리고 빈칸 체크
+     */
+    private char[][] checkRidgeAndFurrow(char[][] farm, Polygon polygon, int farmWidthCell, int farmHeightCell, int ridgeLengthCell, int furrowLengthCell, Boolean isHorizontal) {
+
+        int R = isHorizontal ? farmWidthCell : farmHeightCell;
+        int C = isHorizontal ? farmHeightCell : farmWidthCell;
+        int limit = isHorizontal ? farmWidthCell : farmHeightCell;
+
+        int check = 0;
+//        while (check < limit) {
+//            for (int i = 0; i < R && check < limit; i++) {
+//                for (int j = 0; j < C; j++) {
+//                    // 두둑 표시
+//                    for (int ridge=0; ridge<ridgeLengthCell; ridge++){
+//                        farm[isHorizontal ? j : i][isHorizontal ? i : j] =isRidge( isHorizontal ? i : j, isHorizontal ? j : i, polygon, R,C) ? 'R' : 'E';
+//                    }
+//                    // 이랑 표시
+//                    for (int furrow=0; furrow<furrowLengthCell; furrow++){
+//                        farm[isHorizontal ? j : i][isHorizontal ? i : j] ='F';
+//                    }
+//                }
+//                check++;
+//            }
+//        }
+
+        boolean isRidge=true;
+        int currentCount=0;
+        while (check < limit) {
+            for (int i = 0; i < R && check < limit; i++) {
+                for (int j = 0; j < C; j++) {
+                    farm[isHorizontal ? j : i][isHorizontal ? i : j]=(isRidge) ? isRidgeOrEmpty( isHorizontal ? i : j, isHorizontal ? j : i, polygon, R,C) ? 'R' : 'E': 'F';
+                }
+                check++;
+                currentCount++;
+
+                if (isRidge && currentCount==ridgeLengthCell) {
+                    currentCount = 0;
+                    isRidge=false;
+                }else if (!isRidge && currentCount==furrowLengthCell){
+                    currentCount = 0;
+                    isRidge=true;
+                }
+
+
+            }
+        }
+
+        return farm;
+    }
+
+    /**
+     * 도형 안에 있는지 확인
+     */
+    private boolean isRidgeOrEmpty(int x, int y, Polygon polygon, int height, int width) {
+        // 네군데 다 확인
+        int[] changeX={0,1,1,0}; int[] changeY={0,0,1,1};
+
+        for (int i=0; i<4; i++){
+            int newX=x+changeX[i];
+//            int newY=Math.abs(height-y)+changeY[i];
+            int newY=y+changeY[i];
+
+            if ((0<=newX&&newX<width) && (0<=newY&&newY<height) && !polygon.contains(newX,newY)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -168,7 +248,6 @@ public class DesignServiceImpl implements DesignService {
 
         // 밭 불러오기
         Arrangement selectedArrangement = getSelectedArrangement(design);
-        TotalRidgeDto[] arrangement = selectedArrangement.getArrangement();
 
         // 선택작물 DB 저장
         for (RecommendedDesignCreateRequestDto selectedCrop : request) {
@@ -185,7 +264,6 @@ public class DesignServiceImpl implements DesignService {
 
         // 두둑에서 알고리즘으로 배치하기
         List<CropSelection> cropList=design.getCropSelections();
-        TotalRidgeDto[] updatedTotalRidges= createDesign(cropList, arrangement, design.getStartMonth());
 
         // 몽고디비에 다시 업데이트
 
