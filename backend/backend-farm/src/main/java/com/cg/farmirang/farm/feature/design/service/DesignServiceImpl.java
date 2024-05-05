@@ -235,12 +235,13 @@ public class DesignServiceImpl implements DesignService {
     @Transactional
     public RecommendedDesignCreateResponseDto insertRecommendedDesign(Long designId, List<RecommendedDesignCreateRequestDto> request) {
         Design design = getDesign(designId);
-
         // 밭 불러오기
         Arrangement selectedArrangement = getSelectedArrangement(design);
+        List<Integer> cropIds = new ArrayList<>();
 
         // 선택작물 DB 저장
         for (RecommendedDesignCreateRequestDto selectedCrop : request) {
+            cropIds.add(selectedCrop.getCropId());
             Crop crop = cropRepository.findById(selectedCrop.getCropId()).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.CROP_NOT_FOUND));
             CropSelection cropSelection = CropSelection.builder()
                     .crop(crop)
@@ -253,7 +254,7 @@ public class DesignServiceImpl implements DesignService {
         }
 
         // 두둑에서 알고리즘으로 배치하기
-        List<CropSelection> cropList=design.getCropSelections();
+        createDesign(cropIds, design);
 
         // 몽고디비에 다시 업데이트
 
@@ -264,23 +265,15 @@ public class DesignServiceImpl implements DesignService {
     /**
      * 디자인 추천 배치
      */
-    private TotalRidgeDto[] createDesign(List<CropSelection> cropList, TotalRidgeDto[] totalRidges, Integer startMonth) {
-        List<Crop> crops = new ArrayList<>();
-        for (CropSelection cropSelection : cropList) {
-            Crop crop = cropSelection.getCrop();
-            crops.add(crop);
-        }
-
-        // 기본적으로 키 내림차순, 연작 가능(true가 먼저) 순으로 정렬됨
-        Collections.sort(crops,new CropComparator());
+    private void createDesign(List<Integer> cropIds, Design design) {
+        // 작물 길이, 그리고 1m 기준으로 그룹 생성 후 연작 가능한 것부터 나열
+        List<Crop> cropListFirst = cropRepository.findByHeightGreaterThanEqualOrderByIsRepeatedDescHeightDesc(cropIds);
+        cropListFirst.addAll(cropRepository.findByHeightLessThanOrderByIsRepeatedDescHeightDesc(cropIds));
 
         // TODO : 수확시기를 생각해 비슷한 수확시기의 작물끼리 모으기 => 이랑 별로 하도록!
 
-
-
-
-        return null;
     }
+
 
     /**
      * 이랑 초기화

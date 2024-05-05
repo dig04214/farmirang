@@ -3,6 +3,8 @@ package com.cg.farmirang.farm.feature.design.service;
 import com.cg.farmirang.farm.feature.design.dto.request.CoordinateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.request.DesignNameUpdateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.request.EmptyFarmCreateRequestDto;
+import com.cg.farmirang.farm.feature.design.dto.request.RecommendedDesignCreateRequestDto;
+import com.cg.farmirang.farm.feature.design.dto.response.DesignDetailResponseDto;
 import com.cg.farmirang.farm.feature.design.dto.response.DesignListResponseDto;
 import com.cg.farmirang.farm.feature.design.dto.response.EmptyFarmCreateResponseDto;
 import com.cg.farmirang.farm.feature.design.entity.*;
@@ -160,8 +162,35 @@ class DesignServiceImplTest {
     }
 
     @Test
-    @Disabled
     public void 디자인생성(){
+
+        List<RecommendedDesignCreateRequestDto> cropDtoList = new ArrayList<>();
+        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(1).quantity(5).priority(1).build());
+        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(2).quantity(2).priority(2).build());
+        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(3).quantity(2).priority(3).build());
+        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(4).quantity(2).priority(4).build());
+        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(6).quantity(2).priority(5).build());
+        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(15).quantity(2).priority(6).build());
+
+        List<Integer> cropIds = new ArrayList<>();
+
+        // 선택작물 DB 저장
+        for (RecommendedDesignCreateRequestDto selectedCrop : cropDtoList) {
+            cropIds.add(selectedCrop.getCropId());
+        }
+
+        List<Crop> cropListFirst = cropRepository.findByHeightGreaterThanEqualOrderByIsRepeatedDescHeightDesc(cropIds);
+        cropListFirst.addAll(cropRepository.findByHeightLessThanOrderByIsRepeatedDescHeightDesc(cropIds));
+
+        for (Crop crop : cropListFirst) {
+            System.out.println("crop = " + crop.toString());
+        }
+
+    }
+
+    @Test
+    @Disabled
+    public void 디자인생성_옛날버전(){
         /* 밭 불러오기 */
         // given
 //        Design design = designRepository.findById(1L).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.DESIGN_NOT_FOUND));
@@ -318,7 +347,7 @@ class DesignServiceImplTest {
         Long designId=31L;
 
         // when
-        DesignListResponseDto response = designService.selectDesign(designId);
+        DesignDetailResponseDto response = designService.selectDesign(designId);
 
         // then
         for (char[] chars : response.getArrangement()) {
