@@ -31,6 +31,7 @@ public class Design {
     private String name;
     @Getter
     private Integer startMonth;
+    @Getter
     private Integer ridgeWidth;
     private Integer furrowWidth;
     private Boolean isHorizontal;

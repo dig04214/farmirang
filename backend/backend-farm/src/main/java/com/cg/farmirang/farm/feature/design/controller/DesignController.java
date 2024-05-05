@@ -53,7 +53,7 @@ public class DesignController {
             @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public SuccessResponse<?> getCrops(@PathVariable Long designId){
-        List<CropGetResponseDto> response=designService.selectCropList(designId);
+        CropGetResponseDto response=designService.selectCropList(designId);
         return SuccessResponse.builder().data(response).status(SuccessCode.SELECT_SUCCESS).build();
     }
 
