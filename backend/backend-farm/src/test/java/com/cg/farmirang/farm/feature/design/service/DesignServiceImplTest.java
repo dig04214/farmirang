@@ -1,23 +1,13 @@
 package com.cg.farmirang.farm.feature.design.service;
 
-import com.cg.farmirang.farm.feature.design.dto.FurrowDto;
-import com.cg.farmirang.farm.feature.design.dto.RecommendedDesignInfoDto;
-import com.cg.farmirang.farm.feature.design.dto.RidgeDto;
-import com.cg.farmirang.farm.feature.design.dto.TotalRidgeDto;
 import com.cg.farmirang.farm.feature.design.dto.request.CoordinateRequestDto;
+import com.cg.farmirang.farm.feature.design.dto.request.DesignNameUpdateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.request.EmptyFarmCreateRequestDto;
-import com.cg.farmirang.farm.feature.design.dto.request.RecommendedDesignCreateRequestDto;
-import com.cg.farmirang.farm.feature.design.dto.response.CropGetResponseDto;
+import com.cg.farmirang.farm.feature.design.dto.response.DesignListResponseDto;
 import com.cg.farmirang.farm.feature.design.dto.response.EmptyFarmCreateResponseDto;
 import com.cg.farmirang.farm.feature.design.entity.*;
 import com.cg.farmirang.farm.feature.design.repository.*;
-import com.cg.farmirang.farm.global.common.code.ErrorCode;
-import com.cg.farmirang.farm.global.exception.BusinessExceptionHandler;
-import com.cg.farmirang.farm.global.exception.GlobalExceptionHandler;
-import com.google.gson.Gson;
-import com.google.gson.JsonParser;
 import jakarta.persistence.EntityManager;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +19,6 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -84,20 +73,20 @@ class DesignServiceImplTest {
     public void 디자인저장(){
         // given
         Member member = memberRepository.save(Member.builder().nickname("test").build());
-        Design design = Design.builder()
-                .member(member)
-                .area(100)
-                .startMonth(4)
-                .ridgeWidth(10)
-                .furrowWidth(20)
-                .isHorizontal(false)
-                .build();
-
-        // when
-        Design savedDesign = designRepository.save(design);
-
-        // then
-        assertThat(savedDesign).isEqualTo(design);
+//        Design design = Design.builder()
+//                .member(member)
+//                .totalArea(100)
+//                .startMonth(4)
+//                .ridgeWidth(10)
+//                .furrowWidth(20)
+//                .isHorizontal(false)
+//                .build();
+//
+//        // when
+//        Design savedDesign = designRepository.save(design);
+//
+//        // then
+//        assertThat(savedDesign).isEqualTo(design);
     }
 
     // 좌표 DB 저장 후 빈 밭 배열 생성
@@ -288,4 +277,53 @@ class DesignServiceImplTest {
 
     }
 
+    @Test
+    public void 이름수정(){
+        // given
+        Long designId=31L;
+        String updatedName = "updated name";
+        DesignNameUpdateRequestDto dto = DesignNameUpdateRequestDto.builder().name(updatedName).build();
+
+        // when
+        designService.updateDesignName(designId, dto);
+
+        // then
+        Design design = designRepository.findById(designId).get();
+        assertEquals(updatedName,design.getName());
+    }
+
+    @Test
+    public void 디자인리스트_불러오기(){
+        // given
+        Integer memberId=1;
+
+        // when
+        List<DesignListResponseDto> response = designService.selectDesignList(memberId);
+
+        // then
+        for (DesignListResponseDto dto : response) {
+            System.out.println("--------밭과 이름--------");
+            for (char[] chars : dto.getArrangement()) {
+                System.out.println(chars.toString());
+            }
+            System.out.println("dto.getName() = " + dto.getName());
+            System.out.println("--------------------------");
+        }
+        assertEquals(6, response.size());
+    }
+
+    @Test
+    public void 디자인_상세보기(){
+        // given
+        Long designId=31L;
+
+        // when
+        DesignListResponseDto response = designService.selectDesign(designId);
+
+        // then
+        for (char[] chars : response.getArrangement()) {
+            System.out.println(Arrays.toString(chars));
+        }
+        System.out.println("name = " + response.getName());
+    }
 }

@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -47,7 +46,8 @@ public class DesignServiceImpl implements DesignService {
     public EmptyFarmCreateResponseDto insertEmptyFarm(HttpServletRequest token, EmptyFarmCreateRequestDto request) {
 
         // TODO : 회원 확인 -> 이후에 통신 예정
-        Member member = memberRepository.findById(1).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.MEMBER_NOT_FOUND));
+        Integer memberId=1;
+        Member member = getMember(memberId);
 
         // DB에 design 저장
         Design design = Design.builder()
@@ -118,10 +118,11 @@ public class DesignServiceImpl implements DesignService {
 
         return EmptyFarmCreateResponseDto.builder()
                 .designId(savedDesign.getId())
-                .arrangement(jsonFarm)
                 .farm(farm)
                 .build();
     }
+
+
 
     /**
      * 이랑, 고랑, 그리고 빈칸 체크
@@ -188,8 +189,15 @@ public class DesignServiceImpl implements DesignService {
         String startMonth = Integer.toString(design.getStartMonth());
 
         // 시작 달이 추천 파종시기인 작물부터 정렬
+        return getCropGetResponseDto(design);
+    }
+
+    /**
+     * 작물 정보 리스트, 전체 넓이, 이랑 너비 불러오기
+     */
+    private CropGetResponseDto getCropGetResponseDto(Design design) {
         List<Object[]> results = em.createQuery("SELECT t.id,t.name, CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN true ELSE false END AS isRecommended, t.ridgeSpacing, t.cropSpacing,t.ridgeSpacing * t.cropSpacing AS area FROM Crop t ORDER BY CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN 0 ELSE 1 END, t.sowingTime")
-                .setParameter("substring", startMonth)
+                .setParameter("substring", design.getStartMonth().toString())
                 .getResultList();
 
         List<CropForGetResponseDto> list = new ArrayList<>();
@@ -305,29 +313,59 @@ public class DesignServiceImpl implements DesignService {
         return totalRidges;
     }
 
-
-    private Arrangement getSelectedArrangement(Design design) {
-        return arrangementRepository.findById(design.getArrangementId()).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.ARRANGEMENT_NOT_FOUND));
-    }
-
-    private Design getDesign(Long designId) {
-        return designRepository.findById(designId).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.DESIGN_NOT_FOUND));
-    }
-
     @Override
     @Transactional
     public Boolean insertDesign(DesignUpdateRequestDto request) {
         return null;
     }
 
+    /**
+     * 유저 디자인 리스트 불러오기
+     *
+     * @param memberId
+     * @return
+     */
     @Override
-    public List<DesignDetailResponseDto> selectDesignList(Integer memberId) {
-        return null;
+    public List<DesignListResponseDto> selectDesignList(Integer memberId) {
+        Member member = getMember(memberId);
+        List<DesignListResponseDto> list = new ArrayList<>();
+
+        for (Design design : member.getDesigns()) {
+            Arrangement selectedArrangement = getSelectedArrangement(design);
+            list.add(DesignListResponseDto.builder()
+                    .arrangement(selectedArrangement.getArrangement())
+                    .name(design.getName())
+                    .savedTime(design.getUpdatedAt())
+                    .build()
+            );
+        }
+        return list;
     }
 
+    /**
+     * 디자인 상세보기
+     *
+     * @param designId
+     * @return
+     */
     @Override
     public DesignDetailResponseDto selectDesign(Long designId) {
-        return null;
+        Design design = getDesign(designId);
+        Arrangement selectedArrangement = getSelectedArrangement(design);
+        List<String> cropList = new ArrayList<>();
+
+        List<CropSelection> cropSelections = design.getCropSelections();
+
+        for (CropSelection cropSelection : cropSelections) {
+            cropList.add(cropSelection.getCrop().getName());
+        }
+
+        return DesignDetailResponseDto.builder()
+                .arrangement(selectedArrangement.getArrangement())
+                .name(design.getName())
+                .savedTime(design.getUpdatedAt())
+                .cropList(cropList)
+                .build();
     }
 
     @Override
@@ -339,7 +377,17 @@ public class DesignServiceImpl implements DesignService {
     @Override
     @Transactional
     public Boolean deleteDesign(Long designId) {
-        return null;
+        Design design = getDesign(designId);
+        String arrangementId = design.getArrangementId();
+
+        try {
+            designRepository.delete(design);
+            arrangementRepository.deleteById(arrangementId);
+            return true;
+        } catch (Exception e) {
+            throw new BusinessExceptionHandler(ErrorCode.DELETE_ERROR);
+        }
+
     }
 
     @Override
@@ -349,10 +397,21 @@ public class DesignServiceImpl implements DesignService {
     }
 
 
-
+    /**
+     * 밭 조회
+     *
+     * @param designId
+     * @return
+     */
     @Override
     public EmptyFarmGetResponseDto selectEmptyFarm(Long designId) {
-        return null;
+        Design design = getDesign(designId);
+
+        Arrangement selectedArrangement = getSelectedArrangement(design);
+        return EmptyFarmGetResponseDto.builder()
+                        .farm(selectedArrangement.getArrangement())
+                        .crops(getCropGetResponseDto(design))
+                        .build();
     }
 
     @Override
@@ -364,11 +423,39 @@ public class DesignServiceImpl implements DesignService {
     @Override
     @Transactional
     public Boolean updateDesignName(Long designId, DesignNameUpdateRequestDto request) {
-        return null;
+        Design design = getDesign(designId);
+        design.updateName(request.getName());
+        try {
+            designRepository.save(design);
+            return true;
+        } catch (Exception e) {
+            throw new BusinessExceptionHandler(ErrorCode.UPDATE_ERROR);
+        }
     }
 
     @Override
     public ChemicalGetResponseDto selectChemical(Long designId) {
         return null;
+    }
+
+    /**
+     * 유저 불러오기
+     */
+    private Member getMember(Integer memberId) {
+        return memberRepository.findById(memberId).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.MEMBER_NOT_FOUND));
+    }
+
+    /**
+     * 배치 불러오기
+     */
+    private Arrangement getSelectedArrangement(Design design) {
+        return arrangementRepository.findById(design.getArrangementId()).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.ARRANGEMENT_NOT_FOUND));
+    }
+
+    /**
+     * 디자인 불러오기
+     */
+    private Design getDesign(Long designId) {
+        return designRepository.findById(designId).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.DESIGN_NOT_FOUND));
     }
 }

@@ -9,6 +9,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
+@Getter
 public class Member {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
