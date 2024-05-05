@@ -8,5 +8,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class DesignDetailResponseDto {
-    private String arrangement;
+    private char[][] arrangement;
+    private String name;
 }

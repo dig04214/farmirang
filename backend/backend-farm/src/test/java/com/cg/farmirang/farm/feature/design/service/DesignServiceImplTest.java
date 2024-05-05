@@ -9,6 +9,7 @@ import com.cg.farmirang.farm.feature.design.dto.request.DesignNameUpdateRequestD
 import com.cg.farmirang.farm.feature.design.dto.request.EmptyFarmCreateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.request.RecommendedDesignCreateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.response.CropGetResponseDto;
+import com.cg.farmirang.farm.feature.design.dto.response.DesignDetailResponseDto;
 import com.cg.farmirang.farm.feature.design.dto.response.EmptyFarmCreateResponseDto;
 import com.cg.farmirang.farm.feature.design.entity.*;
 import com.cg.farmirang.farm.feature.design.repository.*;
@@ -302,5 +303,25 @@ class DesignServiceImplTest {
         // then
         Design design = designRepository.findById(designId).get();
         assertEquals(updatedName,design.getName());
+    }
+
+    @Test
+    public void 디자인리스트_불러오기(){
+        // given
+        Integer memberId=1;
+
+        // when
+        List<DesignDetailResponseDto> response = designService.selectDesignList(memberId);
+
+        // then
+        for (DesignDetailResponseDto dto : response) {
+            System.out.println("--------밭과 이름--------");
+            for (char[] chars : dto.getArrangement()) {
+                System.out.println(chars.toString());
+            }
+            System.out.println("dto.getName() = " + dto.getName());
+            System.out.println("--------------------------");
+        }
+        assertEquals(6, response.size());
     }
 }
