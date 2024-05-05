@@ -110,7 +110,7 @@ class DesignServiceImplTest {
         List<CoordinateRequestDto> list=new ArrayList<>();
         list.add(CoordinateRequestDto.builder().x(1).y(0).sequence(1).build());
         list.add(CoordinateRequestDto.builder().x(10).y(0).sequence(2).build());
-        list.add(CoordinateRequestDto.builder().x(7).y(7).sequence(3).build());
+        list.add(CoordinateRequestDto.builder().x(8).y(7).sequence(3).build());
         list.add(CoordinateRequestDto.builder().x(1).y(7).sequence(4).build());
 
         EmptyFarmCreateRequestDto request = EmptyFarmCreateRequestDto.builder()
@@ -250,8 +250,42 @@ class DesignServiceImplTest {
 
     }
 
-    void 폴리곤테스트(){
+    @Test
+    public void 폴리곤테스트(){
         Polygon polygon = new Polygon();
+
+        List<CoordinateRequestDto> list=new ArrayList<>();
+        list.add(CoordinateRequestDto.builder().x(1).y(0).sequence(1).build());
+        list.add(CoordinateRequestDto.builder().x(10).y(0).sequence(2).build());
+        list.add(CoordinateRequestDto.builder().x(8).y(7).sequence(3).build());
+        list.add(CoordinateRequestDto.builder().x(1).y(7).sequence(4).build());
+        int minX=100; int maxX=0; int minY=100; int maxY=0;
+
+        // X, Y 최대 최소 구하기
+        for (CoordinateRequestDto coordinate : list) {
+            minX=Math.min(minX,coordinate.getX());
+            maxX=Math.max(maxX,coordinate.getX());
+            minY=Math.min(minY,coordinate.getY());
+            maxY=Math.max(maxY,coordinate.getY());
+        }
+
+        int row=maxY-minY;
+        int column=maxX-minX;
+
+        char[][] farm=new char[row][column];
+
+        // 좌표값에서 최소값 빼고 좌표 DB에 저장
+        for (CoordinateRequestDto coordinate : list) {
+            int x = coordinate.getX() - minX;
+            int y = coordinate.getY() - minY;
+
+//            polygon.addPoint(x,y);
+            polygon.addPoint(x,Math.abs(row-y));
+
+        }
+
+        System.out.println("polygon = " + polygon.toString());
+
     }
 
 }

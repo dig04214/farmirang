@@ -82,7 +82,8 @@ public class DesignServiceImpl implements DesignService {
             int x = coordinate.getX() - minX;
             int y = coordinate.getY() - minY;
 
-            polygon.addPoint(x,Math.abs(column-y));
+            polygon.addPoint(x,Math.abs(row-y));
+
 
             FarmCoordinate farmCoordinate = FarmCoordinate.builder()
                     .design(savedDesign)
@@ -134,24 +135,8 @@ public class DesignServiceImpl implements DesignService {
         int limit = isHorizontal ? farmWidthCell : farmHeightCell;
 
         int check = 0;
-//        while (check < limit) {
-//            for (int i = 0; i < R && check < limit; i++) {
-//                for (int j = 0; j < C; j++) {
-//                    // 두둑 표시
-//                    for (int ridge=0; ridge<ridgeLengthCell; ridge++){
-//                        farm[isHorizontal ? j : i][isHorizontal ? i : j] =isRidge( isHorizontal ? i : j, isHorizontal ? j : i, polygon, R,C) ? 'R' : 'E';
-//                    }
-//                    // 이랑 표시
-//                    for (int furrow=0; furrow<furrowLengthCell; furrow++){
-//                        farm[isHorizontal ? j : i][isHorizontal ? i : j] ='F';
-//                    }
-//                }
-//                check++;
-//            }
-//        }
-
-        boolean isRidge=true;
         int currentCount=0;
+        boolean isRidge=true;
         while (check < limit) {
             for (int i = 0; i < R && check < limit; i++) {
                 for (int j = 0; j < C; j++) {
