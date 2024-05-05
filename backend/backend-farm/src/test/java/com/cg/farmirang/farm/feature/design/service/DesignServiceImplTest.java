@@ -128,10 +128,10 @@ class DesignServiceImplTest {
 
         // then
 //        assertEquals(100, response.getArrangement().length());
-        for (char[] chars : response.getFarm()) {
-            System.out.println(Arrays.toString(chars));
-
-        }
+//        for (char[] chars : response.getFarm()) {
+//            System.out.println(Arrays.toString(chars));
+//
+//        }
     }
 
 

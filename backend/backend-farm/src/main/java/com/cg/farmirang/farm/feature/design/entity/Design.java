@@ -2,6 +2,7 @@ package com.cg.farmirang.farm.feature.design.entity;
 
 import com.cg.farmirang.farm.feature.design.dto.RecommendedDesignInfoDto;
 import jakarta.persistence.*;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.*;
 
 import java.util.ArrayList;
@@ -9,12 +10,12 @@ import java.util.List;
 
 @Entity
 @NoArgsConstructor(access=AccessLevel.PROTECTED)
+@Getter
 public class Design {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "design_id")
-    @Getter
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -24,14 +25,12 @@ public class Design {
     @OneToMany(mappedBy = "design")
     private List<FarmCoordinate> farmCoordinates;
 
-    @Getter
-    @Setter
     private String arrangementId;
-    private Integer area;
+    private Integer totalArea;
+    @Setter
+    private Integer ridgeArea;
     private String name;
-    @Getter
     private Integer startMonth;
-    @Getter
     private Integer ridgeWidth;
     private Integer furrowWidth;
     private Boolean isHorizontal;
@@ -41,9 +40,12 @@ public class Design {
     private List<CropSelection> cropSelections;
 
     @Builder
-    public Design(Member member, Integer area, Integer startMonth, Integer ridgeWidth, Integer furrowWidth, Boolean isHorizontal) {
+    public Design(Member member, String arrangementId, Integer totalArea, Integer ridgeArea, String name, Integer startMonth, Integer ridgeWidth, Integer furrowWidth, Boolean isHorizontal) {
         this.member = member;
-        this.area = area;
+        this.arrangementId = arrangementId;
+        this.totalArea = totalArea;
+        this.ridgeArea = ridgeArea;
+        this.name = name;
         this.startMonth = startMonth;
         this.ridgeWidth = ridgeWidth;
         this.furrowWidth = furrowWidth;
@@ -55,8 +57,9 @@ public class Design {
     public void addFarmCoordinate(FarmCoordinate farmCoordinate){
         this.farmCoordinates.add(farmCoordinate);
     }
-
-
+    public void addCropSelection(CropSelection cropSelection){
+        this.cropSelections.add(cropSelection);
+    }
     public RecommendedDesignInfoDto getDesignInfo(){
         return RecommendedDesignInfoDto.builder()
                 .ridgeWidth(this.ridgeWidth)
@@ -65,9 +68,9 @@ public class Design {
                 .startMonth(this.startMonth)
                 .build();
     }
-    public void addCropSelection(CropSelection cropSelection){
-        this.cropSelections.add(cropSelection);
+    public void updateArrangementIdAndRidgeArea(String arrangementId, Integer ridgeArea){
+        this.arrangementId=arrangementId;
+        this.ridgeArea=ridgeArea;
     }
-
 
 }

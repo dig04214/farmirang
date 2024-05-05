@@ -17,12 +17,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 @Slf4j
 @Service
-@Transactional
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class DesignServiceImpl implements DesignService {
 
@@ -42,6 +43,7 @@ public class DesignServiceImpl implements DesignService {
      * @return
      */
     @Override
+    @Transactional(readOnly = false)
     public EmptyFarmCreateResponseDto insertEmptyFarm(HttpServletRequest token, EmptyFarmCreateRequestDto request) {
 
         // TODO : 회원 확인 -> 이후에 통신 예정
@@ -50,7 +52,7 @@ public class DesignServiceImpl implements DesignService {
         // DB에 design 저장
         Design design = Design.builder()
                 .member(member)
-                .area(request.getArea())
+                .totalArea(request.getArea())
                 .startMonth(request.getStartMonth())
                 .ridgeWidth(request.getRidgeWidth())
                 .furrowWidth(request.getFurrowWidth())
@@ -106,17 +108,17 @@ public class DesignServiceImpl implements DesignService {
 
         // 몽고DB에 배열 저장
         Arrangement arrangement = arrangementRepository.save(Arrangement.builder().arrangement(farm).build());
-        String arrangementId = arrangement.getId();
 
-
-        // design에 arrangementId 추가
-        savedDesign.setArrangementId(arrangementId);
+        // design에 arrangementId과 두둑 넓이 추가
+        Gson gson=new Gson();
+        String jsonFarm=gson.toJson(arrangement.getArrangement());
+        Integer count= (int) jsonFarm.chars().filter(ch->ch=='R').count();
+        savedDesign.updateArrangementIdAndRidgeArea(arrangement.getId(),count);
         designRepository.save(savedDesign);
 
-        Gson gson=new Gson();
         return EmptyFarmCreateResponseDto.builder()
                 .designId(savedDesign.getId())
-                .arrangement(gson.toJson(arrangement.getArrangement()))
+                .arrangement(jsonFarm)
                 .farm(farm)
                 .build();
     }
@@ -181,7 +183,6 @@ public class DesignServiceImpl implements DesignService {
      * @return
      */
     @Override
-    @Transactional(readOnly = true)
     public CropGetResponseDto selectCropList(Long designId) {
         Design design = getDesign(designId);
         String startMonth = Integer.toString(design.getStartMonth());
@@ -210,7 +211,7 @@ public class DesignServiceImpl implements DesignService {
 
         return CropGetResponseDto.builder()
                 .cropList(list)
-                .totalRidgeArea(1) // TODO : 두둑 총 넓이 제대로 보내주기!!!!!
+                .totalRidgeArea(design.getRidgeArea())
                 .ridgeWidth(design.getRidgeWidth())
                 .build();
     }
@@ -223,6 +224,7 @@ public class DesignServiceImpl implements DesignService {
      * @return
      */
     @Override
+    @Transactional
     public RecommendedDesignCreateResponseDto insertRecommendedDesign(Long designId, List<RecommendedDesignCreateRequestDto> request) {
         Design design = getDesign(designId);
 
@@ -313,33 +315,35 @@ public class DesignServiceImpl implements DesignService {
     }
 
     @Override
+    @Transactional
     public Boolean insertDesign(DesignUpdateRequestDto request) {
         return null;
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<DesignDetailResponseDto> selectDesignList(Integer memberId) {
         return null;
     }
 
     @Override
-    @Transactional(readOnly = true)
     public DesignDetailResponseDto selectDesign(Long designId) {
         return null;
     }
 
     @Override
+    @Transactional
     public Boolean updateDesign(Long designId, DesignUpdateRequestDto request) {
         return null;
     }
 
     @Override
+    @Transactional
     public Boolean deleteDesign(Long designId) {
         return null;
     }
 
     @Override
+    @Transactional
     public Boolean insertPesticideAndFertilizerSelection(PesticideAndFertilizerCreateDto request) {
         return null;
     }
@@ -347,23 +351,23 @@ public class DesignServiceImpl implements DesignService {
 
 
     @Override
-    @Transactional(readOnly = true)
     public EmptyFarmGetResponseDto selectEmptyFarm(Long designId) {
         return null;
     }
 
     @Override
+    @Transactional
     public Boolean insertCustomDesign(Long designId, CustomDesignCreateRequestDto request) {
         return null;
     }
 
     @Override
+    @Transactional
     public Boolean updateDesignName(Long designId, DesignNameUpdateRequestDto request) {
         return null;
     }
 
     @Override
-    @Transactional(readOnly = true)
     public ChemicalGetResponseDto selectChemical(Long designId) {
         return null;
     }
