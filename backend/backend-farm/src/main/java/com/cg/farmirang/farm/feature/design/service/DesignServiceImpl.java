@@ -83,8 +83,6 @@ public class DesignServiceImpl implements DesignService {
             int y = coordinate.getY() - minY;
 
             polygon.addPoint(x,Math.abs(row-y));
-
-
             FarmCoordinate farmCoordinate = FarmCoordinate.builder()
                     .design(savedDesign)
                     .x(x)
@@ -95,8 +93,6 @@ public class DesignServiceImpl implements DesignService {
             savedDesign.addFarmCoordinate(save);
 
         }
-
-
 
         // 이랑 배열 생성
         RecommendedDesignInfoDto designInfo = savedDesign.getDesignInfo();
@@ -169,7 +165,6 @@ public class DesignServiceImpl implements DesignService {
 
         for (int i=0; i<4; i++){
             int newX=x+changeX[i];
-//            int newY=Math.abs(height-y)+changeY[i];
             int newY=y+changeY[i];
 
             if ((0<=newX&&newX<width) && (0<=newY&&newY<height) && !polygon.contains(newX,newY)) {

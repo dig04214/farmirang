@@ -110,8 +110,8 @@ class DesignServiceImplTest {
         List<CoordinateRequestDto> list=new ArrayList<>();
         list.add(CoordinateRequestDto.builder().x(1).y(0).sequence(1).build());
         list.add(CoordinateRequestDto.builder().x(10).y(0).sequence(2).build());
-        list.add(CoordinateRequestDto.builder().x(8).y(7).sequence(3).build());
-        list.add(CoordinateRequestDto.builder().x(1).y(7).sequence(4).build());
+        list.add(CoordinateRequestDto.builder().x(10).y(10).sequence(3).build());
+        list.add(CoordinateRequestDto.builder().x(1).y(10).sequence(4).build());
 
         EmptyFarmCreateRequestDto request = EmptyFarmCreateRequestDto.builder()
                 .coordinates(list)
