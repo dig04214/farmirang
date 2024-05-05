@@ -341,9 +341,22 @@ public class DesignServiceImpl implements DesignService {
         return list;
     }
 
+    /**
+     * 디자인 상세보기
+     *
+     * @param designId
+     * @return
+     */
     @Override
     public DesignDetailResponseDto selectDesign(Long designId) {
-        return null;
+        Design design = getDesign(designId);
+        Arrangement selectedArrangement = getSelectedArrangement(design);
+
+
+        return DesignDetailResponseDto.builder()
+                .arrangement(selectedArrangement.getArrangement())
+                .name(design.getName())
+                .build();
     }
 
     @Override

@@ -324,4 +324,19 @@ class DesignServiceImplTest {
         }
         assertEquals(6, response.size());
     }
+
+    @Test
+    public void 디자인_상세보기(){
+        // given
+        Long designId=31L;
+
+        // when
+        DesignDetailResponseDto response = designService.selectDesign(designId);
+
+        // then
+        for (char[] chars : response.getArrangement()) {
+            System.out.println(Arrays.toString(chars));
+        }
+        System.out.println("name = " + response.getName());
+    }
 }
