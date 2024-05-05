@@ -73,4 +73,7 @@ public class Design {
         this.ridgeArea=ridgeArea;
     }
 
+    public void updateName(String name) {
+        this.name=name;
+    }
 }

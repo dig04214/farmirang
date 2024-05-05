@@ -118,7 +118,6 @@ public class DesignServiceImpl implements DesignService {
 
         return EmptyFarmCreateResponseDto.builder()
                 .designId(savedDesign.getId())
-                .arrangement(jsonFarm)
                 .farm(farm)
                 .build();
     }
@@ -193,7 +192,7 @@ public class DesignServiceImpl implements DesignService {
 
     private CropGetResponseDto getCropGetResponseDto(Design design) {
         List<Object[]> results = em.createQuery("SELECT t.id,t.name, CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN true ELSE false END AS isRecommended, t.ridgeSpacing, t.cropSpacing,t.ridgeSpacing * t.cropSpacing AS area FROM Crop t ORDER BY CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN 0 ELSE 1 END, t.sowingTime")
-                .setParameter("substring", design.getStartMonth())
+                .setParameter("substring", design.getStartMonth().toString())
                 .getResultList();
 
         List<CropForGetResponseDto> list = new ArrayList<>();
@@ -379,7 +378,14 @@ public class DesignServiceImpl implements DesignService {
     @Override
     @Transactional
     public Boolean updateDesignName(Long designId, DesignNameUpdateRequestDto request) {
-        return null;
+        Design design = getDesign(designId);
+        design.updateName(request.getName());
+        try {
+            designRepository.save(design);
+            return true;
+        } catch (Exception e) {
+            throw new BusinessExceptionHandler(ErrorCode.UPDATE_ERROR);
+        }
     }
 
     @Override

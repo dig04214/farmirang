@@ -73,7 +73,7 @@ public class DesignController {
 
 
     @GetMapping("/{designId}/custom")
-    @Operation(summary = "빈 밭 조회", description = "밭 커스텀을 위해 빈 밭을 조회합니다.")
+    @Operation(summary = "커스텀용 빈 밭 조회", description = "밭 커스텀을 위해 빈 밭을 조회합니다.")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "빈 밭 조회에 성공했습니다.",
             content = {@Content(schema = @Schema(implementation = EmptyFarmGetResponseDto.class))}),
             @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),

@@ -5,6 +5,7 @@ import com.cg.farmirang.farm.feature.design.dto.RecommendedDesignInfoDto;
 import com.cg.farmirang.farm.feature.design.dto.RidgeDto;
 import com.cg.farmirang.farm.feature.design.dto.TotalRidgeDto;
 import com.cg.farmirang.farm.feature.design.dto.request.CoordinateRequestDto;
+import com.cg.farmirang.farm.feature.design.dto.request.DesignNameUpdateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.request.EmptyFarmCreateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.request.RecommendedDesignCreateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.response.CropGetResponseDto;
@@ -86,7 +87,7 @@ class DesignServiceImplTest {
         Member member = memberRepository.save(Member.builder().nickname("test").build());
         Design design = Design.builder()
                 .member(member)
-                .area(100)
+                .totalArea(100)
                 .startMonth(4)
                 .ridgeWidth(10)
                 .furrowWidth(20)
@@ -288,4 +289,18 @@ class DesignServiceImplTest {
 
     }
 
+    @Test
+    public void 이름수정(){
+        // given
+        Long designId=31L;
+        String updatedName = "updated name";
+        DesignNameUpdateRequestDto dto = DesignNameUpdateRequestDto.builder().name(updatedName).build();
+
+        // when
+        designService.updateDesignName(designId, dto);
+
+        // then
+        Design design = designRepository.findById(designId).get();
+        assertEquals(updatedName,design.getName());
+    }
 }
