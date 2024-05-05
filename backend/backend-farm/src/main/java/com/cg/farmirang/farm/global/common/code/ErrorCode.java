@@ -73,7 +73,21 @@ public enum ErrorCode {
     // Transaction Delete Error
     DELETE_ERROR(200, "9999", "Delete Transaction Error Exception"),
 
-    ; // End
+
+    /**
+     * ================= Design Error CodeList =================
+     */
+
+    // Member Not Found
+    MEMBER_NOT_FOUND(404, "M001", "해당 회원을 찾을 수 없습니다."),
+
+    // Design Not Found
+    DESIGN_NOT_FOUND(404, "D001", "해당 디자인을 찾을 수 없습니다."),
+
+    // Arrangement Not Found
+    ARRANGEMENT_NOT_FOUND(404, "D002", "해당 디자인의 배열을 찾을 수 없습니다."),
+
+    CROP_NOT_FOUND(404, "D003", "해당 작물을 찾을 수 없습니다."); // End
 
     /**
      * ******************************* Error Code Constructor ***************************************
