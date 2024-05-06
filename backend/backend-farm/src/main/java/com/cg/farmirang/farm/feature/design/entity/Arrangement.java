@@ -1,6 +1,7 @@
 package com.cg.farmirang.farm.feature.design.entity;
 
-import com.cg.farmirang.farm.feature.design.dto.TotalRidgeDto;
+import com.cg.farmirang.farm.feature.design.dto.CropForDesignDto;
+import com.cg.farmirang.farm.feature.design.dto.response.RecommendedDesignCreateResponseDto;
 import jakarta.persistence.Id;
 import lombok.Builder;
 import lombok.Getter;
@@ -14,6 +15,7 @@ public class Arrangement {
     @Id
     private String id;
     private char[][] arrangement;
+    private CropForDesignDto[][] designArrangement;
 
     @Builder
     public Arrangement(char[][] arrangement) {
