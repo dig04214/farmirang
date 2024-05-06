@@ -179,12 +179,7 @@ class DesignServiceImplTest {
             cropIds.add(selectedCrop.getCropId());
         }
 
-        List<Crop> cropListFirst = cropRepository.findByHeightGreaterThanEqualOrderByIsRepeatedDescHeightDesc(cropIds);
-        cropListFirst.addAll(cropRepository.findByHeightLessThanOrderByIsRepeatedDescHeightDesc(cropIds));
 
-        for (Crop crop : cropListFirst) {
-            System.out.println("crop = " + crop.toString());
-        }
 
     }
 

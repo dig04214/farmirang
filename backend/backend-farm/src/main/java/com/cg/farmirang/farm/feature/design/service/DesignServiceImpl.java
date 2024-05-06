@@ -254,7 +254,7 @@ public class DesignServiceImpl implements DesignService {
         }
 
         // 두둑에서 알고리즘으로 배치하기
-        createDesign(cropIds, design);
+        createDesign(design);
 
         // 몽고디비에 다시 업데이트
 
@@ -265,12 +265,20 @@ public class DesignServiceImpl implements DesignService {
     /**
      * 디자인 추천 배치
      */
-    private void createDesign(List<Integer> cropIds, Design design) {
+    private void createDesign(Design design) {
+        Long designId = design.getId();
         // 작물 길이, 그리고 1m 기준으로 그룹 생성 후 연작 가능한 것부터 나열
-        List<Crop> cropListFirst = cropRepository.findByHeightGreaterThanEqualOrderByIsRepeatedDescHeightDesc(cropIds);
-        cropListFirst.addAll(cropRepository.findByHeightLessThanOrderByIsRepeatedDescHeightDesc(cropIds));
+        List<CropSelectionOrderedByCropDto> cropList = cropSelectionRepository.findByCropHeightGreaterThanEqual(designId);
+        cropList.addAll(cropSelectionRepository.findByCropHeightLesserThan(designId));
+
+        // 파종시기==시작시기이면 수확 시기 같은것끼리, 오름차순 그리고 나머지 애들은 시작시기보다 큰 수확시기 오름차순
+
 
         // TODO : 수확시기를 생각해 비슷한 수확시기의 작물끼리 모으기 => 이랑 별로 하도록!
+        char[][] arrangement = getSelectedArrangement(design).getArrangement();
+
+
+
 
     }
 
@@ -278,7 +286,7 @@ public class DesignServiceImpl implements DesignService {
     /**
      * 이랑 초기화
      */
-    private TotalRidgeDto[]getTotalRidge(int farmWidthCell, int farmHeightCell, int ridgeWidthCell, Integer furrowWidth, int totalRidgeLength, Boolean isHorizontal) {
+    /*private TotalRidgeDto[]getTotalRidge(int farmWidthCell, int farmHeightCell, int ridgeWidthCell, Integer furrowWidth, int totalRidgeLength, Boolean isHorizontal) {
         TotalRidgeDto[] totalRidges;
 
         // 세로로 자른 밭
@@ -304,7 +312,7 @@ public class DesignServiceImpl implements DesignService {
             }
         }
         return totalRidges;
-    }
+    }*/
 
     @Override
     @Transactional
