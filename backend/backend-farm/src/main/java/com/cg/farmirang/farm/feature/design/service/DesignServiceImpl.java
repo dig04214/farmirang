@@ -277,6 +277,8 @@ public class DesignServiceImpl implements DesignService {
         CropForDesignDto[][] cropArray = new CropForDesignDto[arrangement.length][arrangement[0].length];
         Boolean isHorizontal = design.getIsHorizontal();
 
+
+        /* 작물 먼저 꺼내고 for문으로 돌리는 방법 */
         // 작물 하나씩 꺼내면서
         for (int i=0; i<cropList.size(); i++){
             CropSelectionOrderedByCropDto cropSelectionDto = cropList.get(i);
@@ -331,6 +333,83 @@ public class DesignServiceImpl implements DesignService {
             }
 
 
+
+
+        }
+
+
+        // 방향에 맞는 이랑의 가로, 세로
+        Integer ridgeWidth = isHorizontal ? arrangement.length : arrangement[0].length;
+        Integer ridgeHeight = design.getRidgeWidth()/10;
+
+
+        /* while로 좀 해보자 */
+        int w=0; int h=0;
+        while (w<ridgeWidth && h<ridgeHeight){
+            // 작물 꺼내
+            for (int i=0; i<cropList.size(); i++) {
+                CropSelectionOrderedByCropDto cropSelectionDto = cropList.get(i);
+                Integer quantity = cropSelectionDto.getQuantity();
+                Integer cropSpacing = cropSelectionDto.getCropSpacing() / 10; // 포기 간격(일반적으로 가로)
+                Integer cropRidgeSpacing = cropSelectionDto.getRidgeSpacing() / 10; // 줄 간격(일반적으로 세로)
+
+                int q=0;
+                while (q<quantity){
+
+                    // 두둑인 부분에서 for문 돌리기
+                    if (arrangement[h][w] == 'R' && cropArray[h][w] != null) {
+                        int countCells = 0;
+                        outer:
+                        for (int addHeight = 0; addHeight <= cropRidgeSpacing; addHeight++) {
+                            for (int addWidth = 0; addWidth <= cropSpacing; addWidth++) {
+                                int newHeight = h + addHeight;
+                                int newWidth = w + addWidth;
+                                // 범위 벗어난 경우
+                                if (newHeight < 0 || newHeight >= ridgeHeight || addWidth < 0 || addWidth >= ridgeWidth) {
+                                    h += cropRidgeSpacing;
+                                    w = 0;
+                                    break outer;
+                                }
+
+                                // 두둑이 아닌 경우
+                                if (arrangement[newHeight][newWidth] != 'R') {
+                                    w++;
+                                    break outer;
+                                }
+
+                                countCells++;
+                            }
+                        }
+
+                        // 작물 범위가 전부 두둑에 있으면 추가
+                        if (countCells == cropSpacing * cropRidgeSpacing) {
+                            for (int addHeight = 0; addHeight <= cropRidgeSpacing; addHeight++) {
+                                for (int addWidth = 0; addWidth <= cropSpacing; addWidth++) {
+                                    int newHeight = h + addHeight;
+                                    int newWidth = w + addWidth;
+                                    cropArray[newHeight][newWidth] = CropForDesignDto.builder().cropId(cropSelectionDto.getCropId()).number(q).build();
+                                }
+                            }
+                            q++;
+                            if(w>=(ridgeWidth-cropSpacing)){
+                                w=0;
+                                h+=cropRidgeSpacing;
+                            }else {
+                                w++;
+                            }
+                        }
+
+
+                    }else {
+                        if(w>=(ridgeWidth-cropSpacing)){
+                            w=0;
+                            h+=cropRidgeSpacing;
+                        }else {
+                            w++;
+                        }
+                    }
+                }
+            }
         }
 
 
