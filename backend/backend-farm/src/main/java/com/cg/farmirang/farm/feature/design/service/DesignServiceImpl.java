@@ -267,17 +267,71 @@ public class DesignServiceImpl implements DesignService {
      */
     private void createDesign(Design design) {
         Long designId = design.getId();
-        // 작물 길이, 그리고 1m 기준으로 그룹 생성 후 연작 가능한 것부터 나열
-        List<CropSelectionOrderedByCropDto> cropList = cropSelectionRepository.findByCropHeightGreaterThanEqual(designId);
-        cropList.addAll(cropSelectionRepository.findByCropHeightLesserThan(designId));
+        // 작물 길이, 그리고 1m 기준으로 그룹 생성 후 연작 가능한 것, 파종 시기 있는 것, 우선순위 순으로 나열
+        // TODO : 수확시기를 생각해 비슷한 수확시기의 작물끼리 모으기 => 이건..조금 나중에
+        List<CropSelectionOrderedByCropDto> cropList = cropSelectionRepository.findByCropHeightGreaterThanEqual(designId,design.getStartMonth().toString());
+        cropList.addAll(cropSelectionRepository.findByCropHeightLesserThan(designId,design.getStartMonth().toString()));
 
-        // 파종시기==시작시기이면 수확 시기 같은것끼리, 오름차순 그리고 나머지 애들은 시작시기보다 큰 수확시기 오름차순
 
-
-        // TODO : 수확시기를 생각해 비슷한 수확시기의 작물끼리 모으기 => 이랑 별로 하도록!
         char[][] arrangement = getSelectedArrangement(design).getArrangement();
+        CropForDesignDto[][] cropArray = new CropForDesignDto[arrangement.length][arrangement[0].length];
+        Boolean isHorizontal = design.getIsHorizontal();
+
+        // 작물 하나씩 꺼내면서
+        for (int i=0; i<cropList.size(); i++){
+            CropSelectionOrderedByCropDto cropSelectionDto = cropList.get(i);
+            Integer quantity = cropSelectionDto.getQuantity();
+            Integer cropSpacing = cropSelectionDto.getCropSpacing()/10; // 포기 간격(일반적으로 가로)
+            Integer cropRidgeSpacing = cropSelectionDto.getRidgeSpacing()/10; // 줄 간격(일반적으로 세로)
+
+            // 방향에 맞는 이랑의 가로, 세로
+            Integer ridgeWidth = isHorizontal ? arrangement.length : arrangement[0].length;
+            Integer ridgeHeight = design.getRidgeWidth()/10;
+
+            int countHeight=0;
+            int cropNumber=0;
+
+            // TODO : 우선은 가로라고 생각하고 되는 것 같음;
+
+            // 세로줄 옮기기
+            next : for(int h=0; h<ridgeHeight; h++){
+                for (int w=0; w<ridgeWidth; w++){
+
+                    // 두둑인 부분에서 for문 돌리기
+                    if (arrangement[h][w]=='R' && cropArray[h][w]!=null){
+                        int countCells=0;
+                        outer : for (int addHeight=0; addHeight<=cropRidgeSpacing; addHeight++){
+                            for (int addWidth=0; addWidth<=cropSpacing; addWidth++){
+                                int newHeight = h + addHeight;
+                                int newWidth = w + addWidth;
+                                if (newHeight <0 || newHeight>=ridgeHeight ||addWidth<0 || addWidth >= ridgeWidth || arrangement[newHeight][newWidth]!='R') break outer;
+
+                                countCells++;
+                            }
+                        }
+
+                        // 작물 범위가 전부 두둑에 있으면 추가
+                        if(countCells==cropSpacing*cropRidgeSpacing) {
+                            for (int addHeight=0; addHeight<=cropRidgeSpacing; addHeight++){
+                                for (int addWidth=0; addWidth<=cropSpacing; addWidth++){
+                                    int newHeight = h + addHeight;
+                                    int newWidth = w + addWidth;
+                                    cropArray[newHeight][newWidth]=CropForDesignDto.builder().cropId(cropSelectionDto.getCropId()).number(cropNumber).build();
+                                }
+                            }
+                            cropNumber++;
+                            if (cropNumber>=quantity) break next;
+                        }
 
 
+                    }
+
+
+                }
+            }
+
+
+        }
 
 
     }
