@@ -7,4 +7,9 @@ import lombok.Data;
 public class CropForDesignDto {
     private Integer cropId;
     private Integer number;
+
+    public CropForDesignDto(Integer cropId, Integer number) {
+        this.cropId = cropId;
+        this.number = number;
+    }
 }

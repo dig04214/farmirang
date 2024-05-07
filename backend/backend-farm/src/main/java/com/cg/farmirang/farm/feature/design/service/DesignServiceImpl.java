@@ -258,6 +258,7 @@ public class DesignServiceImpl implements DesignService {
         // 두둑에서 알고리즘으로 배치하기
         CropForDesignDto[][] designArray = createDesign(design);
 
+
         // 몽고디비에 다시 업데이트
         selectedArrangement.setDesignArrangement(designArray);
         arrangementRepository.save(selectedArrangement);
@@ -285,9 +286,11 @@ public class DesignServiceImpl implements DesignService {
                 .getResultList();
 
         // 1m 미만
+        // TODO : 레포지토리에 넣기
         jpql = "SELECT new com.cg.farmirang.farm.feature.design.dto.CropSelectionOrderedByCropDto(" +
                 "cs.crop.id, cs.crop.ridgeSpacing, cs.crop.cropSpacing, " +
-                "cs.crop.sowingTime, cs.crop.harvestingTime, cs.crop.isRepeated, " +
+                "cs.cr" +
+                "op.sowingTime, cs.crop.harvestingTime, cs.crop.isRepeated, " +
                 "cs.crop.height, cs.priority, cs.quantity) " +
                 "FROM CropSelection cs JOIN cs.crop c " +
                 "WHERE cs.design.id = :designId AND c.height < 100 " +
@@ -299,167 +302,92 @@ public class DesignServiceImpl implements DesignService {
 
 
         char[][] arrangement = getSelectedArrangement(design).getArrangement();
+
+        // 밭 가로, 세로
         int farmHeight = arrangement.length;
         int farmWidth = arrangement[0].length;
+
         CropForDesignDto[][] cropArray = new CropForDesignDto[farmHeight][farmWidth];
+
         Boolean isHorizontal = design.getIsHorizontal();
 
         // 방향에 맞는 이랑의 가로, 세로
         Integer ridgeWidth = isHorizontal ? farmHeight : farmWidth;
         Integer ridgeHeight = design.getRidgeWidth() / 10;
 
-        // 밭 가로, 세로
+//        System.out.println("==============나와라==============");
 
+        int number=0;
+        // 작물을 꺼냄
+        for (CropSelectionOrderedByCropDto crop : cropList) {
+            Integer quantity = crop.getQuantity();
+            Integer cropWidth = crop.getCropSpacing()/10;
+            Integer cropHeight = crop.getRidgeSpacing()/10;
 
+            // 좌표 이동
+            coord : for (int h = 0; h <= farmHeight - cropHeight; h++) {
+                for (int w = 0; w <= farmWidth - cropWidth; w++) {
+                    // 작물 개수만큼 다 심거나 다 안 줄어도 좌표가 끝으로 갔으면 break
+                    if (quantity<=0) break coord;
 
-        /* while로 좀 해보자 */
-        int w = 0;
-        int h = 0;
-        int lastW = 0;
-        int lastH = 0;
-        coor : while (h < farmHeight) {
-
-            System.out.println("-------------while 제일 위-------------");
-            System.out.println("w = " + w);
-            System.out.println("h = " + h);
-
-            // 작물 꺼내
-            // TODO : 0으로 돌려내
-            for (int i = 0; i < cropList.size(); i++) {
-                CropSelectionOrderedByCropDto cropSelectionDto = cropList.get(i);
-                Integer quantity = cropSelectionDto.getQuantity();
-                Integer cropWidth = cropSelectionDto.getCropSpacing() / 10; // 포기 간격(일반적으로 가로)
-                Integer cropHeight = cropSelectionDto.getRidgeSpacing() / 10; // 줄 간격(일반적으로 세로)
-
-                System.out.println("-------------작물 뽑는 for문-------------");
-                System.out.println("i = " + i);
-
-//                if (cropWidth > ridgeWidth || cropHeight > ridgeHeight) {
-//                    continue;
-//                }
-
-                int q = 0;
-                outer:
-                while (q < quantity) {
-                    System.out.println("-------------작물개수만큼 돌리는 while-------------");
-                    if (w >= ridgeWidth || h >= farmHeight) {
-//                        w = lastW;
-//                        h = lastH;
-                        break;
-                    }
-
-                    char farmCell = arrangement[h][w];
-                    CropForDesignDto cropForDesignDto = cropArray[h][w];
-
-//                    log.info("(r,c) : ( {}, {} )", h, w);
-//                    log.info("arrangement[{}][{}] = {}",h,w,farmCell);
-
-                    // 두둑인 부분에서 for문 돌리기
-                    if (farmCell == 'R' && cropForDesignDto == null) {
-                        int countCells = 0;
-
-                        for (int addHeight = 0; addHeight < cropHeight; addHeight++) {
+                    if(canPlantCrop(arrangement,cropArray,w,h,crop)){
+                        for (int addHeight=0; addHeight<cropHeight; addHeight++){
                             for (int addWidth = 0; addWidth < cropWidth; addWidth++) {
-                                int newHeight = h + addHeight;
-                                int newWidth = w + addWidth;
-                                // 범위 벗어난 경우
-                                if (newHeight >= farmHeight || newWidth >= ridgeWidth) {
-                                    h += cropHeight;
-                                    w = 0;
-//                                    continue outer;
-                                    break;
-                                }
-
-//                                // 두둑이 아닌 경우-E
-//                                if (arrangement[newHeight][newWidth] == 'E') {
-//                                    w++;
-//                                    continue outer;
-//                                }
-//                                // 두둑이 아닌 경우-F
-//                                if (arrangement[newHeight][newWidth] == 'F') {
-//                                    h++;
-//                                    w = 0;
-//                                    continue outer;
-//                                }
-                                if (arrangement[newHeight][newWidth] == 'G') {
-                                    countCells++;
-
-                                }
-
+                                int newHeight=h+addHeight;
+                                int newWidth=w+addWidth;
+                                cropArray[newHeight][newWidth]=CropForDesignDto.builder()
+                                        .cropId(crop.getCropId())
+                                        .number(number)
+                                        .build();
                             }
                         }
-
-                        // 작물 범위가 전부 두둑에 있으면 추가
-                        if (countCells == cropWidth * cropHeight) {
-                            for (int addHeight = 0; addHeight <= cropHeight; addHeight++) {
-                                for (int addWidth = 0; addWidth <= cropWidth; addWidth++) {
-                                    int newHeight = h + addHeight;
-                                    int newWidth = w + addWidth;
-                                    cropArray[newHeight][newWidth] = CropForDesignDto.builder().cropId(cropSelectionDto.getCropId()).number(q).build();
-//                                    lastW = newWidth;
-//                                    lastH = newHeight;
-                                }
-                            }
-                            q++;
-
-                            if (w >= (ridgeWidth - cropWidth)) {
-                                w = 0;
-                                h += cropHeight;
-                            } else {
-                                w++;
-                            }
-                        }
-
-
-                    } else if (farmCell == 'F') {
-                        h++;
-                        w = 0;
-                    } else {
-                        if (w >= (ridgeWidth - cropWidth)) {
-                            w = 0;
-                            h += cropHeight;
-                        } else {
-                            w++;
-                        }
+                        number++;
+                        quantity--;
                     }
+
                 }
+
             }
+
+
         }
+
+//        System.out.println("=====================나와라==================");
+//        for (CropForDesignDto[] cropForDesignDtos : cropArray) {
+//            for (CropForDesignDto crop : cropForDesignDtos) {
+//                System.out.print(crop.getCropId());
+//            }
+//        }
+//        System.out.println("=======================================");
 
         return cropArray;
     }
 
-
     /**
-     * 이랑 초기화
+     * 배치 가능한 지 확인
      */
-    /*private TotalRidgeDto[]getTotalRidge(int farmWidthCell, int farmHeightCell, int ridgeWidthCell, Integer furrowWidth, int totalRidgeLength, Boolean isHorizontal) {
-        TotalRidgeDto[] totalRidges;
+    private boolean canPlantCrop(char[][] arrangement, CropForDesignDto[][] cropArray, int w, int h, CropSelectionOrderedByCropDto crop) {
+        int farmHeight = arrangement.length;
+        int farmWidth = arrangement[0].length;
+        Integer cropWidth = crop.getCropSpacing()/10;
+        Integer cropHeight = crop.getRidgeSpacing()/10;
 
-        // 세로로 자른 밭
-        if (isHorizontal) {
-            totalRidges = new TotalRidgeDto[(farmWidthCell * 10) / totalRidgeLength];
+//        System.out.println("==============canPlantCrop==============");
 
-            for (int i = 0; i < totalRidges.length; i++) {
-                totalRidges[i] = TotalRidgeDto.builder()
-                        .ridge(RidgeDto.builder().grid(new int[farmHeightCell][ridgeWidthCell]).build())
-                        .furrow(FurrowDto.builder().width(furrowWidth).height(farmHeightCell * 10).build())
-                        .build();
+        if(w+cropWidth>= farmWidth || h+cropHeight>=farmHeight) return false;
+
+        for (int addHeight=0; addHeight<cropHeight; addHeight++){
+            for (int addWidth = 0; addWidth < cropWidth; addWidth++) {
+                int newHeight=h+addHeight;
+                int newWidth=w+addWidth;
+//                System.out.println(arrangement[newHeight][newWidth]);
+                if(arrangement[newHeight][newWidth]!='R' || cropArray[newHeight][newWidth]!=null) return false;
             }
         }
-        // 가로로 자른 밭
-        else {
-            totalRidges = new TotalRidgeDto[(farmHeightCell * 10) / totalRidgeLength];
+        return true;
+    }
 
-            for (int i = 0; i < totalRidges.length; i++) {
-                totalRidges[i] = TotalRidgeDto.builder()
-                        .ridge(RidgeDto.builder().grid(new int[ridgeWidthCell][farmWidthCell]).build())
-                        .furrow(FurrowDto.builder().width(farmWidthCell * 10).height(furrowWidth).build())
-                        .build();
-            }
-        }
-        return totalRidges;
-    }*/
+
     @Override
     @Transactional
     public Boolean insertDesign(DesignUpdateRequestDto request) {

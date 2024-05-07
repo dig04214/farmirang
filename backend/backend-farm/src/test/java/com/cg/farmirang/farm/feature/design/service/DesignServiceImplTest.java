@@ -367,7 +367,7 @@ class DesignServiceImplTest {
 //        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(6).quantity(2).priority(5).build());
 //        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(15).quantity(2).priority(6).build());
         cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(12).quantity(2).priority(4).build());
-        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(14).quantity(2).priority(5).build());
+        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(13).quantity(2).priority(5).build());
 
         Long designId=5L;
 
