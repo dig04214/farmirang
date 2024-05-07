@@ -19,5 +19,13 @@ public interface CropSelectionRepository extends JpaRepository<CropSelection, In
             "ORDER BY c.isRepeated DESC, c.height DESC, " +
             "CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', c.sowingTime, ','))) THEN 0 ELSE 1 END, " +
             "cs.priority ASC")
-    List<CropSelectionOrderedByCropDto> findByCropHeightGreaterThanEqual(@Param("designId") Long designId);
+    List<CropSelectionOrderedByCropDto> findByCropHeightGreaterThanEqual100(@Param("designId") Long designId, @Param("substring") String startMonth);
+
+    @Query("SELECT new com.cg.farmirang.farm.feature.design.dto.CropSelectionOrderedByCropDto(cs.crop.id, cs.crop.ridgeSpacing, cs.crop.cropSpacing, cs.crop.sowingTime, cs.crop.harvestingTime, cs.crop.isRepeated, cs.crop.height, cs.priority, cs.quantity) " +
+            "FROM CropSelection cs JOIN cs.crop c " +
+            "WHERE cs.design.id = :designId AND c.height < 100 " +
+            "ORDER BY c.isRepeated DESC, c.height DESC, " +
+            "CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', c.sowingTime, ','))) THEN 0 ELSE 1 END, " +
+            "cs.priority ASC")
+    List<CropSelectionOrderedByCropDto> findByCropHeightLesserThan100(@Param("designId") Long designId, @Param("substring") String startMonth);
 }

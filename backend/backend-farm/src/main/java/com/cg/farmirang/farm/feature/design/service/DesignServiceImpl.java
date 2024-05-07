@@ -188,7 +188,6 @@ public class DesignServiceImpl implements DesignService {
     @Override
     public CropGetResponseDto selectCropList(Long designId) {
         Design design = getDesign(designId);
-        String startMonth = Integer.toString(design.getStartMonth());
 
         // 시작 달이 추천 파종시기인 작물부터 정렬
         return getCropGetResponseDto(design);
@@ -208,7 +207,8 @@ public class DesignServiceImpl implements DesignService {
                 .setParameter("substring", design.getStartMonth().toString())
                 .getResultList();
 
-
+        // TODO : NoSuchMethodError 뜸...이유를 모르겠네
+//        List<Object[]> results = cropRepository.findCropInfoAndCropArea(design.getStartMonth().toString());
         List<CropForGetResponseDto> list = new ArrayList<>();
 
         for (Object[] result : results) {
@@ -225,6 +225,8 @@ public class DesignServiceImpl implements DesignService {
                     .build();
             list.add(cropDto);
         }
+        // TODO : NoSuchMethodError 뜨는데 어케 해결해보기
+//        List<CropForGetResponseDto> list = cropRepository.findCropInfoAndCropArea(design.getStartMonth().toString());
 
         return CropGetResponseDto.builder()
                 .cropList(list)
@@ -278,41 +280,12 @@ public class DesignServiceImpl implements DesignService {
      */
     private CropForDesignDto[][] createDesign(Design design) {
         Long designId = design.getId();
-        // 작물 길이, 그리고 1m 기준으로 그룹 생성 후 연작 가능한 것, 파종 시기 있는 것, 우선순위 순으로 나열
         // TODO : 수확시기를 생각해 비슷한 수확시기의 작물끼리 모으기 => 이건..조금 나중에
-        String jpql = "SELECT new com.cg.farmirang.farm.feature.design.dto.CropSelectionOrderedByCropDto(" +
-                "cs.crop.id, cs.crop.ridgeSpacing, cs.crop.cropSpacing, " +
-                "cs.crop.sowingTime, cs.crop.harvestingTime, cs.crop.isRepeated, " +
-                "cs.crop.height, cs.priority, cs.quantity) " +
-                "FROM CropSelection cs JOIN cs.crop c " +
-                "WHERE cs.design.id = :designId AND c.height >= 100 " +
-                "ORDER BY c.isRepeated DESC, c.height DESC, " +
-                "CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', c.sowingTime, ','))) THEN 0 ELSE 1 END, " +
-                "cs.priority ASC";
-
-
-        List<CropSelectionOrderedByCropDto> cropList = em.createQuery(jpql, CropSelectionOrderedByCropDto.class)
-                .setParameter("designId", designId)
-                .setParameter("substring", design.getStartMonth().toString())
-                .getResultList();
+        // 작물 길이, 그리고 1m 기준으로 그룹 생성 후 연작 가능한 것, 파종 시기 있는 것, 우선순위 순으로 나열
+        List<CropSelectionOrderedByCropDto> cropList = cropSelectionRepository.findByCropHeightGreaterThanEqual100(designId,design.getStartMonth().toString());
 
         // 1m 미만
-        // TODO : 레포지토리에 넣기
-        jpql = "SELECT new com.cg.farmirang.farm.feature.design.dto.CropSelectionOrderedByCropDto(" +
-                "cs.crop.id, cs.crop.ridgeSpacing, cs.crop.cropSpacing, " +
-                "cs.crop.sowingTime, cs.crop.harvestingTime, cs.crop.isRepeated, " +
-                "cs.crop.height, cs.priority, cs.quantity) " +
-                "FROM CropSelection cs JOIN cs.crop c " +
-                "WHERE cs.design.id = :designId AND c.height < 100 " +
-                "ORDER BY c.isRepeated DESC, c.height DESC, " +
-                "CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', c.sowingTime, ','))) THEN 0 ELSE 1 END, " +
-                "cs.priority ASC";
-
-
-        cropList.addAll(em.createQuery(jpql, CropSelectionOrderedByCropDto.class)
-                .setParameter("designId", designId)
-                .setParameter("substring", design.getStartMonth().toString())
-                .getResultList());
+        cropList.addAll(cropSelectionRepository.findByCropHeightLesserThan100(designId,design.getStartMonth().toString()));
 
 
         char[][] arrangement = getSelectedArrangement(design).getArrangement();
@@ -323,13 +296,7 @@ public class DesignServiceImpl implements DesignService {
 
         CropForDesignDto[][] cropArray = new CropForDesignDto[farmHeight][farmWidth];
 
-        Boolean isHorizontal = design.getIsHorizontal();
-
         // 방향에 맞는 이랑의 가로, 세로
-        Integer ridgeWidth = isHorizontal ? farmHeight : farmWidth;
-        Integer ridgeHeight = design.getRidgeWidth() / 10;
-
-
         int number=0;
         // 작물을 꺼냄
         for (CropSelectionOrderedByCropDto crop : cropList) {
@@ -338,22 +305,13 @@ public class DesignServiceImpl implements DesignService {
             Integer cropHeight = crop.getRidgeSpacing()/10;
 
             // 좌표 이동
-            coord : for (int h = 0; h <= farmHeight - cropHeight; h++) {
+            outer : for (int h = 0; h <= farmHeight - cropHeight; h++) {
                 for (int w = 0; w <= farmWidth - cropWidth; w++) {
                     // 작물 개수만큼 다 심거나 다 안 줄어도 좌표가 끝으로 갔으면 break
-                    if (quantity<=0) break coord;
+                    if (quantity<=0) break outer;
 
                     if(canPlantCrop(arrangement,cropArray,w,h,crop)){
-                        for (int addHeight=0; addHeight<cropHeight; addHeight++){
-                            for (int addWidth = 0; addWidth < cropWidth; addWidth++) {
-                                int newHeight=h+addHeight;
-                                int newWidth=w+addWidth;
-                                cropArray[newHeight][newWidth]=CropForDesignDto.builder()
-                                        .cropId(crop.getCropId())
-                                        .number(number)
-                                        .build();
-                            }
-                        }
+                        plantCrop(crop, cropHeight, cropWidth, h, w, cropArray, number);
                         number++;
                         quantity--;
                     }
@@ -361,11 +319,22 @@ public class DesignServiceImpl implements DesignService {
                 }
 
             }
-
-
         }
 
         return cropArray;
+    }
+
+    private static void plantCrop(CropSelectionOrderedByCropDto crop, Integer cropHeight, Integer cropWidth, int h, int w, CropForDesignDto[][] cropArray, int number) {
+        for (int addHeight = 0; addHeight< cropHeight; addHeight++){
+            for (int addWidth = 0; addWidth < cropWidth; addWidth++) {
+                int newHeight= h +addHeight;
+                int newWidth= w +addWidth;
+                cropArray[newHeight][newWidth]=CropForDesignDto.builder()
+                        .cropId(crop.getCropId())
+                        .number(number)
+                        .build();
+            }
+        }
     }
 
     /**
@@ -440,16 +409,39 @@ public class DesignServiceImpl implements DesignService {
 
         return DesignDetailResponseDto.builder()
                 .arrangement(selectedArrangement.getArrangement())
+                .designArray(selectedArrangement.getDesignArrangement())
                 .name(design.getName())
                 .savedTime(design.getUpdatedAt())
                 .cropList(cropList)
                 .build();
     }
 
+    /**
+     * 디자인 이름, 배치 수정
+     * 
+     * @param designId
+     * @param request
+     * @return
+     */
     @Override
     @Transactional
     public Boolean updateDesign(Long designId, DesignUpdateRequestDto request) {
-        return null;
+        Design design = getDesign(designId);
+        design.updateName(request.getName());
+
+        Arrangement selectedArrangement = getSelectedArrangement(design);
+        selectedArrangement.setDesignArrangement(request.getDesignArray());
+
+        // TODO : CropSelection 수정해야함 => 어떤 작물 넣었는지와 개수 필요
+
+
+        try {
+            designRepository.save(design);
+            arrangementRepository.save(selectedArrangement);
+            return true;
+        } catch (Exception e) {
+            throw new BusinessExceptionHandler(ErrorCode.INSERT_ERROR);
+        }
     }
 
     @Override
@@ -492,12 +484,38 @@ public class DesignServiceImpl implements DesignService {
                 .build();
     }
 
+    /**
+     * 커스텀 디자인 추가
+     * 
+     * @param designId
+     * @param request
+     * @return
+     */
     @Override
     @Transactional
     public Boolean insertCustomDesign(Long designId, CustomDesignCreateRequestDto request) {
-        return null;
+        Design design = getDesign(designId);
+        Arrangement selectedArrangement = getSelectedArrangement(design);
+        selectedArrangement.setDesignArrangement(request.getDesignArray());
+
+        // TODO : CropSelection 수정해야함 => 어떤 작물 넣었는지와 개수 필요
+
+        try {
+            arrangementRepository.save(selectedArrangement);
+            return true;
+        } catch (Exception e) {
+            throw new BusinessExceptionHandler(ErrorCode.INSERT_ERROR);
+        }
+
     }
 
+    /**
+     * 디자인 이름 수정
+     *
+     * @param designId
+     * @param request
+     * @return
+     */
     @Override
     @Transactional
     public Boolean updateDesignName(Long designId, DesignNameUpdateRequestDto request) {

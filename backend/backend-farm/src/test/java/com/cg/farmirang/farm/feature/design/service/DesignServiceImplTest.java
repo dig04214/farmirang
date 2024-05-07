@@ -6,12 +6,11 @@ import com.cg.farmirang.farm.feature.design.dto.request.CoordinateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.request.DesignNameUpdateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.request.EmptyFarmCreateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.request.RecommendedDesignCreateRequestDto;
-import com.cg.farmirang.farm.feature.design.dto.response.DesignDetailResponseDto;
-import com.cg.farmirang.farm.feature.design.dto.response.DesignListResponseDto;
-import com.cg.farmirang.farm.feature.design.dto.response.EmptyFarmCreateResponseDto;
-import com.cg.farmirang.farm.feature.design.dto.response.RecommendedDesignCreateResponseDto;
+import com.cg.farmirang.farm.feature.design.dto.response.*;
 import com.cg.farmirang.farm.feature.design.entity.*;
 import com.cg.farmirang.farm.feature.design.repository.*;
+import com.cg.farmirang.farm.global.common.code.ErrorCode;
+import com.cg.farmirang.farm.global.exception.BusinessExceptionHandler;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -131,38 +130,16 @@ class DesignServiceImplTest {
 
 
     @Test
+    @DisplayName("작물 리스트 조회")
     public void 작물리스트조회(){
-//        // given
-//        Member member = memberRepository.save(Member.builder().nickname("test").build());
-//        Design savedDesign = designRepository.save(
-//                Design.builder()
-//                .member(member)
-//                .area(100)
-//                .startMonth(4)
-//                .ridgeWidth(10)
-//                .furrowWidth(20)
-//                .isHorizontal(false)
-//                .build());
-//
-//        // when
-//        Design design = designRepository.findById(savedDesign.getId()).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.DESIGN_NOT_FOUND));
-////        String startMonth = Integer.toString(design.getStartMonth());
-//        String startMonth = "1";
-//        List<Object[]> results = em.createQuery("SELECT t.name, CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN true ELSE false END AS isRecommended, t.ridgeSpacing * t.cropSpacing AS area FROM Crop t ORDER BY CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN 0 ELSE 1 END, t.sowingTime")
-//                .setParameter("substring", startMonth)
-//                .getResultList();
-//
-//
-//
-//        // then
-//        for (Object[] result : results) {
-//            CropGetResponseDto cropDto = CropGetResponseDto.builder()
-//                    .name((String) result[0])
-//                    .isRecommended((boolean) result[1])
-//                    .cellQuantity((int) (Math.ceil(((Integer) result[2]).intValue()) / 100))
-//                    .build();
-//            System.out.println("cropDto = " + cropDto);
-//        }
+        // given
+        Long designId=5L;
+
+        // when
+        CropGetResponseDto response = designService.selectCropList(designId);
+
+        // then
+        System.out.println(response.getCropList());
     }
 
     @Test

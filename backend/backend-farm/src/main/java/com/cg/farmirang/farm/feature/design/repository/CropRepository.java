@@ -9,12 +9,15 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface CropRepository extends JpaRepository<Crop, Integer> {
-    @Query("SELECT c FROM Crop c WHERE c.id IN :cropIds AND c.height >= 100 ORDER BY c.isRepeated DESC, c.height DESC")
-    List<Crop> findByHeightGreaterThanEqualOrderByIsRepeatedDescHeightDesc(@Param("cropIds") List<Integer> cropIds);
 
-    @Query("SELECT c FROM Crop c WHERE c.id IN :cropIds AND c.height < 100 ORDER BY c.isRepeated DESC, c.height DESC")
-    List<Crop> findByHeightLessThanOrderByIsRepeatedDescHeightDesc(@Param("cropIds") List<Integer> cropIds);
-
+//    @Query("SELECT t.id,t.name, " +
+//            "CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN true ELSE false END AS isRecommended, " +
+//            "t.ridgeSpacing, t.cropSpacing,t.ridgeSpacing * t.cropSpacing AS area " +
+//            "FROM Crop t " +
+//            "ORDER BY " +
+//            "CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN 0 ELSE 1 END, " +
+//            "t.sowingTime")
+//    List<Object[]> findCropInfoAndCropArea(@Param("substring") String startMonth);
 
 
 
