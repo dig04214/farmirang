@@ -366,8 +366,9 @@ class DesignServiceImplTest {
 //        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(4).quantity(2).priority(4).build());
 //        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(6).quantity(2).priority(5).build());
 //        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(15).quantity(2).priority(6).build());
-        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(12).quantity(2).priority(4).build());
-        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(13).quantity(2).priority(5).build());
+        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(12).quantity(4).priority(4).build());
+        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(13).quantity(5).priority(5).build());
+        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(8).quantity(5).priority(1).build());
 
         Long designId=5L;
 
@@ -378,7 +379,11 @@ class DesignServiceImplTest {
 
         // then
         for (CropForDesignDto[] cropForDesignDtos : designArray) {
-            System.out.println(Arrays.toString(cropForDesignDtos));
+            for (CropForDesignDto crop : cropForDesignDtos) {
+                if (crop==null) System.out.print("null ");
+                else System.out.print(crop.getCropId()+" ");
+            }
+            System.out.println();
         }
 
 

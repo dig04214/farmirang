@@ -15,4 +15,7 @@ public interface CropRepository extends JpaRepository<Crop, Integer> {
     @Query("SELECT c FROM Crop c WHERE c.id IN :cropIds AND c.height < 100 ORDER BY c.isRepeated DESC, c.height DESC")
     List<Crop> findByHeightLessThanOrderByIsRepeatedDescHeightDesc(@Param("cropIds") List<Integer> cropIds);
 
+
+
+
 }

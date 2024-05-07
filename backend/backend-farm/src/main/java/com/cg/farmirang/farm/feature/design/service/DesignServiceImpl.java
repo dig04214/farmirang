@@ -198,9 +198,16 @@ public class DesignServiceImpl implements DesignService {
      * 작물 정보 리스트, 전체 넓이, 이랑 너비 불러오기
      */
     private CropGetResponseDto getCropGetResponseDto(Design design) {
-        List<Object[]> results = em.createQuery("SELECT t.id,t.name, CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN true ELSE false END AS isRecommended, t.ridgeSpacing, t.cropSpacing,t.ridgeSpacing * t.cropSpacing AS area FROM Crop t ORDER BY CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN 0 ELSE 1 END, t.sowingTime")
+        List<Object[]> results = em.createQuery("SELECT t.id,t.name, " +
+                        "CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN true ELSE false END AS isRecommended, " +
+                        "t.ridgeSpacing, t.cropSpacing,t.ridgeSpacing * t.cropSpacing AS area " +
+                        "FROM Crop t " +
+                        "ORDER BY " +
+                        "CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN 0 ELSE 1 END, " +
+                        "t.sowingTime")
                 .setParameter("substring", design.getStartMonth().toString())
                 .getResultList();
+
 
         List<CropForGetResponseDto> list = new ArrayList<>();
 
@@ -279,25 +286,32 @@ public class DesignServiceImpl implements DesignService {
                 "cs.crop.height, cs.priority, cs.quantity) " +
                 "FROM CropSelection cs JOIN cs.crop c " +
                 "WHERE cs.design.id = :designId AND c.height >= 100 " +
-                "ORDER BY c.isRepeated DESC, c.height DESC, cs.priority ASC";
+                "ORDER BY c.isRepeated DESC, c.height DESC, " +
+                "CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', c.sowingTime, ','))) THEN 0 ELSE 1 END, " +
+                "cs.priority ASC";
+
 
         List<CropSelectionOrderedByCropDto> cropList = em.createQuery(jpql, CropSelectionOrderedByCropDto.class)
                 .setParameter("designId", designId)
+                .setParameter("substring", design.getStartMonth().toString())
                 .getResultList();
 
         // 1m 미만
         // TODO : 레포지토리에 넣기
         jpql = "SELECT new com.cg.farmirang.farm.feature.design.dto.CropSelectionOrderedByCropDto(" +
                 "cs.crop.id, cs.crop.ridgeSpacing, cs.crop.cropSpacing, " +
-                "cs.cr" +
-                "op.sowingTime, cs.crop.harvestingTime, cs.crop.isRepeated, " +
+                "cs.crop.sowingTime, cs.crop.harvestingTime, cs.crop.isRepeated, " +
                 "cs.crop.height, cs.priority, cs.quantity) " +
                 "FROM CropSelection cs JOIN cs.crop c " +
                 "WHERE cs.design.id = :designId AND c.height < 100 " +
-                "ORDER BY c.isRepeated DESC, c.height DESC, cs.priority ASC";
+                "ORDER BY c.isRepeated DESC, c.height DESC, " +
+                "CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', c.sowingTime, ','))) THEN 0 ELSE 1 END, " +
+                "cs.priority ASC";
+
 
         cropList.addAll(em.createQuery(jpql, CropSelectionOrderedByCropDto.class)
                 .setParameter("designId", designId)
+                .setParameter("substring", design.getStartMonth().toString())
                 .getResultList());
 
 
@@ -315,7 +329,6 @@ public class DesignServiceImpl implements DesignService {
         Integer ridgeWidth = isHorizontal ? farmHeight : farmWidth;
         Integer ridgeHeight = design.getRidgeWidth() / 10;
 
-//        System.out.println("==============나와라==============");
 
         int number=0;
         // 작물을 꺼냄
@@ -352,14 +365,6 @@ public class DesignServiceImpl implements DesignService {
 
         }
 
-//        System.out.println("=====================나와라==================");
-//        for (CropForDesignDto[] cropForDesignDtos : cropArray) {
-//            for (CropForDesignDto crop : cropForDesignDtos) {
-//                System.out.print(crop.getCropId());
-//            }
-//        }
-//        System.out.println("=======================================");
-
         return cropArray;
     }
 
@@ -372,7 +377,6 @@ public class DesignServiceImpl implements DesignService {
         Integer cropWidth = crop.getCropSpacing()/10;
         Integer cropHeight = crop.getRidgeSpacing()/10;
 
-//        System.out.println("==============canPlantCrop==============");
 
         if(w+cropWidth>= farmWidth || h+cropHeight>=farmHeight) return false;
 
@@ -380,7 +384,6 @@ public class DesignServiceImpl implements DesignService {
             for (int addWidth = 0; addWidth < cropWidth; addWidth++) {
                 int newHeight=h+addHeight;
                 int newWidth=w+addWidth;
-//                System.out.println(arrangement[newHeight][newWidth]);
                 if(arrangement[newHeight][newWidth]!='R' || cropArray[newHeight][newWidth]!=null) return false;
             }
         }
