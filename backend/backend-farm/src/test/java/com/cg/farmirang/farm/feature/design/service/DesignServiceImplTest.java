@@ -1,5 +1,7 @@
 package com.cg.farmirang.farm.feature.design.service;
 
+import com.cg.farmirang.farm.feature.design.dto.CropForDesignDto;
+import com.cg.farmirang.farm.feature.design.dto.CropSelectionOrderedByCropDto;
 import com.cg.farmirang.farm.feature.design.dto.request.CoordinateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.request.DesignNameUpdateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.request.EmptyFarmCreateRequestDto;
@@ -7,10 +9,12 @@ import com.cg.farmirang.farm.feature.design.dto.request.RecommendedDesignCreateR
 import com.cg.farmirang.farm.feature.design.dto.response.DesignDetailResponseDto;
 import com.cg.farmirang.farm.feature.design.dto.response.DesignListResponseDto;
 import com.cg.farmirang.farm.feature.design.dto.response.EmptyFarmCreateResponseDto;
+import com.cg.farmirang.farm.feature.design.dto.response.RecommendedDesignCreateResponseDto;
 import com.cg.farmirang.farm.feature.design.entity.*;
 import com.cg.farmirang.farm.feature.design.repository.*;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -349,5 +353,34 @@ class DesignServiceImplTest {
             System.out.println(Arrays.toString(chars));
         }
         System.out.println("name = " + response.getName());
+    }
+
+    @Test
+    @DisplayName("추천 디자인 생성")
+    public void 추천디자인생성(){
+        // given
+        List<RecommendedDesignCreateRequestDto> cropDtoList = new ArrayList<>();
+//        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(1).quantity(5).priority(1).build());
+//        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(2).quantity(2).priority(2).build());
+//        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(3).quantity(2).priority(3).build());
+//        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(4).quantity(2).priority(4).build());
+//        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(6).quantity(2).priority(5).build());
+//        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(15).quantity(2).priority(6).build());
+        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(12).quantity(2).priority(4).build());
+        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(14).quantity(2).priority(5).build());
+
+        Long designId=5L;
+
+        // when
+        RecommendedDesignCreateResponseDto response = designService.insertRecommendedDesign(designId, cropDtoList);
+        CropForDesignDto[][] designArray = response.getDesignArray();
+
+
+        // then
+        for (CropForDesignDto[] cropForDesignDtos : designArray) {
+            System.out.println(Arrays.toString(cropForDesignDtos));
+        }
+
+
     }
 }

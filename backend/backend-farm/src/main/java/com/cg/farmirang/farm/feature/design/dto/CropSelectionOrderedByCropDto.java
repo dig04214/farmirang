@@ -6,10 +6,11 @@ import com.querydsl.core.annotations.QueryProjection;
 import com.querydsl.core.types.dsl.BooleanPath;
 import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.core.types.dsl.StringPath;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data @NoArgsConstructor
+@Data @NoArgsConstructor @Builder
 public class CropSelectionOrderedByCropDto {
     private Integer cropId;
     private Integer ridgeSpacing;
@@ -21,7 +22,7 @@ public class CropSelectionOrderedByCropDto {
     private Integer priority;
     private Integer quantity;
 
-    @QueryProjection
+//    @QueryProjection
     public CropSelectionOrderedByCropDto(Integer cropId, Integer ridgeSpacing, Integer cropSpacing, String sowingTime, String harvestingTime, Boolean isRepeated, Integer height, Integer priority, Integer quantity) {
         this.cropId = cropId;
         this.ridgeSpacing = ridgeSpacing;
