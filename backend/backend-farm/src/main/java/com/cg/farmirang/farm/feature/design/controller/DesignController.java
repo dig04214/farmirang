@@ -67,7 +67,6 @@ public class DesignController {
     public SuccessResponse<?> createRecommendedDesign(@PathVariable Long designId, @Validated @RequestBody List<RecommendedDesignCreateRequestDto> request){
         RecommendedDesignCreateResponseDto response= designService.insertRecommendedDesign(designId, request);
 
-        // 임시, MongoDB 공부 후 그 데이터 넘겨줄 예정
         return SuccessResponse.builder().data(response).status(SuccessCode.INSERT_SUCCESS).build();
     }
 
@@ -108,20 +107,6 @@ public class DesignController {
     public SuccessResponse<?> updateDesignName(@PathVariable Long designId, DesignNameUpdateRequestDto request){
         Boolean result = designService.updateDesignName(designId, request);
         return SuccessResponse.builder().data(result).status(SuccessCode.UPDATE_SUCCESS).build();
-    }
-
-    @GetMapping("/{designId}/chemical")
-    @Operation(summary = "농약, 비료 조회", description = "추천 농약, 비료를 조회합니다.")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "추천 농약, 비료 조회에 성공했습니다.",
-            content = {@Content(schema = @Schema(implementation = ChemicalGetResponseDto.class))}),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
-            @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    })
-    public SuccessResponse<?> getChemical(@PathVariable Long designId){
-
-        ChemicalGetResponseDto response=designService.selectChemical(designId);
-
-        return SuccessResponse.builder().data(response).status(SuccessCode.SELECT_SUCCESS).build();
     }
 
     @GetMapping("/list")
@@ -174,6 +159,11 @@ public class DesignController {
         return SuccessResponse.builder().data(result).status(SuccessCode.DELETE_SUCCESS).build();
     }
 
+    // TODO : 대표디자인 설정
+
+
+
+    // TODO : 대표디자인 가져오기
 }
 
 

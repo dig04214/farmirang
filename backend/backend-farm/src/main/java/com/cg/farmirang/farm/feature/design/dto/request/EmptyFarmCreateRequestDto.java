@@ -1,5 +1,7 @@
 package com.cg.farmirang.farm.feature.design.dto.request;
 
+import com.cg.farmirang.farm.feature.design.entity.Design;
+import com.cg.farmirang.farm.feature.design.entity.Member;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
@@ -21,4 +23,5 @@ public class EmptyFarmCreateRequestDto {
     private Integer furrowWidth;
     @NotNull
     private Boolean isHorizontal;
+
 }

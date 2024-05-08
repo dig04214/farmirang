@@ -1,14 +1,16 @@
 package com.cg.farmirang.farm.feature.design.service;
 
+import com.cg.farmirang.farm.feature.design.dto.CropCoordinateAndCropIdDto;
 import com.cg.farmirang.farm.feature.design.dto.request.CoordinateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.request.DesignNameUpdateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.request.EmptyFarmCreateRequestDto;
-import com.cg.farmirang.farm.feature.design.dto.response.DesignListResponseDto;
-import com.cg.farmirang.farm.feature.design.dto.response.EmptyFarmCreateResponseDto;
+import com.cg.farmirang.farm.feature.design.dto.request.RecommendedDesignCreateRequestDto;
+import com.cg.farmirang.farm.feature.design.dto.response.*;
 import com.cg.farmirang.farm.feature.design.entity.*;
 import com.cg.farmirang.farm.feature.design.repository.*;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,6 +21,7 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -73,25 +76,25 @@ class DesignServiceImplTest {
     public void 디자인저장(){
         // given
         Member member = memberRepository.save(Member.builder().nickname("test").build());
-//        Design design = Design.builder()
-//                .member(member)
-//                .totalArea(100)
-//                .startMonth(4)
-//                .ridgeWidth(10)
-//                .furrowWidth(20)
-//                .isHorizontal(false)
-//                .build();
-//
-//        // when
-//        Design savedDesign = designRepository.save(design);
-//
-//        // then
-//        assertThat(savedDesign).isEqualTo(design);
+        Design design = Design.builder()
+                .member(member)
+                .totalArea(100)
+                .startMonth(4)
+                .ridgeWidth(10)
+                .furrowWidth(20)
+                .isHorizontal(false)
+                .build();
+
+        // when
+        Design savedDesign = designRepository.save(design);
+
+        // then
+        assertThat(savedDesign).isEqualTo(design);
     }
 
     // 좌표 DB 저장 후 빈 밭 배열 생성
     @Test
-//    @Rollback(value = false)
+    @Rollback(value = false)
     public void 밭배열생성(){
         // given
 //        Member member = memberRepository.save(Member.builder().nickname("test").build());
@@ -116,52 +119,52 @@ class DesignServiceImplTest {
 
 
         // then
-//        assertEquals(100, response.getArrangement().length());
-//        for (char[] chars : response.getFarm()) {
-//            System.out.println(Arrays.toString(chars));
-//
-//        }
+//        assertEquals(10, response.getFarm().length);
+        for (char[] chars : response.getFarm()) {
+            System.out.println(Arrays.toString(chars));
+
+        }
     }
 
 
     @Test
+    @DisplayName("작물 리스트 조회")
     public void 작물리스트조회(){
-//        // given
-//        Member member = memberRepository.save(Member.builder().nickname("test").build());
-//        Design savedDesign = designRepository.save(
-//                Design.builder()
-//                .member(member)
-//                .area(100)
-//                .startMonth(4)
-//                .ridgeWidth(10)
-//                .furrowWidth(20)
-//                .isHorizontal(false)
-//                .build());
-//
-//        // when
-//        Design design = designRepository.findById(savedDesign.getId()).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.DESIGN_NOT_FOUND));
-////        String startMonth = Integer.toString(design.getStartMonth());
-//        String startMonth = "1";
-//        List<Object[]> results = em.createQuery("SELECT t.name, CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN true ELSE false END AS isRecommended, t.ridgeSpacing * t.cropSpacing AS area FROM Crop t ORDER BY CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN 0 ELSE 1 END, t.sowingTime")
-//                .setParameter("substring", startMonth)
-//                .getResultList();
-//
-//
-//
-//        // then
-//        for (Object[] result : results) {
-//            CropGetResponseDto cropDto = CropGetResponseDto.builder()
-//                    .name((String) result[0])
-//                    .isRecommended((boolean) result[1])
-//                    .cellQuantity((int) (Math.ceil(((Integer) result[2]).intValue()) / 100))
-//                    .build();
-//            System.out.println("cropDto = " + cropDto);
-//        }
+        // given
+        Long designId=5L;
+
+        // when
+        CropGetResponseDto response = designService.selectCropList(designId);
+
+        // then
+        System.out.println(response.getCropList());
+    }
+
+    @Test
+    public void 디자인생성(){
+
+        List<RecommendedDesignCreateRequestDto> cropDtoList = new ArrayList<>();
+        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(1).quantity(5).priority(1).build());
+        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(2).quantity(2).priority(2).build());
+        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(3).quantity(2).priority(3).build());
+        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(4).quantity(2).priority(4).build());
+        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(6).quantity(2).priority(5).build());
+        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(15).quantity(2).priority(6).build());
+
+        List<Integer> cropIds = new ArrayList<>();
+
+        // 선택작물 DB 저장
+        for (RecommendedDesignCreateRequestDto selectedCrop : cropDtoList) {
+            cropIds.add(selectedCrop.getCropId());
+        }
+
+
+
     }
 
     @Test
     @Disabled
-    public void 디자인생성(){
+    public void 디자인생성_옛날버전(){
         /* 밭 불러오기 */
         // given
 //        Design design = designRepository.findById(1L).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.DESIGN_NOT_FOUND));
@@ -315,15 +318,52 @@ class DesignServiceImplTest {
     @Test
     public void 디자인_상세보기(){
         // given
-        Long designId=31L;
+        Long designId=10L;
 
         // when
-        DesignListResponseDto response = designService.selectDesign(designId);
+        DesignDetailResponseDto response = designService.selectDesign(designId);
 
         // then
-        for (char[] chars : response.getArrangement()) {
-            System.out.println(Arrays.toString(chars));
+        assertEquals("2024.05.08",response.getSavedTime());
+    }
+
+    @Test
+    @DisplayName("추천 디자인 생성")
+    public void 추천디자인생성(){
+        // given
+        List<RecommendedDesignCreateRequestDto> cropDtoList = new ArrayList<>();
+//        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(1).quantity(5).priority(1).build());
+//        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(2).quantity(2).priority(2).build());
+//        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(3).quantity(2).priority(3).build());
+//        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(4).quantity(2).priority(4).build());
+//        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(6).quantity(2).priority(5).build());
+//        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(15).quantity(2).priority(6).build());
+        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(12).quantity(4).priority(4).build());
+        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(13).quantity(5).priority(5).build());
+        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(8).quantity(5).priority(1).build());
+
+        // 가로 방향
+        Long designId=10L;
+        // 세로 방향
+//        Long designId=9L;
+
+        // when
+        RecommendedDesignCreateResponseDto response = designService.insertRecommendedDesign(designId, cropDtoList);
+        int[][] designArray = response.getDesignArray();
+        List<CropCoordinateAndCropIdDto> list = response.getCropCoordinateAndCropIdList();
+
+        // then
+        for (int[] ints : designArray) {
+            for (int anInt : ints) {
+                System.out.print(anInt+" ");
+            }
+            System.out.println();
         }
-        System.out.println("name = " + response.getName());
+        System.out.println("=============================");
+        for (CropCoordinateAndCropIdDto crop : list) {
+            System.out.printf("( r : %d, c : %d, cropId : %d )\n", crop.getRow(),crop.getColumn(),crop.getCropId());
+        }
+
+
     }
 }
