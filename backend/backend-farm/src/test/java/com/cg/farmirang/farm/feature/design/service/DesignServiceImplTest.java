@@ -1,6 +1,6 @@
 package com.cg.farmirang.farm.feature.design.service;
 
-import com.cg.farmirang.farm.feature.design.dto.CropNumberAndNameDto;
+import com.cg.farmirang.farm.feature.design.dto.CropCoordinateAndCropIdDto;
 import com.cg.farmirang.farm.feature.design.dto.request.CoordinateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.request.DesignNameUpdateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.request.EmptyFarmCreateRequestDto;
@@ -318,16 +318,13 @@ class DesignServiceImplTest {
     @Test
     public void 디자인_상세보기(){
         // given
-        Long designId=31L;
+        Long designId=10L;
 
         // when
         DesignDetailResponseDto response = designService.selectDesign(designId);
 
         // then
-        for (char[] chars : response.getArrangement()) {
-            System.out.println(Arrays.toString(chars));
-        }
-        System.out.println("name = " + response.getName());
+        assertEquals("2024.05.08",response.getSavedTime());
     }
 
     @Test
@@ -341,9 +338,9 @@ class DesignServiceImplTest {
 //        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(4).quantity(2).priority(4).build());
 //        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(6).quantity(2).priority(5).build());
 //        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(15).quantity(2).priority(6).build());
-        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(12).quantity(40).priority(4).build());
-//        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(13).quantity(5).priority(5).build());
-//        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(8).quantity(5).priority(1).build());
+        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(12).quantity(4).priority(4).build());
+        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(13).quantity(5).priority(5).build());
+        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(8).quantity(5).priority(1).build());
 
         // 가로 방향
         Long designId=10L;
@@ -353,7 +350,7 @@ class DesignServiceImplTest {
         // when
         RecommendedDesignCreateResponseDto response = designService.insertRecommendedDesign(designId, cropDtoList);
         int[][] designArray = response.getDesignArray();
-
+        List<CropCoordinateAndCropIdDto> list = response.getCropCoordinateAndCropIdList();
 
         // then
         for (int[] ints : designArray) {
@@ -362,6 +359,11 @@ class DesignServiceImplTest {
             }
             System.out.println();
         }
+        System.out.println("=============================");
+        for (CropCoordinateAndCropIdDto crop : list) {
+            System.out.printf("( r : %d, c : %d, cropId : %d )\n", crop.getRow(),crop.getColumn(),crop.getCropId());
+        }
+
 
     }
 }

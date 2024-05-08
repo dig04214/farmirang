@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.awt.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -268,7 +270,7 @@ public class DesignServiceImpl implements DesignService {
 
         // 몽고디비에 다시 업데이트
         selectedArrangement.setDesignArrangement(response.getDesignArray());
-        selectedArrangement.setCropNumberAndNameList(response.getCropNumberAndNameList());
+        selectedArrangement.setCropNumberAndNameList(response.getCropCoordinateAndCropIdList());
         arrangementRepository.save(selectedArrangement);
 
         return response;
@@ -294,7 +296,7 @@ public class DesignServiceImpl implements DesignService {
         int farmWidth = arrangement[0].length;
 
         int[][] cropArray = new int[farmHeight][farmWidth];
-        List<CropNumberAndNameDto> cropNumberAndNameList = new ArrayList<>();
+        List<CropCoordinateAndCropIdDto> cropCoordinateAndCropIds = new ArrayList<>();
 
         // 방향에 맞는 이랑의 가로, 세로
         int number = 1;
@@ -305,7 +307,6 @@ public class DesignServiceImpl implements DesignService {
             Integer cropHeight = crop.getRidgeSpacing() / 10;
 
             // 좌표 이동
-            // TODO : 가로 세로 버전 전부해야함
             int height = isHorizontal ? farmWidth - cropHeight : farmHeight-cropHeight;
             int width = isHorizontal ? farmHeight-cropWidth : farmWidth-cropWidth;
             outer:
@@ -318,7 +319,7 @@ public class DesignServiceImpl implements DesignService {
                     int w=isHorizontal ? i : j;
 
                     if (canPlantCrop(arrangement, farmWidth, farmHeight, cropArray, cropWidth, cropHeight, w, h, crop, isHorizontal)) {
-                        plantCrop(crop, cropHeight, cropWidth, h, w, cropArray, number, cropNumberAndNameList, isHorizontal);
+                        plantCrop(crop, cropHeight, cropWidth, h, w, cropArray, number, cropCoordinateAndCropIds, isHorizontal);
                         number++;
                         quantity--;
                     }
@@ -330,20 +331,25 @@ public class DesignServiceImpl implements DesignService {
 
         return RecommendedDesignCreateResponseDto.builder()
                 .designArray(cropArray)
-                .cropNumberAndNameList(cropNumberAndNameList)
+                .cropCoordinateAndCropIdList(cropCoordinateAndCropIds)
                 .build();
     }
 
     /**
      * 작물 배치
      */
-    private static void plantCrop(CropSelectionOrderedByCropDto crop, Integer cropHeight, Integer cropWidth, int h, int w, int[][] cropArray, int number, List<CropNumberAndNameDto> cropNumberAndNameList, Boolean isHorizontal) {
-        cropNumberAndNameList.add(CropNumberAndNameDto.builder().cropId(crop.getCropId()).number(number).build());
+    private static void plantCrop(CropSelectionOrderedByCropDto crop, Integer cropHeight, Integer cropWidth, int h, int w, int[][] cropArray, int number, List<CropCoordinateAndCropIdDto> cropNumberAndNameList, Boolean isHorizontal) {
+        cropNumberAndNameList.add(
+                CropCoordinateAndCropIdDto.builder()
+                        .row(isHorizontal ? w : h)
+                        .column(isHorizontal ? h : w)
+                        .cropId(crop.getCropId())
+                        .build()
+        );
         for (int addHeight = 0; addHeight < cropHeight; addHeight++) {
             for (int addWidth = 0; addWidth < cropWidth; addWidth++) {
                 int newHeight = h + addHeight;
                 int newWidth = w + addWidth;
-//                cropArray[newHeight][newWidth] = number;
                 cropArray[isHorizontal ? newWidth : newHeight][isHorizontal ? newHeight : newWidth] = number;
             }
         }
@@ -360,18 +366,10 @@ public class DesignServiceImpl implements DesignService {
                 int newHeight = h + addHeight;
                 int newWidth = w + addWidth;
 
-//                if (arrangement[newHeight][newWidth] != 'R' || cropArray[newHeight][newWidth] != 0) return false;
                 if (arrangement[isHorizontal ? newWidth : newHeight][isHorizontal ? newHeight : newWidth] != 'R' || cropArray[isHorizontal ? newWidth : newHeight][isHorizontal ? newHeight : newWidth] != 0) return false;
             }
         }
         return true;
-    }
-
-
-    @Override
-    @Transactional
-    public Boolean insertDesign(DesignUpdateRequestDto request) {
-        return null;
     }
 
     /**
@@ -415,12 +413,14 @@ public class DesignServiceImpl implements DesignService {
             cropList.add(cropSelection.getCrop().getName());
         }
 
+        LocalDateTime savedTime = design.getUpdatedAt();
+
         return DesignDetailResponseDto.builder()
                 .arrangement(selectedArrangement.getArrangement())
                 .designArray(selectedArrangement.getDesignArrangement())
                 .cropNumberAndNameList(selectedArrangement.getCropNumberAndNameList())
                 .name(design.getName())
-                .savedTime(design.getUpdatedAt())
+                .savedTime(savedTime.format(DateTimeFormatter.ofPattern("YYYY.MM.dd")))
                 .cropList(cropList)
                 .build();
     }
@@ -435,25 +435,82 @@ public class DesignServiceImpl implements DesignService {
     @Override
     @Transactional
     public Boolean updateDesign(Long designId, DesignUpdateRequestDto request) {
+        // 이름 수정
         Design design = getDesign(designId);
         design.updateName(request.getName());
 
+        // 배치 수정
         Arrangement selectedArrangement = getSelectedArrangement(design);
         selectedArrangement.setDesignArrangement(request.getDesignArray());
         selectedArrangement.setCropNumberAndNameList(request.getCropNumberAndNameList());
 
-        // TODO : CropSelection 수정해야함 => 어떤 작물 넣었는지와 개수 필요
+        // CropSelection 기존 목록 삭제
+        cropSelectionRepository.deleteAllByDesign(design);
 
-
+        // CropSelection 새로 추가
+        List<CropSelection> newCropSelectionList = getNewCropSelectionList(request.getCropIdAndQuantityDtoList(), design);
+        // TODO : 디버깅하기
         try {
             designRepository.save(design);
             arrangementRepository.save(selectedArrangement);
+            cropSelectionRepository.saveAll(newCropSelectionList);
             return true;
         } catch (Exception e) {
             throw new BusinessExceptionHandler(ErrorCode.INSERT_ERROR);
         }
     }
 
+    /**
+     * 커스텀 디자인 추가
+     *
+     * @param designId
+     * @param request
+     * @return
+     */
+    @Override
+    @Transactional
+    public Boolean insertCustomDesign(Long designId, CustomDesignCreateRequestDto request) {
+        Design design = getDesign(designId);
+        Arrangement selectedArrangement = getSelectedArrangement(design);
+        selectedArrangement.setDesignArrangement(request.getDesignArray());
+        selectedArrangement.setCropNumberAndNameList(request.getCropCoordinateAndCropIdDtoList());
+
+        List<CropSelection> newCropSelectionList = getNewCropSelectionList(request.getCropIdAndQuantityDtoList(), design);
+        // TODO : 디버깅 하기
+        try {
+            arrangementRepository.save(selectedArrangement);
+            cropSelectionRepository.saveAll(newCropSelectionList);
+            return true;
+        } catch (Exception e) {
+            throw new BusinessExceptionHandler(ErrorCode.INSERT_ERROR);
+        }
+
+    }
+
+    /**
+     * CropSelection 추가
+     */
+    private List<CropSelection> getNewCropSelectionList(List<CropIdAndQuantityDto> list, Design design) {
+        List<CropSelection> cropSelections = new ArrayList<>();
+
+        for (CropIdAndQuantityDto cropIdAndQuantityDto : list) {
+            Crop crop = cropRepository.findById(cropIdAndQuantityDto.getCropId()).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.CROP_NOT_FOUND));
+
+            cropSelections.add(CropSelection.builder()
+                    .design(design)
+                    .crop(crop)
+                    .quantity(cropIdAndQuantityDto.getQuantity())
+                    .build());
+        }
+        return cropSelections;
+    }
+
+    /**
+     * 디자인 삭제
+     *
+     * @param designId
+     * @return
+     */
     @Override
     @Transactional
     public Boolean deleteDesign(Long designId) {
@@ -470,11 +527,6 @@ public class DesignServiceImpl implements DesignService {
 
     }
 
-    @Override
-    @Transactional
-    public Boolean insertPesticideAndFertilizerSelection(PesticideAndFertilizerCreateDto request) {
-        return null;
-    }
 
 
     /**
@@ -494,31 +546,7 @@ public class DesignServiceImpl implements DesignService {
                 .build();
     }
 
-    /**
-     * 커스텀 디자인 추가
-     *
-     * @param designId
-     * @param request
-     * @return
-     */
-    @Override
-    @Transactional
-    public Boolean insertCustomDesign(Long designId, CustomDesignCreateRequestDto request) {
-        Design design = getDesign(designId);
-        Arrangement selectedArrangement = getSelectedArrangement(design);
-        selectedArrangement.setDesignArrangement(request.getDesignArray());
-        selectedArrangement.setCropNumberAndNameList(request.getCropNumberAndNameList());
 
-        // TODO : CropSelection 수정해야함 => 어떤 작물 넣었는지와 개수 필요
-
-        try {
-            arrangementRepository.save(selectedArrangement);
-            return true;
-        } catch (Exception e) {
-            throw new BusinessExceptionHandler(ErrorCode.INSERT_ERROR);
-        }
-
-    }
 
     /**
      * 디자인 이름 수정

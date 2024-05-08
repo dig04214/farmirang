@@ -159,6 +159,11 @@ public class DesignController {
         return SuccessResponse.builder().data(result).status(SuccessCode.DELETE_SUCCESS).build();
     }
 
+    // TODO : 대표디자인 설정
+
+
+
+    // TODO : 대표디자인 가져오기
 }
 
 

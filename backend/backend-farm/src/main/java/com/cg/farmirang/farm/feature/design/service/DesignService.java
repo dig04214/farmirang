@@ -11,9 +11,6 @@ public interface DesignService {
 
     public RecommendedDesignCreateResponseDto insertRecommendedDesign(Long designId, List<RecommendedDesignCreateRequestDto> request);
 
-    Boolean insertDesign(DesignUpdateRequestDto request);
-
-
     List<DesignListResponseDto> selectDesignList(Integer memberId);
 
     DesignDetailResponseDto selectDesign(Long designId);
@@ -21,8 +18,6 @@ public interface DesignService {
     Boolean updateDesign(Long designId, DesignUpdateRequestDto request);
 
     Boolean deleteDesign(Long designId);
-
-    Boolean insertPesticideAndFertilizerSelection(PesticideAndFertilizerCreateDto request);
 
     CropGetResponseDto selectCropList(Long designId);
 

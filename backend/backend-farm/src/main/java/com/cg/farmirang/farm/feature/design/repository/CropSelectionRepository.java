@@ -28,4 +28,6 @@ public interface CropSelectionRepository extends JpaRepository<CropSelection, In
             "CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', c.sowingTime, ','))) THEN 0 ELSE 1 END, " +
             "cs.priority ASC")
     List<CropSelectionOrderedByCropDto> findByCropHeightLesserThan100(@Param("designId") Long designId, @Param("substring") String startMonth);
+
+    void deleteAllByDesign(Design design);
 }

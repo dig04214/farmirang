@@ -1,6 +1,6 @@
 package com.cg.farmirang.farm.feature.design.entity;
 
-import com.cg.farmirang.farm.feature.design.dto.CropNumberAndNameDto;
+import com.cg.farmirang.farm.feature.design.dto.CropCoordinateAndCropIdDto;
 import jakarta.persistence.Id;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,7 +18,7 @@ public class Arrangement {
     private String id;
     private char[][] arrangement;
     private int[][] designArrangement;
-    private List<CropNumberAndNameDto> cropNumberAndNameList;
+    private List<CropCoordinateAndCropIdDto> cropNumberAndNameList;
 
     @Builder
     public Arrangement(char[][] arrangement) {
