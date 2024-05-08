@@ -1,7 +1,6 @@
 package com.cg.farmirang.farm.feature.design.service;
 
-import com.cg.farmirang.farm.feature.design.dto.CropForDesignDto;
-import com.cg.farmirang.farm.feature.design.dto.CropSelectionOrderedByCropDto;
+import com.cg.farmirang.farm.feature.design.dto.CropNumberAndNameDto;
 import com.cg.farmirang.farm.feature.design.dto.request.CoordinateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.request.DesignNameUpdateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.request.EmptyFarmCreateRequestDto;
@@ -9,8 +8,6 @@ import com.cg.farmirang.farm.feature.design.dto.request.RecommendedDesignCreateR
 import com.cg.farmirang.farm.feature.design.dto.response.*;
 import com.cg.farmirang.farm.feature.design.entity.*;
 import com.cg.farmirang.farm.feature.design.repository.*;
-import com.cg.farmirang.farm.global.common.code.ErrorCode;
-import com.cg.farmirang.farm.global.exception.BusinessExceptionHandler;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -24,6 +21,7 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -78,25 +76,25 @@ class DesignServiceImplTest {
     public void 디자인저장(){
         // given
         Member member = memberRepository.save(Member.builder().nickname("test").build());
-//        Design design = Design.builder()
-//                .member(member)
-//                .totalArea(100)
-//                .startMonth(4)
-//                .ridgeWidth(10)
-//                .furrowWidth(20)
-//                .isHorizontal(false)
-//                .build();
-//
-//        // when
-//        Design savedDesign = designRepository.save(design);
-//
-//        // then
-//        assertThat(savedDesign).isEqualTo(design);
+        Design design = Design.builder()
+                .member(member)
+                .totalArea(100)
+                .startMonth(4)
+                .ridgeWidth(10)
+                .furrowWidth(20)
+                .isHorizontal(false)
+                .build();
+
+        // when
+        Design savedDesign = designRepository.save(design);
+
+        // then
+        assertThat(savedDesign).isEqualTo(design);
     }
 
     // 좌표 DB 저장 후 빈 밭 배열 생성
     @Test
-//    @Rollback(value = false)
+    @Rollback(value = false)
     public void 밭배열생성(){
         // given
 //        Member member = memberRepository.save(Member.builder().nickname("test").build());
@@ -121,11 +119,11 @@ class DesignServiceImplTest {
 
 
         // then
-//        assertEquals(100, response.getArrangement().length());
-//        for (char[] chars : response.getFarm()) {
-//            System.out.println(Arrays.toString(chars));
-//
-//        }
+//        assertEquals(10, response.getFarm().length);
+        for (char[] chars : response.getFarm()) {
+            System.out.println(Arrays.toString(chars));
+
+        }
     }
 
 
@@ -343,26 +341,27 @@ class DesignServiceImplTest {
 //        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(4).quantity(2).priority(4).build());
 //        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(6).quantity(2).priority(5).build());
 //        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(15).quantity(2).priority(6).build());
-        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(12).quantity(4).priority(4).build());
-        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(13).quantity(5).priority(5).build());
-        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(8).quantity(5).priority(1).build());
+        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(12).quantity(40).priority(4).build());
+//        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(13).quantity(5).priority(5).build());
+//        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(8).quantity(5).priority(1).build());
 
-        Long designId=5L;
+        // 가로 방향
+        Long designId=10L;
+        // 세로 방향
+//        Long designId=9L;
 
         // when
         RecommendedDesignCreateResponseDto response = designService.insertRecommendedDesign(designId, cropDtoList);
-        CropForDesignDto[][] designArray = response.getDesignArray();
+        int[][] designArray = response.getDesignArray();
 
 
         // then
-        for (CropForDesignDto[] cropForDesignDtos : designArray) {
-            for (CropForDesignDto crop : cropForDesignDtos) {
-                if (crop==null) System.out.print("null ");
-                else System.out.print(crop.getCropId()+" ");
+        for (int[] ints : designArray) {
+            for (int anInt : ints) {
+                System.out.print(anInt+" ");
             }
             System.out.println();
         }
-
 
     }
 }

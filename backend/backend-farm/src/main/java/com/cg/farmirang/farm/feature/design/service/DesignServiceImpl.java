@@ -225,8 +225,6 @@ public class DesignServiceImpl implements DesignService {
                     .build();
             list.add(cropDto);
         }
-        // TODO : NoSuchMethodError 뜨는데 어케 해결해보기
-//        List<CropForGetResponseDto> list = cropRepository.findCropInfoAndCropArea(design.getStartMonth().toString());
 
         return CropGetResponseDto.builder()
                 .cropList(list)
@@ -265,53 +263,62 @@ public class DesignServiceImpl implements DesignService {
         }
 
         // 두둑에서 알고리즘으로 배치하기
-        CropForDesignDto[][] designArray = createDesign(design);
+        RecommendedDesignCreateResponseDto response = createDesign(design);
 
 
         // 몽고디비에 다시 업데이트
-        selectedArrangement.setDesignArrangement(designArray);
+        selectedArrangement.setDesignArrangement(response.getDesignArray());
+        selectedArrangement.setCropNumberAndNameList(response.getCropNumberAndNameList());
         arrangementRepository.save(selectedArrangement);
 
-        return RecommendedDesignCreateResponseDto.builder().designArray(designArray).build();
+        return response;
     }
 
     /**
      * 디자인 추천 배치
      */
-    private CropForDesignDto[][] createDesign(Design design) {
+    private RecommendedDesignCreateResponseDto createDesign(Design design) {
         Long designId = design.getId();
         // TODO : 수확시기를 생각해 비슷한 수확시기의 작물끼리 모으기 => 이건..조금 나중에
         // 작물 길이, 그리고 1m 기준으로 그룹 생성 후 연작 가능한 것, 파종 시기 있는 것, 우선순위 순으로 나열
-        List<CropSelectionOrderedByCropDto> cropList = cropSelectionRepository.findByCropHeightGreaterThanEqual100(designId,design.getStartMonth().toString());
-
+        List<CropSelectionOrderedByCropDto> cropList = cropSelectionRepository.findByCropHeightGreaterThanEqual100(designId, design.getStartMonth().toString());
         // 1m 미만
-        cropList.addAll(cropSelectionRepository.findByCropHeightLesserThan100(designId,design.getStartMonth().toString()));
-
+        cropList.addAll(cropSelectionRepository.findByCropHeightLesserThan100(designId, design.getStartMonth().toString()));
 
         char[][] arrangement = getSelectedArrangement(design).getArrangement();
+
+        Boolean isHorizontal = design.getIsHorizontal();
 
         // 밭 가로, 세로
         int farmHeight = arrangement.length;
         int farmWidth = arrangement[0].length;
 
-        CropForDesignDto[][] cropArray = new CropForDesignDto[farmHeight][farmWidth];
+        int[][] cropArray = new int[farmHeight][farmWidth];
+        List<CropNumberAndNameDto> cropNumberAndNameList = new ArrayList<>();
 
         // 방향에 맞는 이랑의 가로, 세로
-        int number=0;
+        int number = 1;
         // 작물을 꺼냄
         for (CropSelectionOrderedByCropDto crop : cropList) {
             Integer quantity = crop.getQuantity();
-            Integer cropWidth = crop.getCropSpacing()/10;
-            Integer cropHeight = crop.getRidgeSpacing()/10;
+            Integer cropWidth = crop.getCropSpacing() / 10;
+            Integer cropHeight = crop.getRidgeSpacing() / 10;
 
             // 좌표 이동
-            outer : for (int h = 0; h <= farmHeight - cropHeight; h++) {
-                for (int w = 0; w <= farmWidth - cropWidth; w++) {
+            // TODO : 가로 세로 버전 전부해야함
+            int height = isHorizontal ? farmWidth - cropHeight : farmHeight-cropHeight;
+            int width = isHorizontal ? farmHeight-cropWidth : farmWidth-cropWidth;
+            outer:
+            for (int i = 0; i <= height; i++) {
+                for (int j = 0; j <= width; j++) {
                     // 작물 개수만큼 다 심거나 다 안 줄어도 좌표가 끝으로 갔으면 break
-                    if (quantity<=0) break outer;
+                    if (quantity <= 0) break outer;
 
-                    if(canPlantCrop(arrangement,cropArray,w,h,crop)){
-                        plantCrop(crop, cropHeight, cropWidth, h, w, cropArray, number);
+                    int h=isHorizontal ? j : i;
+                    int w=isHorizontal ? i : j;
+
+                    if (canPlantCrop(arrangement, farmWidth, farmHeight, cropArray, cropWidth, cropHeight, w, h, crop, isHorizontal)) {
+                        plantCrop(crop, cropHeight, cropWidth, h, w, cropArray, number, cropNumberAndNameList, isHorizontal);
                         number++;
                         quantity--;
                     }
@@ -321,18 +328,23 @@ public class DesignServiceImpl implements DesignService {
             }
         }
 
-        return cropArray;
+        return RecommendedDesignCreateResponseDto.builder()
+                .designArray(cropArray)
+                .cropNumberAndNameList(cropNumberAndNameList)
+                .build();
     }
 
-    private static void plantCrop(CropSelectionOrderedByCropDto crop, Integer cropHeight, Integer cropWidth, int h, int w, CropForDesignDto[][] cropArray, int number) {
-        for (int addHeight = 0; addHeight< cropHeight; addHeight++){
+    /**
+     * 작물 배치
+     */
+    private static void plantCrop(CropSelectionOrderedByCropDto crop, Integer cropHeight, Integer cropWidth, int h, int w, int[][] cropArray, int number, List<CropNumberAndNameDto> cropNumberAndNameList, Boolean isHorizontal) {
+        cropNumberAndNameList.add(CropNumberAndNameDto.builder().cropId(crop.getCropId()).number(number).build());
+        for (int addHeight = 0; addHeight < cropHeight; addHeight++) {
             for (int addWidth = 0; addWidth < cropWidth; addWidth++) {
-                int newHeight= h +addHeight;
-                int newWidth= w +addWidth;
-                cropArray[newHeight][newWidth]=CropForDesignDto.builder()
-                        .cropId(crop.getCropId())
-                        .number(number)
-                        .build();
+                int newHeight = h + addHeight;
+                int newWidth = w + addWidth;
+//                cropArray[newHeight][newWidth] = number;
+                cropArray[isHorizontal ? newWidth : newHeight][isHorizontal ? newHeight : newWidth] = number;
             }
         }
     }
@@ -340,20 +352,16 @@ public class DesignServiceImpl implements DesignService {
     /**
      * 배치 가능한 지 확인
      */
-    private boolean canPlantCrop(char[][] arrangement, CropForDesignDto[][] cropArray, int w, int h, CropSelectionOrderedByCropDto crop) {
-        int farmHeight = arrangement.length;
-        int farmWidth = arrangement[0].length;
-        Integer cropWidth = crop.getCropSpacing()/10;
-        Integer cropHeight = crop.getRidgeSpacing()/10;
+    private boolean canPlantCrop(char[][] arrangement, int farmWidth, int farmHeight, int[][] cropArray, Integer cropWidth, Integer cropHeight, int w, int h, CropSelectionOrderedByCropDto crop, Boolean isHorizontal) {
+        if (w + cropWidth >= farmWidth || h + cropHeight >= farmHeight) return false;
 
-
-        if(w+cropWidth>= farmWidth || h+cropHeight>=farmHeight) return false;
-
-        for (int addHeight=0; addHeight<cropHeight; addHeight++){
+        for (int addHeight = 0; addHeight < cropHeight; addHeight++) {
             for (int addWidth = 0; addWidth < cropWidth; addWidth++) {
-                int newHeight=h+addHeight;
-                int newWidth=w+addWidth;
-                if(arrangement[newHeight][newWidth]!='R' || cropArray[newHeight][newWidth]!=null) return false;
+                int newHeight = h + addHeight;
+                int newWidth = w + addWidth;
+
+//                if (arrangement[newHeight][newWidth] != 'R' || cropArray[newHeight][newWidth] != 0) return false;
+                if (arrangement[isHorizontal ? newWidth : newHeight][isHorizontal ? newHeight : newWidth] != 'R' || cropArray[isHorizontal ? newWidth : newHeight][isHorizontal ? newHeight : newWidth] != 0) return false;
             }
         }
         return true;
@@ -410,6 +418,7 @@ public class DesignServiceImpl implements DesignService {
         return DesignDetailResponseDto.builder()
                 .arrangement(selectedArrangement.getArrangement())
                 .designArray(selectedArrangement.getDesignArrangement())
+                .cropNumberAndNameList(selectedArrangement.getCropNumberAndNameList())
                 .name(design.getName())
                 .savedTime(design.getUpdatedAt())
                 .cropList(cropList)
@@ -418,7 +427,7 @@ public class DesignServiceImpl implements DesignService {
 
     /**
      * 디자인 이름, 배치 수정
-     * 
+     *
      * @param designId
      * @param request
      * @return
@@ -431,6 +440,7 @@ public class DesignServiceImpl implements DesignService {
 
         Arrangement selectedArrangement = getSelectedArrangement(design);
         selectedArrangement.setDesignArrangement(request.getDesignArray());
+        selectedArrangement.setCropNumberAndNameList(request.getCropNumberAndNameList());
 
         // TODO : CropSelection 수정해야함 => 어떤 작물 넣었는지와 개수 필요
 
@@ -486,7 +496,7 @@ public class DesignServiceImpl implements DesignService {
 
     /**
      * 커스텀 디자인 추가
-     * 
+     *
      * @param designId
      * @param request
      * @return
@@ -497,6 +507,7 @@ public class DesignServiceImpl implements DesignService {
         Design design = getDesign(designId);
         Arrangement selectedArrangement = getSelectedArrangement(design);
         selectedArrangement.setDesignArrangement(request.getDesignArray());
+        selectedArrangement.setCropNumberAndNameList(request.getCropNumberAndNameList());
 
         // TODO : CropSelection 수정해야함 => 어떤 작물 넣었는지와 개수 필요
 
@@ -527,11 +538,6 @@ public class DesignServiceImpl implements DesignService {
         } catch (Exception e) {
             throw new BusinessExceptionHandler(ErrorCode.UPDATE_ERROR);
         }
-    }
-
-    @Override
-    public ChemicalGetResponseDto selectChemical(Long designId) {
-        return null;
     }
 
     /**

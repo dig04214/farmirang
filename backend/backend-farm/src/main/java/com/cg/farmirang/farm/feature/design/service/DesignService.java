@@ -32,5 +32,4 @@ public interface DesignService {
 
     Boolean updateDesignName(Long designId, DesignNameUpdateRequestDto request);
 
-    ChemicalGetResponseDto selectChemical(Long designId);
 }
