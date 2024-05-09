@@ -22,17 +22,13 @@ public class CropSelection {
     @JoinColumn(name = "crop_id")
     private Crop crop;
 
-    @OneToMany(mappedBy = "cropSelection")
-    private List<CropCoordination> cropCoordinations;
-
     private Integer priority;
     private Integer quantity;
 
     @Builder
-    public CropSelection(Design design, Crop crop, List<CropCoordination> cropCoordinations, Integer priority, Integer quantity) {
+    public CropSelection(Design design, Crop crop, Integer priority, Integer quantity) {
         this.design = design;
         this.crop = crop;
-        this.cropCoordinations = cropCoordinations;
         this.priority = priority;
         this.quantity = quantity;
     }

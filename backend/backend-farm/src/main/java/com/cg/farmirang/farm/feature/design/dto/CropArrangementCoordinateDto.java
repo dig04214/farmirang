@@ -1,7 +1,6 @@
 package com.cg.farmirang.farm.feature.design.dto;
 
 import com.cg.farmirang.farm.feature.design.dto.request.CoordinateRequestDto;
-import com.cg.farmirang.farm.feature.design.entity.CropCoordination;
 import lombok.Data;
 
 import java.util.List;

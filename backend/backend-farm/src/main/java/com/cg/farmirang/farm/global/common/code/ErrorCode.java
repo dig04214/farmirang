@@ -91,7 +91,15 @@ public enum ErrorCode {
     CROP_NOT_FOUND(404, "D003", "해당 작물을 찾을 수 없습니다."),
 
     // 대표디자인 수정하는 디자인 자체 디자인 메소드 할 때 오류 발생
-    UPDATE_DEIGN_THUMBNAIL_ERROR(500, "D004", "대표 디자인을 수정하는 부분에서 오류가 발생했습니다."); // End
+    UPDATE_DEIGN_THUMBNAIL_ERROR(500, "D004", "대표 디자인을 수정하는 부분에서 오류가 발생했습니다."),
+
+    /**
+     * ================= Member Error CodeList =================
+     */
+    // token error
+    TOKEN_ERROR(401, "B009", "Token Exception")
+
+    ; // End
 
     /**
      * ******************************* Error Code Constructor ***************************************

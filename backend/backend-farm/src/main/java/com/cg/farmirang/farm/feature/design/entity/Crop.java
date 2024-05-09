@@ -32,11 +32,9 @@ public class Crop {
     private Double minFieldHumidity;
     private Double maxFieldHumidity;
 
-    @Enumerated(EnumType.STRING)
-    private Difficulty difficulty;
 
     @Builder
-    public Crop(String name, Integer ridgeSpacing, Integer cropSpacing, String companionPlant, String competetivePlant, String sowingTime, String harvestingTime, Boolean isRepeated, Integer height, Double minTemperature, Double maxTemperature, Double minHumidity, Double maxHumidity, Double minFieldHumidity, Double maxFieldHumidity, Difficulty difficulty) {
+    public Crop(String name, Integer ridgeSpacing, Integer cropSpacing, String companionPlant, String competetivePlant, String sowingTime, String harvestingTime, Boolean isRepeated, Integer height, Double minTemperature, Double maxTemperature, Double minHumidity, Double maxHumidity, Double minFieldHumidity, Double maxFieldHumidity) {
         this.name = name;
         this.ridgeSpacing = ridgeSpacing;
         this.cropSpacing = cropSpacing;
@@ -52,6 +50,5 @@ public class Crop {
         this.maxHumidity = maxHumidity;
         this.minFieldHumidity = minFieldHumidity;
         this.maxFieldHumidity = maxFieldHumidity;
-        this.difficulty = difficulty;
     }
 }
