@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@NoArgsConstructor(access=AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @EntityListeners(AuditingEntityListener.class)
 public class Design {
@@ -29,7 +29,7 @@ public class Design {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @OneToMany(mappedBy = "design", cascade = {CascadeType.PERSIST,CascadeType.MERGE},orphanRemoval = true)
+    @OneToMany(mappedBy = "design", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
     private List<FarmCoordinate> farmCoordinates;
 
     private String arrangementId;
@@ -43,6 +43,8 @@ public class Design {
     private Integer ridgeWidth;
     private Integer furrowWidth;
     private Boolean isHorizontal;
+
+    @ColumnDefault("false")
     private Boolean isThumbnail;
 
     @CreatedDate
@@ -53,7 +55,7 @@ public class Design {
     private LocalDateTime updatedAt;
 
     @Getter
-    @OneToMany(mappedBy = "design", orphanRemoval = true)
+    @OneToMany(mappedBy = "design", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
     private List<CropSelection> cropSelections;
 
     @Builder
@@ -62,24 +64,27 @@ public class Design {
         this.arrangementId = arrangementId;
         this.totalArea = totalArea;
         this.ridgeArea = ridgeArea;
-        this.name = name;
+        this.name = "제목 없음";
         this.startMonth = startMonth;
         this.ridgeWidth = ridgeWidth;
         this.furrowWidth = furrowWidth;
         this.isHorizontal = isHorizontal;
-        this.isThumbnail = isThumbnail;
-        this.farmCoordinates=new ArrayList<>();
+        this.isThumbnail = false;
+        this.farmCoordinates = new ArrayList<>();
         this.cropSelections = new ArrayList<>();
     }
 
-    public void addFarmCoordinate(FarmCoordinate farmCoordinate){
+    public void addFarmCoordinate(FarmCoordinate farmCoordinate) {
         this.farmCoordinates.add(farmCoordinate);
         farmCoordinate.updateDesign(this);
     }
-    public void addCropSelection(CropSelection cropSelection){
+
+    public void addCropSelection(CropSelection cropSelection) {
         this.cropSelections.add(cropSelection);
+        cropSelection.updateDesign(this);
     }
-    public RecommendedDesignInfoDto getDesignInfo(){
+
+    public RecommendedDesignInfoDto getDesignInfo() {
         return RecommendedDesignInfoDto.builder()
                 .ridgeWidth(this.ridgeWidth)
                 .furrowWidth(this.furrowWidth)
@@ -87,13 +92,17 @@ public class Design {
                 .startMonth(this.startMonth)
                 .build();
     }
-    public void updateArrangementIdAndRidgeArea(String arrangementId, Integer ridgeArea){
-        this.arrangementId=arrangementId;
-        this.ridgeArea=ridgeArea;
+
+    public void updateArrangementIdAndRidgeArea(String arrangementId, Integer ridgeArea) {
+        this.arrangementId = arrangementId;
+        this.ridgeArea = ridgeArea;
     }
 
     public void updateName(String name) {
-        this.name=name;
+        this.name = name;
     }
-    public void updateIsThumbnail(){this.isThumbnail=!isThumbnail;}
+
+    public void updateIsThumbnail() {
+        this.isThumbnail = !isThumbnail;
+    }
 }

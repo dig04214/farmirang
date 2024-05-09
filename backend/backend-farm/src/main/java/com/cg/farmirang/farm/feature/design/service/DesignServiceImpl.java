@@ -220,8 +220,7 @@ public class DesignServiceImpl implements DesignService {
                 .setParameter("substring", design.getStartMonth().toString())
                 .getResultList();
 
-        // TODO : NoSuchMethodError 뜸...이유를 모르겠네
-//        List<Object[]> results = cropRepository.findCropInfoAndCropArea(design.getStartMonth().toString());
+//        List<Object[]> results = cropRepository.findCropInfoAndCropArea(String.valueOf(design.getStartMonth()));
         List<CropForGetResponseDto> list = new ArrayList<>();
 
         for (Object[] result : results) {
@@ -255,7 +254,7 @@ public class DesignServiceImpl implements DesignService {
      */
     @Override
     @Transactional
-    public RecommendedDesignCreateResponseDto insertRecommendedDesign(Long designId, List<RecommendedDesignCreateRequestDto> request) {
+    public RecommendedDesignCreateResponseDto insertRecommendedDesign(Long designId, @NotBlank List<RecommendedDesignCreateRequestDto> request) {
         Design design = getDesign(designId);
         // 밭 불러오기
         Arrangement selectedArrangement = getSelectedArrangement(design);
@@ -271,10 +270,11 @@ public class DesignServiceImpl implements DesignService {
                     .priority(selectedCrop.getPriority())
                     .design(design)
                     .build();
-            CropSelection savedCropSelection = cropSelectionRepository.save(cropSelection);
-            design.addCropSelection(savedCropSelection);
+
+            design.addCropSelection(cropSelection);
         }
 
+        designRepository.save(design);
         // 두둑에서 알고리즘으로 배치하기
         RecommendedDesignCreateResponseDto response = createDesign(design);
 
@@ -593,9 +593,8 @@ public class DesignServiceImpl implements DesignService {
 
     /**
      * 대표 디자인 수정
-     *
      * @param designId
-     * @param integer
+     * @param memberId
      * @return
      */
     @Override

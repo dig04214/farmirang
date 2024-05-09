@@ -32,4 +32,8 @@ public class CropSelection {
         this.priority = priority;
         this.quantity = quantity;
     }
+
+    public void updateDesign(Design design) {
+        this.design=design;
+    }
 }
