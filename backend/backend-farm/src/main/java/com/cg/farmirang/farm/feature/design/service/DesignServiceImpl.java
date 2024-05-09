@@ -40,7 +40,7 @@ public class DesignServiceImpl implements DesignService {
     /**
      * 빈 밭 생성
      *
-     * @param token
+     * @param memberId
      * @param request
      * @return
      */
@@ -92,14 +92,12 @@ public class DesignServiceImpl implements DesignService {
             FarmCoordinate farmCoordinate = FarmCoordinate.builder()
                     .design(savedDesign)
                     .x(x)
-                    .y(y)
+                    .y(Math.abs(row - y))
                     .sequence(coordinate.getSequence())
                     .build();
-            FarmCoordinate save = farmCoordinateRepository.save(farmCoordinate);
-            savedDesign.addFarmCoordinate(save);
-
+            savedDesign.addFarmCoordinate(farmCoordinate);
         }
-
+        designRepository.save(savedDesign);
         // 이랑 배열 생성
         RecommendedDesignInfoDto designInfo = savedDesign.getDesignInfo();
 
@@ -107,8 +105,9 @@ public class DesignServiceImpl implements DesignService {
         Integer ridgeWidth = designInfo.getRidgeWidth();
         int farmWidthCell = farm[0].length;
         int farmHeightCell = farm.length;
+        List<FarmCoordinate> farmCoordinates = savedDesign.getFarmCoordinates();
 
-        farm = checkRidgeAndFurrow(farm, polygon, farmWidthCell, farmHeightCell, ridgeWidth / 10, furrowWidth / 10, designInfo.getIsHorizontal());
+        farm = checkRidgeAndFurrow(farm, polygon, farmWidthCell, farmHeightCell, ridgeWidth / 10, furrowWidth / 10, designInfo.getIsHorizontal(), farmCoordinates);
 
         // 몽고DB에 배열 저장
         Arrangement arrangement = arrangementRepository.save(Arrangement.builder().arrangement(farm).build());
@@ -116,6 +115,7 @@ public class DesignServiceImpl implements DesignService {
         // design에 arrangementId과 두둑 넓이 추가
         Gson gson = new Gson();
         String jsonFarm = gson.toJson(arrangement.getArrangement());
+
         Integer count = (int) jsonFarm.chars().filter(ch -> ch == 'R').count();
         savedDesign.updateArrangementIdAndRidgeArea(arrangement.getId(), count);
         designRepository.save(savedDesign);
@@ -130,7 +130,7 @@ public class DesignServiceImpl implements DesignService {
     /**
      * 이랑, 고랑, 그리고 빈칸 체크
      */
-    private char[][] checkRidgeAndFurrow(char[][] farm, Polygon polygon, int farmWidthCell, int farmHeightCell, int ridgeLengthCell, int furrowLengthCell, Boolean isHorizontal) {
+    private char[][] checkRidgeAndFurrow(char[][] farm, Polygon polygon, int farmWidthCell, int farmHeightCell, int ridgeLengthCell, int furrowLengthCell, Boolean isHorizontal, List<FarmCoordinate> farmCoordinates) {
 
         int R = isHorizontal ? farmWidthCell : farmHeightCell;
         int C = isHorizontal ? farmHeightCell : farmWidthCell;
@@ -142,7 +142,7 @@ public class DesignServiceImpl implements DesignService {
         while (check < limit) {
             for (int i = 0; i < R && check < limit; i++) {
                 for (int j = 0; j < C; j++) {
-                    farm[isHorizontal ? j : i][isHorizontal ? i : j] = (isRidge) ? isRidgeOrEmpty(isHorizontal ? i : j, isHorizontal ? j : i, polygon, R, C) ? 'R' : 'E' : 'F';
+                    farm[isHorizontal ? j : i][isHorizontal ? i : j] = (isRidge) ? isRidgeOrEmpty(isHorizontal ? i : j, isHorizontal ? j : i, polygon, R, C, farmCoordinates) ? 'R' : 'E' : 'F';
                 }
                 check++;
                 currentCount++;
@@ -165,7 +165,7 @@ public class DesignServiceImpl implements DesignService {
     /**
      * 도형 안에 있는지 확인
      */
-    private boolean isRidgeOrEmpty(int x, int y, Polygon polygon, int height, int width) {
+    private boolean isRidgeOrEmpty(int x, int y, Polygon polygon, int height, int width, List<FarmCoordinate> farmCoordinates) {
         // 네군데 다 확인
         int[] changeX = {0, 1, 1, 0};
         int[] changeY = {0, 0, 1, 1};
@@ -174,11 +174,22 @@ public class DesignServiceImpl implements DesignService {
             int newX = x + changeX[i];
             int newY = y + changeY[i];
 
-            if ((0 <= newX && newX < width) && (0 <= newY && newY < height) && !polygon.contains(newX, newY)) {
+            if ((0 <= newX && newX <= width) && (0 <= newY && newY < height) && !polygon.contains(newX, newY) && !isPointInPolygon(newX, newY, farmCoordinates)) {
                 return false;
+
             }
         }
         return true;
+    }
+
+    /**
+     * 꼭지점에 있는지 확인
+     */
+    private boolean isPointInPolygon(int newX, int newY, List<FarmCoordinate> farmCoordinates) {
+        for (FarmCoordinate farmCoordinate : farmCoordinates) {
+            if (farmCoordinate.getX() == newX && farmCoordinate.getY() == newY) return true;
+        }
+        return false;
     }
 
     /**
@@ -384,16 +395,24 @@ public class DesignServiceImpl implements DesignService {
         Member member = getMember(memberId);
         List<DesignListResponseDto> list = new ArrayList<>();
 
-        // TODO : 로직 수정 필요
-        for (Design design : member.getDesigns()) {
-            Arrangement selectedArrangement = getSelectedArrangement(design);
-            list.add(DesignListResponseDto.builder()
-                    .arrangement(selectedArrangement.getArrangement())
-                    .name(design.getName())
-                    .savedTime(design.getUpdatedAt())
-                    .build()
-            );
+
+        Optional<List<Design>> optionalDesignList = designRepository.findAllByMember(member);
+
+        // 디자인 리스트 있는 경우만 추가
+        if (optionalDesignList.isPresent()) {
+            List<Design> designList = optionalDesignList.get();
+            for (Design design : designList) {
+                Arrangement selectedArrangement = getSelectedArrangement(design);
+                list.add(
+                        DesignListResponseDto.builder()
+                                .arrangement(selectedArrangement.getArrangement())
+                                .name(design.getName())
+                                .savedTime(design.getUpdatedAt().format(DateTimeFormatter.ofPattern("YYYY.MM.dd")))
+                                .build()
+                );
+            }
         }
+
         return list;
     }
 
@@ -580,6 +599,7 @@ public class DesignServiceImpl implements DesignService {
      * @return
      */
     @Override
+    @Transactional
     public Boolean updateThumbnailDesign(Long designId, @NotBlank Integer memberId) {
         Member member = getMember(memberId);
 

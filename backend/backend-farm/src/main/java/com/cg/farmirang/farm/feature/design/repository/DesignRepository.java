@@ -12,5 +12,5 @@ public interface DesignRepository  extends JpaRepository<Design, Long> {
 
     Optional<Design> findByMemberAndId(Member member, Long designId);
 
-    List<Design> findAllByMember(Member member);
+    Optional<List<Design>> findAllByMember(Member member);
 }

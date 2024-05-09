@@ -6,6 +6,7 @@ import lombok.*;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @ToString(exclude = "design")
+@Getter
 public class FarmCoordinate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,5 +27,9 @@ public class FarmCoordinate {
         this.x = x;
         this.y = y;
         this.sequence = sequence;
+    }
+
+    public void updateDesign(Design design) {
+        this.design=design;
     }
 }

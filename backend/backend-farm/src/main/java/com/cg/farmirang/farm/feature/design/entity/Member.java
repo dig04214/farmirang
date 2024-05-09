@@ -18,7 +18,5 @@ public class Member {
 	private Integer id;
 
 
-	@OneToMany(mappedBy = "member")
-	private List<Design> designs;
 
 }

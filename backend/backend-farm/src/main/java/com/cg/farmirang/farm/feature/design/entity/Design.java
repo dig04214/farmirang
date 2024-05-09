@@ -25,13 +25,11 @@ public class Design {
     @Column(name = "design_id")
     private Long id;
 
-    // TODO : memberId만으로도 join되는지 확인하고 바꾸기
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
 
-    // TODO : 단방향으로 전환
-    @OneToMany(mappedBy = "design", orphanRemoval = true)
+    @OneToMany(mappedBy = "design", cascade = {CascadeType.PERSIST,CascadeType.MERGE},orphanRemoval = true)
     private List<FarmCoordinate> farmCoordinates;
 
     private String arrangementId;
@@ -76,6 +74,7 @@ public class Design {
 
     public void addFarmCoordinate(FarmCoordinate farmCoordinate){
         this.farmCoordinates.add(farmCoordinate);
+        farmCoordinate.updateDesign(this);
     }
     public void addCropSelection(CropSelection cropSelection){
         this.cropSelections.add(cropSelection);

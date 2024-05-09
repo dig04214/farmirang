@@ -12,5 +12,5 @@ import java.time.LocalDateTime;
 public class DesignListResponseDto {
     private char[][] arrangement;
     private String name;
-    private LocalDateTime savedTime;
+    private String  savedTime;
 }
