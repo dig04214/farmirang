@@ -18,7 +18,7 @@ public class Arrangement {
     private String id;
     private char[][] arrangement;
     private int[][] designArrangement;
-    private List<CropCoordinateAndCropIdDto> cropNumberAndNameList;
+    private List<CropCoordinateAndCropIdDto> cropCoordinateAndCropIdDtoList;
 
     @Builder
     public Arrangement(char[][] arrangement) {

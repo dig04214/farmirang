@@ -8,6 +8,8 @@ import com.cg.farmirang.farm.feature.design.dto.request.RecommendedDesignCreateR
 import com.cg.farmirang.farm.feature.design.dto.response.*;
 import com.cg.farmirang.farm.feature.design.entity.*;
 import com.cg.farmirang.farm.feature.design.repository.*;
+import com.cg.farmirang.farm.global.common.code.ErrorCode;
+import com.cg.farmirang.farm.global.exception.BusinessExceptionHandler;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
@@ -364,6 +366,52 @@ class DesignServiceImplTest {
             System.out.printf("( r : %d, c : %d, cropId : %d )\n", crop.getRow(),crop.getColumn(),crop.getCropId());
         }
 
+
+    }
+
+    @Test
+    @DisplayName("대표 디자인 수정")
+    void 대표디자인_수정(){
+        // given
+        Integer memberId=1;
+        Design design = designRepository.findById(10L).get();
+        List<Design> designList = designRepository.findAllByMember(memberRepository.findById(memberId).get());
+        int count=0;
+        Design oldDesign = designRepository.findById(2L).get();
+
+        // when
+        designService.updateThumbnailDesign(10L);
+        for (Design design1 : designList) {
+            if (design1.getIsThumbnail()==true) count++;
+        }
+
+
+        // then
+        assertEquals(true,design.getIsThumbnail());
+        assertEquals(false,oldDesign.getIsThumbnail());
+        assertEquals(count,1);
+
+    }
+
+    @Test
+    @DisplayName("대표 디자인 조회")
+    void 대표디자인_조회(){
+        // given
+        int memberId=1;
+
+        // when
+        ThumbnailDesignResponseDto reponse = designService.selectThumbnailDesign(memberId);
+
+        // then
+        System.out.println("==========디자인 조회==========");
+        for (int[] ints : reponse.getDesignArray()) {
+            System.out.println(Arrays.toString(ints));
+        }
+        System.out.println("==========디자인 조회==========");
+
+        for (CropCoordinateAndCropIdDto dto : reponse.getCropCoordinateAndCropIdDtoList()) {
+            System.out.printf("row : %d, col : %d, cropId : %d", dto.getRow(),dto.getColumn(),dto.getCropId());
+        }
 
     }
 }

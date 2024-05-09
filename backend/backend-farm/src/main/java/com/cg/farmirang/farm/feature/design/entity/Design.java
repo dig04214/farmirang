@@ -43,6 +43,8 @@ public class Design {
     private Integer ridgeWidth;
     private Integer furrowWidth;
     private Boolean isHorizontal;
+    private Boolean isThumbnail;
+
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdAt;
@@ -55,7 +57,7 @@ public class Design {
     private List<CropSelection> cropSelections;
 
     @Builder
-    public Design(Member member, String arrangementId, Integer totalArea, Integer ridgeArea, String name, Integer startMonth, Integer ridgeWidth, Integer furrowWidth, Boolean isHorizontal) {
+    public Design(Member member, String arrangementId, Integer totalArea, Integer ridgeArea, String name, Integer startMonth, Integer ridgeWidth, Integer furrowWidth, Boolean isHorizontal, Boolean isThumbnail) {
         this.member = member;
         this.arrangementId = arrangementId;
         this.totalArea = totalArea;
@@ -65,6 +67,7 @@ public class Design {
         this.ridgeWidth = ridgeWidth;
         this.furrowWidth = furrowWidth;
         this.isHorizontal = isHorizontal;
+        this.isThumbnail = isThumbnail;
         this.farmCoordinates=new ArrayList<>();
         this.cropSelections = new ArrayList<>();
     }
@@ -91,4 +94,5 @@ public class Design {
     public void updateName(String name) {
         this.name=name;
     }
+    public void updateIsThumbnail(){this.isThumbnail=!isThumbnail;}
 }

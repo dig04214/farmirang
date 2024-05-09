@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -270,7 +271,7 @@ public class DesignServiceImpl implements DesignService {
 
         // 몽고디비에 다시 업데이트
         selectedArrangement.setDesignArrangement(response.getDesignArray());
-        selectedArrangement.setCropNumberAndNameList(response.getCropCoordinateAndCropIdList());
+        selectedArrangement.setCropCoordinateAndCropIdDtoList(response.getCropCoordinateAndCropIdList());
         arrangementRepository.save(selectedArrangement);
 
         return response;
@@ -307,16 +308,16 @@ public class DesignServiceImpl implements DesignService {
             Integer cropHeight = crop.getRidgeSpacing() / 10;
 
             // 좌표 이동
-            int height = isHorizontal ? farmWidth - cropHeight : farmHeight-cropHeight;
-            int width = isHorizontal ? farmHeight-cropWidth : farmWidth-cropWidth;
+            int height = isHorizontal ? farmWidth - cropHeight : farmHeight - cropHeight;
+            int width = isHorizontal ? farmHeight - cropWidth : farmWidth - cropWidth;
             outer:
             for (int i = 0; i <= height; i++) {
                 for (int j = 0; j <= width; j++) {
                     // 작물 개수만큼 다 심거나 다 안 줄어도 좌표가 끝으로 갔으면 break
                     if (quantity <= 0) break outer;
 
-                    int h=isHorizontal ? j : i;
-                    int w=isHorizontal ? i : j;
+                    int h = isHorizontal ? j : i;
+                    int w = isHorizontal ? i : j;
 
                     if (canPlantCrop(arrangement, farmWidth, farmHeight, cropArray, cropWidth, cropHeight, w, h, crop, isHorizontal)) {
                         plantCrop(crop, cropHeight, cropWidth, h, w, cropArray, number, cropCoordinateAndCropIds, isHorizontal);
@@ -366,7 +367,8 @@ public class DesignServiceImpl implements DesignService {
                 int newHeight = h + addHeight;
                 int newWidth = w + addWidth;
 
-                if (arrangement[isHorizontal ? newWidth : newHeight][isHorizontal ? newHeight : newWidth] != 'R' || cropArray[isHorizontal ? newWidth : newHeight][isHorizontal ? newHeight : newWidth] != 0) return false;
+                if (arrangement[isHorizontal ? newWidth : newHeight][isHorizontal ? newHeight : newWidth] != 'R' || cropArray[isHorizontal ? newWidth : newHeight][isHorizontal ? newHeight : newWidth] != 0)
+                    return false;
             }
         }
         return true;
@@ -383,6 +385,7 @@ public class DesignServiceImpl implements DesignService {
         Member member = getMember(memberId);
         List<DesignListResponseDto> list = new ArrayList<>();
 
+        // TODO : 로직 수정 필요
         for (Design design : member.getDesigns()) {
             Arrangement selectedArrangement = getSelectedArrangement(design);
             list.add(DesignListResponseDto.builder()
@@ -418,7 +421,7 @@ public class DesignServiceImpl implements DesignService {
         return DesignDetailResponseDto.builder()
                 .arrangement(selectedArrangement.getArrangement())
                 .designArray(selectedArrangement.getDesignArrangement())
-                .cropNumberAndNameList(selectedArrangement.getCropNumberAndNameList())
+                .cropCoordinateAndCropIdDtoList(selectedArrangement.getCropCoordinateAndCropIdDtoList())
                 .name(design.getName())
                 .savedTime(savedTime.format(DateTimeFormatter.ofPattern("YYYY.MM.dd")))
                 .cropList(cropList)
@@ -442,7 +445,7 @@ public class DesignServiceImpl implements DesignService {
         // 배치 수정
         Arrangement selectedArrangement = getSelectedArrangement(design);
         selectedArrangement.setDesignArrangement(request.getDesignArray());
-        selectedArrangement.setCropNumberAndNameList(request.getCropNumberAndNameList());
+        selectedArrangement.setCropCoordinateAndCropIdDtoList(request.getCropNumberAndNameList());
 
         // CropSelection 기존 목록 삭제
         cropSelectionRepository.deleteAllByDesign(design);
@@ -456,6 +459,7 @@ public class DesignServiceImpl implements DesignService {
             cropSelectionRepository.saveAll(newCropSelectionList);
             return true;
         } catch (Exception e) {
+            e.printStackTrace();
             throw new BusinessExceptionHandler(ErrorCode.INSERT_ERROR);
         }
     }
@@ -473,7 +477,7 @@ public class DesignServiceImpl implements DesignService {
         Design design = getDesign(designId);
         Arrangement selectedArrangement = getSelectedArrangement(design);
         selectedArrangement.setDesignArrangement(request.getDesignArray());
-        selectedArrangement.setCropNumberAndNameList(request.getCropCoordinateAndCropIdDtoList());
+        selectedArrangement.setCropCoordinateAndCropIdDtoList(request.getCropCoordinateAndCropIdDtoList());
 
         List<CropSelection> newCropSelectionList = getNewCropSelectionList(request.getCropIdAndQuantityDtoList(), design);
         // TODO : 디버깅 하기
@@ -482,6 +486,7 @@ public class DesignServiceImpl implements DesignService {
             cropSelectionRepository.saveAll(newCropSelectionList);
             return true;
         } catch (Exception e) {
+            e.printStackTrace();
             throw new BusinessExceptionHandler(ErrorCode.INSERT_ERROR);
         }
 
@@ -522,11 +527,11 @@ public class DesignServiceImpl implements DesignService {
             arrangementRepository.deleteById(arrangementId);
             return true;
         } catch (Exception e) {
+            e.printStackTrace();
             throw new BusinessExceptionHandler(ErrorCode.DELETE_ERROR);
         }
 
     }
-
 
 
     /**
@@ -547,7 +552,6 @@ public class DesignServiceImpl implements DesignService {
     }
 
 
-
     /**
      * 디자인 이름 수정
      *
@@ -564,8 +568,78 @@ public class DesignServiceImpl implements DesignService {
             designRepository.save(design);
             return true;
         } catch (Exception e) {
+            e.printStackTrace();
             throw new BusinessExceptionHandler(ErrorCode.UPDATE_ERROR);
         }
+    }
+
+    /**
+     * 대표 디자인 수정
+     *
+     * @param designId
+     * @return
+     */
+    @Override
+    public Boolean updateThumbnailDesign(Long designId) {
+        Integer memberId = 1;
+        Member member = getMember(memberId);
+
+        // 선택한 디자인 찾아오기
+        Design newThumbnailDesign = designRepository.findByMemberAndId(member, designId)
+                .orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.DESIGN_NOT_FOUND));
+
+        // 기존 대표 디자인 찾기
+        Optional<Design> oldThumbnailOptional = getThumbnailDesign(member);
+
+        try {
+            if (oldThumbnailOptional.isPresent()) {
+                Design oldThumbnailDesign = oldThumbnailOptional.get();
+                if (!oldThumbnailDesign.getId().equals(newThumbnailDesign.getId())) {
+                    // 대표 이미지가 있는데 다른 걸 누른 경우는 그걸로 대표이미지 변경
+                    oldThumbnailDesign.updateIsThumbnail();
+                    newThumbnailDesign.updateIsThumbnail();
+                } else {
+                    // 이미 선택된 대표 이미지를 취소하는 경우
+                    oldThumbnailDesign.updateIsThumbnail();
+                }
+            } else {
+                // 대표 이미지가 없는 경우면 바로 대표이미지 설정을 하기
+                newThumbnailDesign.updateIsThumbnail();
+            }
+
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BusinessExceptionHandler(ErrorCode.UPDATE_DEIGN_THUMBNAIL_ERROR);
+        }
+    }
+
+
+    /**
+     * 대표 디자인 조회
+     *
+     * @param memberId
+     * @return
+     */
+    @Override
+    public ThumbnailDesignResponseDto selectThumbnailDesign(int memberId) {
+        Optional<Design> thumbnailDesign = getThumbnailDesign(getMember(memberId));
+        if (thumbnailDesign.isEmpty()) return null;
+        else {
+            Design design = thumbnailDesign.get();
+            Arrangement selectedArrangement = getSelectedArrangement(design);
+            return ThumbnailDesignResponseDto.builder()
+                    .designArray(selectedArrangement.getDesignArrangement())
+                    .cropCoordinateAndCropIdDtoList(selectedArrangement.getCropCoordinateAndCropIdDtoList())
+                    .build();
+        }
+    }
+
+    /**
+     * 대표 디자인 Optional 불러오기
+     */
+    private Optional<Design> getThumbnailDesign(Member member) {
+        return designRepository.findByMemberAndIsThumbnailTrue(member);
     }
 
     /**

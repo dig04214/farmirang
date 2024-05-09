@@ -27,4 +27,7 @@ public interface DesignService {
 
     Boolean updateDesignName(Long designId, DesignNameUpdateRequestDto request);
 
+    Boolean updateThumbnailDesign(Long designId);
+
+    ThumbnailDesignResponseDto selectThumbnailDesign(int memberId);
 }
