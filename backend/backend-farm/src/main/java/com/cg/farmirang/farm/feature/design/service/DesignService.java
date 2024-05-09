@@ -2,12 +2,12 @@ package com.cg.farmirang.farm.feature.design.service;
 
 import com.cg.farmirang.farm.feature.design.dto.request.*;
 import com.cg.farmirang.farm.feature.design.dto.response.*;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.constraints.NotBlank;
 
 import java.util.List;
 
 public interface DesignService {
-    public EmptyFarmCreateResponseDto insertEmptyFarm(HttpServletRequest token, EmptyFarmCreateRequestDto request);
+    public EmptyFarmCreateResponseDto insertEmptyFarm(@NotBlank Integer token, EmptyFarmCreateRequestDto request);
 
     public RecommendedDesignCreateResponseDto insertRecommendedDesign(Long designId, List<RecommendedDesignCreateRequestDto> request);
 
@@ -27,7 +27,7 @@ public interface DesignService {
 
     Boolean updateDesignName(Long designId, DesignNameUpdateRequestDto request);
 
-    Boolean updateThumbnailDesign(Long designId);
+    Boolean updateThumbnailDesign(Long designId, @NotBlank Integer integer);
 
-    ThumbnailDesignResponseDto selectThumbnailDesign(int memberId);
+    ThumbnailDesignResponseDto selectThumbnailDesign(Integer memberId);
 }

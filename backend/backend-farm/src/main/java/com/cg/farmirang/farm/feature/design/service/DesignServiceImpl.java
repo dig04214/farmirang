@@ -9,7 +9,8 @@ import com.cg.farmirang.farm.global.common.code.ErrorCode;
 import com.cg.farmirang.farm.global.exception.BusinessExceptionHandler;
 import com.google.gson.Gson;
 import jakarta.persistence.EntityManager;
-import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -45,10 +46,8 @@ public class DesignServiceImpl implements DesignService {
      */
     @Override
     @Transactional(readOnly = false)
-    public EmptyFarmCreateResponseDto insertEmptyFarm(HttpServletRequest token, EmptyFarmCreateRequestDto request) {
+    public EmptyFarmCreateResponseDto insertEmptyFarm(@NotBlank Integer memberId, EmptyFarmCreateRequestDto request) {
 
-        // TODO : 회원 확인 -> 이후에 통신 예정
-        Integer memberId = 1;
         Member member = getMember(memberId);
 
         // DB에 design 저장
@@ -577,11 +576,11 @@ public class DesignServiceImpl implements DesignService {
      * 대표 디자인 수정
      *
      * @param designId
+     * @param integer
      * @return
      */
     @Override
-    public Boolean updateThumbnailDesign(Long designId) {
-        Integer memberId = 1;
+    public Boolean updateThumbnailDesign(Long designId, @NotBlank Integer memberId) {
         Member member = getMember(memberId);
 
         // 선택한 디자인 찾아오기
@@ -622,7 +621,7 @@ public class DesignServiceImpl implements DesignService {
      * @return
      */
     @Override
-    public ThumbnailDesignResponseDto selectThumbnailDesign(int memberId) {
+    public ThumbnailDesignResponseDto selectThumbnailDesign(@NotNull Integer memberId) {
         Optional<Design> thumbnailDesign = getThumbnailDesign(getMember(memberId));
         if (thumbnailDesign.isEmpty()) return null;
         else {
