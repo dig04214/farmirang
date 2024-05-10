@@ -206,13 +206,18 @@ public class DesignServiceImpl implements DesignService {
         Design design = getDesign(designId);
 
         // 시작 달이 추천 파종시기인 작물부터 정렬
-        return getCropGetResponseDto(design);
+        List<Object> list = getCropInfoListAndRidgeAreaWidth(design);
+        return CropGetResponseDto.builder()
+                .cropList((List<CropDataDto>)list.get(0))
+                .totalRidgeArea((Integer) list.get(1))
+                .ridgeWidth((Integer) list.get(2))
+                .build();
     }
 
     /**
      * 작물 정보 리스트, 전체 넓이, 이랑 너비 불러오기
      */
-    private CropGetResponseDto getCropGetResponseDto(Design design) {
+    private List<Object> getCropInfoListAndRidgeAreaWidth(Design design) {
         List<Object[]> results = em.createQuery("SELECT t.id,t.name, " +
                         "CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN true ELSE false END AS isRecommended, " +
                         "t.ridgeSpacing, t.cropSpacing,t.ridgeSpacing * t.cropSpacing AS area " +
@@ -224,10 +229,10 @@ public class DesignServiceImpl implements DesignService {
                 .getResultList();
 
 //        List<Object[]> results = cropRepository.findCropInfoAndCropArea(String.valueOf(design.getStartMonth()));
-        List<CropForGetResponseDto> list = new ArrayList<>();
+        List<CropDataDto> list = new ArrayList<>();
 
         for (Object[] result : results) {
-            CropForGetResponseDto cropDto = CropForGetResponseDto.builder()
+            CropDataDto cropDto = CropDataDto.builder()
                     .cropId((Integer) result[0])
                     .name((String) result[1])
                     .isRecommended((boolean) result[2])
@@ -241,11 +246,13 @@ public class DesignServiceImpl implements DesignService {
             list.add(cropDto);
         }
 
-        return CropGetResponseDto.builder()
-                .cropList(list)
-                .totalRidgeArea(design.getRidgeArea())
-                .ridgeWidth(design.getRidgeWidth())
-                .build();
+        List<Object> returnList=new ArrayList<>();
+
+        returnList.add(list);
+        returnList.add(design.getRidgeArea());
+        returnList.add(design.getRidgeWidth());
+
+        return returnList;
     }
 
     /**
@@ -561,8 +568,7 @@ public class DesignServiceImpl implements DesignService {
 
 
     /**
-     * 밭 조회
-     *
+     * 커스텀용 밭 조회
      * @param designId
      * @return
      */
@@ -571,9 +577,12 @@ public class DesignServiceImpl implements DesignService {
         Design design = getDesign(designId);
 
         Arrangement selectedArrangement = getSelectedArrangement(design);
+        List<Object> list = getCropInfoListAndRidgeAreaWidth(design);
         return EmptyFarmGetResponseDto.builder()
                 .farm(selectedArrangement.getArrangement())
-                .crops(getCropGetResponseDto(design))
+                .cropList((List<CropDataDto>)list.get(0))
+                .totalRidgeArea((Integer) list.get(1))
+                .ridgeWidth((Integer) list.get(2))
                 .build();
     }
 

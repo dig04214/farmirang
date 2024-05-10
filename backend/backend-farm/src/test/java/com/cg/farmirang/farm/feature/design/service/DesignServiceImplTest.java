@@ -1,5 +1,6 @@
 package com.cg.farmirang.farm.feature.design.service;
 
+import com.cg.farmirang.farm.feature.design.dto.CropDataDto;
 import com.cg.farmirang.farm.feature.design.dto.CropNumberAndCropIdDto;
 import com.cg.farmirang.farm.feature.design.dto.FarmCoordinateDto;
 import com.cg.farmirang.farm.feature.design.dto.XYCoordinateDto;
@@ -214,6 +215,37 @@ class DesignServiceImplTest {
         // then
         assertEquals("해당 디자인을 찾을 수 없습니다.", exception.getMessage());
     }
+
+    @Test
+    @DisplayName("커스텀용 밭 조회")
+    public void select_emptyFarm(){
+        // given
+        Long designId=1L;
+
+        // when
+        EmptyFarmGetResponseDto response = designService.selectEmptyFarm(designId);
+        char[][] farm = response.getFarm();
+        List<CropDataDto> cropList = response.getCropList();
+        Integer ridgeWidth = response.getRidgeWidth();
+        Integer totalRidgeArea = response.getTotalRidgeArea();
+
+        // then
+        assertNotNull(farm);
+        for (char[] chars : farm) {
+            System.out.println(Arrays.toString(chars));
+        }
+        System.out.println("=======================");
+        assertEquals(16, cropList.size());
+        for (CropDataDto cropDataDto : cropList) {
+            System.out.println(cropDataDto.toString());
+        }
+        System.out.println("=======================");
+        System.out.println("totalRidgeArea = " + totalRidgeArea);
+        System.out.println("ridgeWidth = " + ridgeWidth);
+
+
+    }
+
 
 
     @Test

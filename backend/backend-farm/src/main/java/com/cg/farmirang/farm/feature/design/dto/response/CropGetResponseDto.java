@@ -1,16 +1,13 @@
 package com.cg.farmirang.farm.feature.design.dto.response;
 
-import com.cg.farmirang.farm.feature.design.dto.CropLengthAndAreaDto;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import com.cg.farmirang.farm.feature.design.dto.CropDataDto;
+import lombok.*;
 
 import java.util.List;
 
-@Builder @Setter @Getter @ToString
+@Builder @Data
 public class CropGetResponseDto {
-    private List<CropForGetResponseDto> cropList;
+    private List<CropDataDto> cropList;
     private Integer totalRidgeArea;
     private Integer ridgeWidth;
 }
