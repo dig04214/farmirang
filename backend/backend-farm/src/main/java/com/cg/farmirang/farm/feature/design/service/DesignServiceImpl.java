@@ -19,10 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.awt.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -49,11 +47,11 @@ public class DesignServiceImpl implements DesignService {
     @Transactional
     public EmptyFarmCreateResponseDto insertEmptyFarm(@NotBlank Integer memberId, EmptyFarmCreateRequestDto request) {
 
-        Member member = getMember(memberId);
+        Member reference = em.getReference(Member.class, memberId);
 
         // DB에 design 저장
         Design design = Design.builder()
-                .member(member)
+                .member(reference)
                 .totalArea(request.getArea())
                 .startMonth(request.getStartMonth())
                 .ridgeWidth(request.getRidgeWidth())
@@ -67,9 +65,9 @@ public class DesignServiceImpl implements DesignService {
         List<XYCoordinateDto> coordinates = request.getCoordinates();
         Collections.sort(coordinates);
 
-        int minX = 100;
+        int minX = 50;
         int maxX = 0;
-        int minY = 100;
+        int minY = 50;
         int maxY = 0;
 
         // X, Y 최대 최소 구하기
@@ -208,7 +206,7 @@ public class DesignServiceImpl implements DesignService {
         // 시작 달이 추천 파종시기인 작물부터 정렬
         List<Object> list = getCropInfoListAndRidgeAreaWidth(design);
         return CropGetResponseDto.builder()
-                .cropList((List<CropDataDto>)list.get(0))
+                .cropList((List<CropDataDto>) list.get(0))
                 .totalRidgeArea((Integer) list.get(1))
                 .ridgeWidth((Integer) list.get(2))
                 .build();
@@ -246,7 +244,7 @@ public class DesignServiceImpl implements DesignService {
             list.add(cropDto);
         }
 
-        List<Object> returnList=new ArrayList<>();
+        List<Object> returnList = new ArrayList<>();
 
         returnList.add(list);
         returnList.add(design.getRidgeArea());
@@ -407,29 +405,21 @@ public class DesignServiceImpl implements DesignService {
      * @return
      */
     @Override
-    public List<DesignListResponseDto> selectDesignList(Integer memberId) {
-        Member member = getMember(memberId);
-        List<DesignListResponseDto> list = new ArrayList<>();
+    public DesignListResponseDto selectDesignList(Integer memberId) {
+        List<DesignForListDto> list = new ArrayList<>();
 
-
-        Optional<List<Design>> optionalDesignList = designRepository.findAllByMember(member);
+        Optional<List<Design>> optionalDesignList = designRepository.findAllByMemberId(memberId);
 
         // 디자인 리스트 있는 경우만 추가
         if (optionalDesignList.isPresent()) {
             List<Design> designList = optionalDesignList.get();
             for (Design design : designList) {
                 Arrangement selectedArrangement = getSelectedArrangement(design);
-                list.add(
-                        DesignListResponseDto.builder()
-                                .arrangement(selectedArrangement.getArrangement())
-                                .name(design.getName())
-                                .savedTime(design.getUpdatedAt().format(DateTimeFormatter.ofPattern("YYYY.MM.dd")))
-                                .build()
-                );
+                list.add(DesignForListDto.toDto(design,selectedArrangement.getArrangement()));
             }
         }
 
-        return list;
+        return DesignListResponseDto.builder().designList(list).build();
     }
 
     /**
@@ -522,7 +512,7 @@ public class DesignServiceImpl implements DesignService {
         List<CropSelection> designCropSelectionList = design.getCropSelections();
 
         // 이미 CropSelection이 있을 때
-        if(!designCropSelectionList.isEmpty()){
+        if (!designCropSelectionList.isEmpty()) {
             designCropSelectionList.clear();
             designRepository.save(design);
         }
@@ -534,7 +524,12 @@ public class DesignServiceImpl implements DesignService {
                     .quantity(cropIdAndQuantityDto.getQuantity())
                     .build());
         }
-        designRepository.save(design);
+        try {
+            designRepository.save(design);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BusinessExceptionHandler(ErrorCode.UPDATE_ERROR);
+        }
     }
 
     /**
@@ -563,6 +558,7 @@ public class DesignServiceImpl implements DesignService {
 
     /**
      * 커스텀용 밭 조회
+     *
      * @param designId
      * @return
      */
@@ -574,7 +570,7 @@ public class DesignServiceImpl implements DesignService {
         List<Object> list = getCropInfoListAndRidgeAreaWidth(design);
         return EmptyFarmGetResponseDto.builder()
                 .farm(selectedArrangement.getArrangement())
-                .cropList((List<CropDataDto>)list.get(0))
+                .cropList((List<CropDataDto>) list.get(0))
                 .totalRidgeArea((Integer) list.get(1))
                 .ridgeWidth((Integer) list.get(2))
                 .build();
@@ -612,14 +608,18 @@ public class DesignServiceImpl implements DesignService {
     @Override
     @Transactional
     public Boolean updateThumbnailDesign(Long designId, @NotBlank Integer memberId) {
-        Member member = getMember(memberId);
+        Design design = getDesign(designId);
+
+        // memberId로 유효성 검사
+        if (!Objects.equals(memberId, design.getMember().getId())) {
+            throw new BusinessExceptionHandler(ErrorCode.FORBIDDEN_MEMBER);
+        }
 
         // 선택한 디자인 찾아오기
-        Design newThumbnailDesign = designRepository.findByMemberAndId(member, designId)
+        Design newThumbnailDesign = designRepository.findByMemberIdAndId(memberId, designId)
                 .orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.DESIGN_NOT_FOUND));
-
         // 기존 대표 디자인 찾기
-        Optional<Design> oldThumbnailOptional = getThumbnailDesign(member);
+        Optional<Design> oldThumbnailOptional = getThumbnailDesign(memberId);
 
         try {
             if (oldThumbnailOptional.isPresent()) {
@@ -640,7 +640,7 @@ public class DesignServiceImpl implements DesignService {
             return true;
         } catch (Exception e) {
             e.printStackTrace();
-            throw new BusinessExceptionHandler(ErrorCode.UPDATE_DEIGN_THUMBNAIL_ERROR);
+            throw new BusinessExceptionHandler(ErrorCode.UPDATE_DESIGN_THUMBNAIL_ERROR);
         }
     }
 
@@ -653,7 +653,7 @@ public class DesignServiceImpl implements DesignService {
      */
     @Override
     public ThumbnailDesignResponseDto selectThumbnailDesign(@NotNull Integer memberId) {
-        Optional<Design> thumbnailDesign = getThumbnailDesign(getMember(memberId));
+        Optional<Design> thumbnailDesign = getThumbnailDesign(memberId);
         if (thumbnailDesign.isEmpty()) return null;
         else {
             Design design = thumbnailDesign.get();
@@ -668,8 +668,8 @@ public class DesignServiceImpl implements DesignService {
     /**
      * 대표 디자인 Optional 불러오기
      */
-    private Optional<Design> getThumbnailDesign(Member member) {
-        return designRepository.findByMemberAndIsThumbnailTrue(member);
+    private Optional<Design> getThumbnailDesign(@NotBlank Integer memberId) {
+        return designRepository.findByMemberIdAndIsThumbnailTrue(memberId);
     }
 
     /**

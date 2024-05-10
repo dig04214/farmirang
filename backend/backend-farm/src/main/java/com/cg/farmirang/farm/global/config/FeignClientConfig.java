@@ -31,10 +31,14 @@ public class FeignClientConfig {
 		return (res, type) -> {
 			var returnType = TypeFactory.rawClass(type);
 			var forClassWithGenerics = ResolvableType.forClassWithGenerics(SuccessResponse.class, returnType);
+			log.info("response : {}", res.toString());
+			log.info("returnType : {}", returnType);
 
 			try {
 				return ((SuccessResponse<?>) decoder.decode(res, forClassWithGenerics.getType())).getData();
 			} catch (Exception e) {
+				log.error(Arrays.toString(e.getStackTrace()));
+				log.error("{}",111111);
 				return (ErrorResponse) decoder.decode(res, forClassWithGenerics.getType());
 			}
 		};

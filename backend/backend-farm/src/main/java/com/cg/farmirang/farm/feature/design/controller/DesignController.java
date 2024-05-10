@@ -48,9 +48,11 @@ public class DesignController {
             @ApiResponse(responseCode = "404", description = "없는 배열입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public SuccessResponse<?> createEmptyFarm(@Validated @RequestBody EmptyFarmCreateRequestDto request, @Parameter(hidden = true) @RequestHeader("Authorization") String accessToken){
-        var result=jwtClient.validateAccessToken(accessToken);
-        EmptyFarmCreateResponseDto response=designService.insertEmptyFarm(result.memberId(), request);
+    public SuccessResponse<?> createEmptyFarm(@Validated @RequestBody EmptyFarmCreateRequestDto request/*, @Parameter(hidden = true) @RequestHeader("Authorization") String accessToken*/){
+//        var result=jwtClient.validateAccessToken(accessToken);
+//        EmptyFarmCreateResponseDto response=designService.insertEmptyFarm(result.memberId(), request);
+        Integer memberId=10;
+        EmptyFarmCreateResponseDto response=designService.insertEmptyFarm(memberId, request);
 
         return SuccessResponse.builder().data(response).status(SuccessCode.INSERT_SUCCESS).build();
     }
@@ -67,7 +69,7 @@ public class DesignController {
             @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public SuccessResponse<?> getCrops(@PathVariable Long designId){
+    public SuccessResponse<?> getCrops(@PathVariable("designId") Long designId){
         CropGetResponseDto response=designService.selectCropList(designId);
         return SuccessResponse.builder().data(response).status(SuccessCode.SELECT_SUCCESS).build();
     }
@@ -85,7 +87,7 @@ public class DesignController {
             @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public SuccessResponse<?> createRecommendedDesign(@PathVariable Long designId, @Validated @RequestBody RecommendedDesignCreateRequestDto request){
+    public SuccessResponse<?> createRecommendedDesign(@PathVariable("designId") Long designId, @Validated @RequestBody RecommendedDesignCreateRequestDto request){
         RecommendedDesignCreateResponseDto response= designService.insertRecommendedDesign(designId, request);
 
         return SuccessResponse.builder().data(response).status(SuccessCode.INSERT_SUCCESS).build();
@@ -103,7 +105,7 @@ public class DesignController {
             @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public SuccessResponse<?> getFarm(@PathVariable Long designId){
+    public SuccessResponse<?> getFarm(@PathVariable("designId") Long designId){
         EmptyFarmGetResponseDto response=designService.selectEmptyFarm(designId);
         return SuccessResponse.builder().data(response).status(SuccessCode.SELECT_SUCCESS).build();
     }
@@ -121,7 +123,7 @@ public class DesignController {
             @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public SuccessResponse<?> createCustomDesign(@PathVariable Long designId, @Validated @RequestBody CustomDesignCreateRequestDto request){
+    public SuccessResponse<?> createCustomDesign(@PathVariable("designId") Long designId, @Validated @RequestBody CustomDesignCreateRequestDto request){
         Boolean response= designService.insertCustomDesign(designId, request);
 
         return SuccessResponse.builder().data(response).status(SuccessCode.INSERT_SUCCESS).build();
@@ -140,7 +142,7 @@ public class DesignController {
             @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public SuccessResponse<?> updateDesign(@PathVariable Long designId, DesignUpdateRequestDto request){
+    public SuccessResponse<?> updateDesign(@PathVariable("designId") Long designId, DesignUpdateRequestDto request){
         Boolean result = designService.updateDesign(designId, request);
         return SuccessResponse.builder().data(result).status(SuccessCode.UPDATE_SUCCESS).build();
     }
@@ -158,7 +160,7 @@ public class DesignController {
             @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public SuccessResponse<?> updateDesignName(@PathVariable Long designId, DesignNameUpdateRequestDto request){
+    public SuccessResponse<?> updateDesignName(@PathVariable("designId") Long designId, DesignNameUpdateRequestDto request){
         Boolean result = designService.updateDesignName(designId, request);
         return SuccessResponse.builder().data(result).status(SuccessCode.UPDATE_SUCCESS).build();
     }
@@ -174,9 +176,10 @@ public class DesignController {
             @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public SuccessResponse<?> getDesignList(@Parameter(hidden = true) @RequestHeader("Authorization") String accessToken){
-        var result=jwtClient.validateAccessToken(accessToken);
-        List<DesignListResponseDto> response=designService.selectDesignList(result.memberId());
+    public SuccessResponse<?> getDesignList(/*@Parameter(hidden = true) @RequestHeader("Authorization") String accessToken*/){
+//        var result=jwtClient.validateAccessToken(accessToken);
+//        DesignListResponseDto response=designService.selectDesignList(result.memberId());
+        DesignListResponseDto response=designService.selectDesignList(10);
         return SuccessResponse.builder().data(response).status(SuccessCode.SELECT_SUCCESS).build();
     }
 
@@ -192,7 +195,7 @@ public class DesignController {
             @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public SuccessResponse<?> getDesignDetail(@PathVariable Long designId){
+    public SuccessResponse<?> getDesignDetail(@PathVariable("designId") Long designId){
         DesignDetailResponseDto response = designService.selectDesign(designId);
         return SuccessResponse.builder().data(response).status(SuccessCode.SELECT_SUCCESS).build();
     }
@@ -209,7 +212,7 @@ public class DesignController {
             @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public SuccessResponse<?> deleteDesign(@PathVariable Long designId){
+    public SuccessResponse<?> deleteDesign(@PathVariable("designId") Long designId){
         Boolean result = designService.deleteDesign(designId);
         return SuccessResponse.builder().data(result).status(SuccessCode.DELETE_SUCCESS).build();
     }
@@ -226,9 +229,10 @@ public class DesignController {
             @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public SuccessResponse<?> updateThumbnailDesign(@PathVariable Long designId,@Parameter(hidden = true) @RequestHeader("Authorization") String accessToken){
-        var tokenResult=jwtClient.validateAccessToken(accessToken);
-        Boolean result = designService.updateThumbnailDesign(designId,tokenResult.memberId());
+    public SuccessResponse<?> updateThumbnailDesign(@PathVariable("designId") Long designId/*,@Parameter(hidden = true) @RequestHeader("Authorization") String accessToken*/){
+//        var tokenResult=jwtClient.validateAccessToken(accessToken);
+//        Boolean result = designService.updateThumbnailDesign(designId,tokenResult.memberId());
+        Boolean result = designService.updateThumbnailDesign(designId,10);
         return SuccessResponse.builder().data(result).status(SuccessCode.UPDATE_SUCCESS).build();
     }
 
@@ -243,9 +247,10 @@ public class DesignController {
             @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
-    public SuccessResponse<?> selectThumbnailDesign(@Parameter(hidden = true) @RequestHeader("Authorization") String accessToken){
-        var result=jwtClient.validateAccessToken(accessToken);
-        ThumbnailDesignResponseDto response=designService.selectThumbnailDesign(result.memberId());
+    public SuccessResponse<?> selectThumbnailDesign(/*@Parameter(hidden = true) @RequestHeader("Authorization") String accessToken*/){
+//        var result=jwtClient.validateAccessToken(accessToken);
+//        ThumbnailDesignResponseDto response=designService.selectThumbnailDesign(result.memberId());
+        ThumbnailDesignResponseDto response=designService.selectThumbnailDesign(10);
         return SuccessResponse.builder().data(response).status(SuccessCode.SELECT_SUCCESS).build();
     }
 

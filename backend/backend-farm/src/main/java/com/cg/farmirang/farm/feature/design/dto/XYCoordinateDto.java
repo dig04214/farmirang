@@ -1,9 +1,8 @@
 package com.cg.farmirang.farm.feature.design.dto;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
-@Data @Builder
+@Builder @Data @NoArgsConstructor(access = AccessLevel.PROTECTED) @AllArgsConstructor
 public class XYCoordinateDto implements Comparable<XYCoordinateDto>{
     private Integer x;
     private Integer y;

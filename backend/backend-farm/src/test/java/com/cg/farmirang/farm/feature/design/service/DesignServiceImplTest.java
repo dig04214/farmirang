@@ -1,9 +1,6 @@
 package com.cg.farmirang.farm.feature.design.service;
 
-import com.cg.farmirang.farm.feature.design.dto.CropDataDto;
-import com.cg.farmirang.farm.feature.design.dto.CropNumberAndCropIdDto;
-import com.cg.farmirang.farm.feature.design.dto.FarmCoordinateDto;
-import com.cg.farmirang.farm.feature.design.dto.XYCoordinateDto;
+import com.cg.farmirang.farm.feature.design.dto.*;
 import com.cg.farmirang.farm.feature.design.dto.request.DesignNameUpdateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.request.EmptyFarmCreateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.request.RecommendedDesignCreateRequestDto;
@@ -79,11 +76,11 @@ class DesignServiceImplTest {
     @Test
     @DisplayName("가로 밭 생성")
 //    @BeforeEach
-    @Rollback(value = false)
+//    @Rollback(value = false)
     public void insert_emptyFarm_horizontal() {
         // given
-        Member member = Member.builder().build();
-        Member savedMember = memberRepository.save(member);
+
+        Integer memberId=10;
 
         List<XYCoordinateDto> list = new ArrayList<>();
         list.add(XYCoordinateDto.builder().x(1).y(0).sequence(0).build());
@@ -93,7 +90,7 @@ class DesignServiceImplTest {
 
         EmptyFarmCreateRequestDto request = EmptyFarmCreateRequestDto.builder()
                 .coordinates(list)
-                .area(10000)
+                .area(2500)
                 .isVertical(false)
                 .ridgeWidth(40)
                 .furrowWidth(10)
@@ -101,7 +98,7 @@ class DesignServiceImplTest {
                 .build();
 
         // when
-        EmptyFarmCreateResponseDto response = designService.insertEmptyFarm(savedMember.getId(), request);
+        EmptyFarmCreateResponseDto response = designService.insertEmptyFarm(memberId, request);
 
         this.designId = response.getDesignId();
 
@@ -169,12 +166,13 @@ class DesignServiceImplTest {
     public void insert_recommended_design_success() {
 
         // given
-        List<RecommendedDesignCreateRequestDto> request = new ArrayList<>();
-        request.add(RecommendedDesignCreateRequestDto.builder().cropId(10).quantity(5).priority(1).build());
-        request.add(RecommendedDesignCreateRequestDto.builder().cropId(5).quantity(5).priority(1).build());
-        request.add(RecommendedDesignCreateRequestDto.builder().cropId(6).quantity(5).priority(1).build());
-        request.add(RecommendedDesignCreateRequestDto.builder().cropId(13).quantity(5).priority(1).build());
+        List<CropIdAndQuantityAndPriorityDto> cropList = new ArrayList<>();
+        cropList.add(CropIdAndQuantityAndPriorityDto.builder().cropId(10).quantity(5).priority(1).build());
+        cropList.add(CropIdAndQuantityAndPriorityDto.builder().cropId(5).quantity(5).priority(1).build());
+        cropList.add(CropIdAndQuantityAndPriorityDto.builder().cropId(6).quantity(5).priority(1).build());
+        cropList.add(CropIdAndQuantityAndPriorityDto.builder().cropId(13).quantity(5).priority(1).build());
 
+        RecommendedDesignCreateRequestDto request = RecommendedDesignCreateRequestDto.builder().cropList(cropList).build();
 
         designId = 2L;
         Design design = designRepository.findById(designId).get();
@@ -203,12 +201,10 @@ class DesignServiceImplTest {
     public void insert_recommended_design_fail() {
         Throwable exception = assertThrows(RuntimeException.class, () -> {
             // given
-            List<RecommendedDesignCreateRequestDto> request = new ArrayList<>();
-
             designId = 1L;
 
             // when
-            RecommendedDesignCreateResponseDto response = designService.insertRecommendedDesign(designId, request);
+            RecommendedDesignCreateResponseDto response = designService.insertRecommendedDesign(designId, null);
 
 
         });
@@ -246,6 +242,20 @@ class DesignServiceImplTest {
 
     }
 
+    @Test
+    @DisplayName("디자인 리스트 조회")
+    public void select_designList(){
+        // given
+        Integer memberId=10;
+
+        // when
+        DesignListResponseDto response = designService.selectDesignList(memberId);
+        List<Design> designList = designRepository.findAllByMemberId(memberId).get();
+
+        // then
+        assertEquals(designList.size(),response.getDesignList().size());
+    }
+
 
 
     @Test
@@ -263,25 +273,6 @@ class DesignServiceImplTest {
         assertEquals(updatedName, design.getName());
     }
 
-    @Test
-    public void 디자인리스트_불러오기() {
-        // given
-        Integer memberId = 1;
-
-        // when
-        List<DesignListResponseDto> response = designService.selectDesignList(memberId);
-
-        // then
-        for (DesignListResponseDto dto : response) {
-            System.out.println("--------밭과 이름--------");
-            for (char[] chars : dto.getArrangement()) {
-                System.out.println(chars.toString());
-            }
-            System.out.println("dto.getName() = " + dto.getName());
-            System.out.println("--------------------------");
-        }
-        assertEquals(6, response.size());
-    }
 
     @Test
     public void 디자인_상세보기() {
@@ -377,5 +368,13 @@ class DesignServiceImplTest {
 
         System.out.println("polygon = " + polygon.toString());
 
+    }
+
+    @Test
+    @Rollback(value = false)
+    @DisplayName("회원 생성")
+    public void create_member(){
+        Member member = Member.builder().build();
+        memberRepository.save(member);
     }
 }

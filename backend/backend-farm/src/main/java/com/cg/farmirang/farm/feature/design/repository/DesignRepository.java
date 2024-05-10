@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Optional;
 
 public interface DesignRepository  extends JpaRepository<Design, Long> {
-    Optional<Design> findByMemberAndIsThumbnailTrue(Member member);
+    Optional<Design> findByMemberIdAndIsThumbnailTrue(Integer memberId);
 
-    Optional<Design> findByMemberAndId(Member member, Long designId);
+    Optional<Design> findByMemberIdAndId(Integer memberId, Long designId);
 
-    Optional<List<Design>> findAllByMember(Member member);
+    Optional<List<Design>> findAllByMemberId(Integer memberId);
 }
