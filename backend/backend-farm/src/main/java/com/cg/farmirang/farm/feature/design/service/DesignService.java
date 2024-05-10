@@ -9,7 +9,7 @@ import java.util.List;
 public interface DesignService {
     public EmptyFarmCreateResponseDto insertEmptyFarm(@NotBlank Integer token, EmptyFarmCreateRequestDto request);
 
-    public RecommendedDesignCreateResponseDto insertRecommendedDesign(Long designId, List<RecommendedDesignCreateRequestDto> request);
+    public RecommendedDesignCreateResponseDto insertRecommendedDesign(Long designId, RecommendedDesignCreateRequestDto request);
 
     List<DesignListResponseDto> selectDesignList(Integer memberId);
 

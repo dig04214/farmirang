@@ -27,7 +27,8 @@ public class Design {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @OneToMany(mappedBy = "design", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
+    @OneToMany(mappedBy = "design", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE},
+            orphanRemoval = true)
     private List<FarmCoordinate> farmCoordinates;
 
     private String arrangementId;

@@ -264,14 +264,15 @@ public class DesignServiceImpl implements DesignService {
      */
     @Override
     @Transactional
-    public RecommendedDesignCreateResponseDto insertRecommendedDesign(Long designId, @NotBlank List<RecommendedDesignCreateRequestDto> request) {
+    public RecommendedDesignCreateResponseDto insertRecommendedDesign(Long designId, @NotBlank RecommendedDesignCreateRequestDto request) {
         Design design = getDesign(designId);
         // 밭 불러오기
         Arrangement selectedArrangement = getSelectedArrangement(design);
         List<Integer> cropIds = new ArrayList<>();
+        List<CropIdAndQuantityAndPriorityDto> cropList = request.getCropList();
 
         // 선택작물 DB 저장
-        for (RecommendedDesignCreateRequestDto selectedCrop : request) {
+        for (CropIdAndQuantityAndPriorityDto selectedCrop : cropList) {
             cropIds.add(selectedCrop.getCropId());
             Crop crop = cropRepository.findById(selectedCrop.getCropId()).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.CROP_NOT_FOUND));
             CropSelection cropSelection = CropSelection.builder()
@@ -475,26 +476,8 @@ public class DesignServiceImpl implements DesignService {
         Design design = getDesign(designId);
         design.updateName(request.getName());
 
-        // 배치 수정
-        Arrangement selectedArrangement = getSelectedArrangement(design);
-        selectedArrangement.setDesignArrangement(request.getDesignArray());
-        selectedArrangement.setCropNumberAndCropIdDtoList(request.getCropNumberAndNameList());
-
-        // CropSelection 기존 목록 삭제
-        cropSelectionRepository.deleteAllByDesign(design);
-
-        // CropSelection 새로 추가
-        List<CropSelection> newCropSelectionList = getNewCropSelectionList(request.getCropIdAndQuantityDtoList(), design);
-        // TODO : 디버깅하기
-        try {
-            designRepository.save(design);
-            arrangementRepository.save(selectedArrangement);
-            cropSelectionRepository.saveAll(newCropSelectionList);
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BusinessExceptionHandler(ErrorCode.INSERT_ERROR);
-        }
+        // 배치, CropSelection 수정
+        return updateArrangementAndCropSelection(design, request.getDesignArray(), request.getCropNumberAndNameList(), request.getCropIdAndQuantityDtoList());
     }
 
     /**
@@ -508,39 +491,50 @@ public class DesignServiceImpl implements DesignService {
     @Transactional
     public Boolean insertCustomDesign(Long designId, CustomDesignCreateRequestDto request) {
         Design design = getDesign(designId);
-        Arrangement selectedArrangement = getSelectedArrangement(design);
-        selectedArrangement.setDesignArrangement(request.getDesignArray());
-        selectedArrangement.setCropNumberAndCropIdDtoList(request.getCropNumberAndCropIdDtoList());
+        return updateArrangementAndCropSelection(design, request.getDesignArray(), request.getCropNumberAndCropIdDtoList(), request.getCropIdAndQuantityDtoList());
 
-        List<CropSelection> newCropSelectionList = getNewCropSelectionList(request.getCropIdAndQuantityDtoList(), design);
-        // TODO : 디버깅 하기
+    }
+
+    /**
+     * 작물 배치도, CropSelection 수정
+     */
+    private boolean updateArrangementAndCropSelection(Design design, int[][] designArrangement, List<CropNumberAndCropIdDto> cropNumberAndCropIdDtoList, List<CropIdAndQuantityDto> cropIdAndQuantityDtoList) {
+        Arrangement selectedArrangement = getSelectedArrangement(design);
+        selectedArrangement.setDesignArrangement(designArrangement);
+        selectedArrangement.setCropNumberAndCropIdDtoList(cropNumberAndCropIdDtoList);
+
+        // CropSelection 새로 추가
+        getNewCropSelectionList(cropIdAndQuantityDtoList, design);
+        // TODO : 디버깅하기
         try {
             arrangementRepository.save(selectedArrangement);
-            cropSelectionRepository.saveAll(newCropSelectionList);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
             throw new BusinessExceptionHandler(ErrorCode.INSERT_ERROR);
         }
-
     }
 
     /**
      * CropSelection 추가
      */
-    private List<CropSelection> getNewCropSelectionList(List<CropIdAndQuantityDto> list, Design design) {
-        List<CropSelection> cropSelections = new ArrayList<>();
+    private void getNewCropSelectionList(List<CropIdAndQuantityDto> list, Design design) {
+        List<CropSelection> designCropSelectionList = design.getCropSelections();
 
+        // 이미 CropSelection이 있을 때
+        if(!designCropSelectionList.isEmpty()){
+            designCropSelectionList.clear();
+            designRepository.save(design);
+        }
         for (CropIdAndQuantityDto cropIdAndQuantityDto : list) {
             Crop crop = cropRepository.findById(cropIdAndQuantityDto.getCropId()).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.CROP_NOT_FOUND));
-
-            cropSelections.add(CropSelection.builder()
+            designCropSelectionList.add(CropSelection.builder()
                     .design(design)
                     .crop(crop)
                     .quantity(cropIdAndQuantityDto.getQuantity())
                     .build());
         }
-        return cropSelections;
+        designRepository.save(design);
     }
 
     /**
