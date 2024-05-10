@@ -1,7 +1,6 @@
 package com.cg.farmirang.farm.feature.design.dto.request;
 
-import com.cg.farmirang.farm.feature.design.entity.Design;
-import com.cg.farmirang.farm.feature.design.entity.Member;
+import com.cg.farmirang.farm.feature.design.dto.FarmCoordinateDto;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,7 +11,7 @@ import java.util.List;
 @Getter
 @Setter
 public class EmptyFarmCreateRequestDto {
-    private List<CoordinateRequestDto> coordinates;
+    private List<FarmCoordinateDto> coordinates;
     @NotNull
     private Integer area;
     @NotNull
@@ -22,6 +21,6 @@ public class EmptyFarmCreateRequestDto {
     @NotNull
     private Integer furrowWidth;
     @NotNull
-    private Boolean isHorizontal;
+    private Boolean isVertical;
 
 }

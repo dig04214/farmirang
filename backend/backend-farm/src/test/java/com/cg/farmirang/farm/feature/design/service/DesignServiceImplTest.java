@@ -1,18 +1,14 @@
 package com.cg.farmirang.farm.feature.design.service;
 
-import com.cg.farmirang.farm.feature.design.dto.CropCoordinateAndCropIdDto;
-import com.cg.farmirang.farm.feature.design.dto.request.CoordinateRequestDto;
+import com.cg.farmirang.farm.feature.design.dto.CropNumberAndCropIdDto;
+import com.cg.farmirang.farm.feature.design.dto.FarmCoordinateDto;
 import com.cg.farmirang.farm.feature.design.dto.request.DesignNameUpdateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.request.EmptyFarmCreateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.request.RecommendedDesignCreateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.response.*;
 import com.cg.farmirang.farm.feature.design.entity.*;
 import com.cg.farmirang.farm.feature.design.repository.*;
-import com.cg.farmirang.farm.global.common.code.ErrorCode;
-import com.cg.farmirang.farm.global.exception.BusinessExceptionHandler;
 import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +21,6 @@ import java.util.*;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatException;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -34,7 +29,8 @@ class DesignServiceImplTest {
 
     @Autowired
     EntityManager em;
-    @Autowired DesignService designService;
+    @Autowired
+    DesignService designService;
     @Autowired
     DesignRepository designRepository;
     @Autowired
@@ -45,14 +41,15 @@ class DesignServiceImplTest {
     ArrangementRepository arrangementRepository;
     @Autowired
     CropRepository cropRepository;
-    @Autowired CropSelectionRepository cropSelectionRepository;
+    @Autowired
+    CropSelectionRepository cropSelectionRepository;
 
     private Long designId;
 
     @Test
     @Rollback(value = false)
-    public void 작물DB저장(){
-        List<Crop> list=new ArrayList<>();
+    public void 작물DB저장() {
+        List<Crop> list = new ArrayList<>();
 
         list.add(Crop.builder().name("감자").ridgeSpacing(50).cropSpacing(20).companionPlant("15").competetivePlant("4,7,14").sowingTime("3,4").harvestingTime("6").isRepeated(false).height(100).minTemperature(15.0).maxTemperature(25.0).minHumidity(60.0).maxHumidity(80.0).minFieldHumidity(70.0).maxFieldHumidity(90.0).build());
         list.add(Crop.builder().name("고구마").ridgeSpacing(80).cropSpacing(30).companionPlant("15").competetivePlant("").sowingTime("5").harvestingTime("10").isRepeated(true).height(20).minTemperature(15.0).maxTemperature(30.0).minHumidity(60.0).maxHumidity(70.0).minFieldHumidity(60.0).maxFieldHumidity(70.0).build());
@@ -77,27 +74,63 @@ class DesignServiceImplTest {
     }
 
 
-    // 좌표 DB 저장 후 빈 밭 배열 생성
     @Test
-    @DisplayName("빈 밭 생성")
+    @DisplayName("가로 밭 생성")
 //    @BeforeEach
     @Rollback(value = false)
-    public void insert_emptyFarm(){
+    public void insert_emptyFarm_horizontal() {
         // given
         Member member = Member.builder().build();
         Member savedMember = memberRepository.save(member);
 
-        List<CoordinateRequestDto> list=new ArrayList<>();
-        list.add(CoordinateRequestDto.builder().x(0).y(1).sequence(1).build());
-        list.add(CoordinateRequestDto.builder().x(4).y(0).sequence(2).build());
-        list.add(CoordinateRequestDto.builder().x(7).y(5).sequence(3).build());
-        list.add(CoordinateRequestDto.builder().x(3).y(6).sequence(4).build());
+        List<FarmCoordinateDto> list = new ArrayList<>();
+        list.add(FarmCoordinateDto.builder().row(0).column(10).sequence(1).build());
+        list.add(FarmCoordinateDto.builder().row(10).column(0).sequence(4).build());
+        list.add(FarmCoordinateDto.builder().row(20).column(10).sequence(3).build());
+        list.add(FarmCoordinateDto.builder().row(10).column(20).sequence(2).build());
 
         EmptyFarmCreateRequestDto request = EmptyFarmCreateRequestDto.builder()
                 .coordinates(list)
                 .area(10000)
-                .isHorizontal(false)
-                .ridgeWidth(20)
+                .isVertical(false)
+                .ridgeWidth(40)
+                .furrowWidth(10)
+                .startMonth(5)
+                .build();
+
+        // when
+        EmptyFarmCreateResponseDto response = designService.insertEmptyFarm(savedMember.getId(), request);
+
+        this.designId = response.getDesignId();
+
+        // then
+        assertNotNull(response.getFarm());
+        for (char[] chars : response.getFarm()) {
+            System.out.println(Arrays.toString(chars));
+
+        }
+    }
+
+    @Test
+    @DisplayName("세로 밭 생성")
+//    @BeforeEach
+    @Rollback(value = false)
+    public void insert_emptyFarm_vertical() {
+        // given
+        Member member = Member.builder().build();
+        Member savedMember = memberRepository.save(member);
+
+        List<FarmCoordinateDto> list = new ArrayList<>();
+        list.add(FarmCoordinateDto.builder().row(0).column(10).sequence(1).build());
+        list.add(FarmCoordinateDto.builder().row(10).column(0).sequence(4).build());
+        list.add(FarmCoordinateDto.builder().row(20).column(10).sequence(3).build());
+        list.add(FarmCoordinateDto.builder().row(10).column(20).sequence(2).build());
+
+        EmptyFarmCreateRequestDto request = EmptyFarmCreateRequestDto.builder()
+                .coordinates(list)
+                .area(10000)
+                .isVertical(true)
+                .ridgeWidth(40)
                 .furrowWidth(10)
                 .startMonth(5)
                 .build();
@@ -116,27 +149,32 @@ class DesignServiceImplTest {
     }
 
 
+
     @Test
     @DisplayName("작물 리스트 조회")
-    public void select_cropList(){
+    public void select_cropList() {
         // given
 
         // when
         CropGetResponseDto response = designService.selectCropList(designId);
 
         // then
-        assertEquals(16,response.getCropList().size());
+        assertEquals(16, response.getCropList().size());
     }
 
     @Test
     @DisplayName("추천 디자인 생성-성공")
-    public void insert_recommended_design_success(){
+    public void insert_recommended_design_success() {
 
         // given
         List<RecommendedDesignCreateRequestDto> request = new ArrayList<>();
         request.add(RecommendedDesignCreateRequestDto.builder().cropId(10).quantity(5).priority(1).build());
+        request.add(RecommendedDesignCreateRequestDto.builder().cropId(5).quantity(5).priority(1).build());
+        request.add(RecommendedDesignCreateRequestDto.builder().cropId(6).quantity(5).priority(1).build());
+        request.add(RecommendedDesignCreateRequestDto.builder().cropId(13).quantity(5).priority(1).build());
 
-        designId=14L;
+
+        designId = 19L;
         Design design = designRepository.findById(designId).get();
 
         // when
@@ -147,32 +185,35 @@ class DesignServiceImplTest {
         for (int[] ints : designArray) {
             System.out.println(Arrays.toString(ints));
         }
+        System.out.println("============================");
+        for (CropNumberAndCropIdDto dto : response.getCropNumberAndCropIdDtoList()) {
+        }
 
     }
 
     @Test
     @DisplayName("추천 디자인 생성-실패")
-    public void insert_recommended_design_fail(){
+    public void insert_recommended_design_fail() {
+        Throwable exception = assertThrows(RuntimeException.class, () -> {
+            // given
+            List<RecommendedDesignCreateRequestDto> request = new ArrayList<>();
 
-        // given
-        List<RecommendedDesignCreateRequestDto> request = new ArrayList<>();
-        request.add(RecommendedDesignCreateRequestDto.builder().cropId(10).quantity(5).priority(1).build());
+            designId = 1L;
 
-        designId=1L;
+            // when
+            RecommendedDesignCreateResponseDto response = designService.insertRecommendedDesign(designId, request);
 
-        // when
-        RecommendedDesignCreateResponseDto response = designService.insertRecommendedDesign(designId, request);
 
+        });
         // then
+        assertEquals("해당 디자인을 찾을 수 없습니다.", exception.getMessage());
     }
 
 
-
-
     @Test
-    public void 이름수정(){
+    public void 이름수정() {
         // given
-        Long designId=31L;
+        Long designId = 31L;
         String updatedName = "updated name";
         DesignNameUpdateRequestDto dto = DesignNameUpdateRequestDto.builder().name(updatedName).build();
 
@@ -181,13 +222,13 @@ class DesignServiceImplTest {
 
         // then
         Design design = designRepository.findById(designId).get();
-        assertEquals(updatedName,design.getName());
+        assertEquals(updatedName, design.getName());
     }
 
     @Test
-    public void 디자인리스트_불러오기(){
+    public void 디자인리스트_불러오기() {
         // given
-        Integer memberId=1;
+        Integer memberId = 1;
 
         // when
         List<DesignListResponseDto> response = designService.selectDesignList(memberId);
@@ -205,60 +246,20 @@ class DesignServiceImplTest {
     }
 
     @Test
-    public void 디자인_상세보기(){
+    public void 디자인_상세보기() {
         // given
-        Long designId=10L;
+        Long designId = 10L;
 
         // when
         DesignDetailResponseDto response = designService.selectDesign(designId);
 
         // then
-        assertEquals("2024.05.08",response.getSavedTime());
-    }
-
-    @Test
-    @DisplayName("추천 디자인 생성")
-    public void 추천디자인생성(){
-        // given
-        List<RecommendedDesignCreateRequestDto> cropDtoList = new ArrayList<>();
-//        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(1).quantity(5).priority(1).build());
-//        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(2).quantity(2).priority(2).build());
-//        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(3).quantity(2).priority(3).build());
-//        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(4).quantity(2).priority(4).build());
-//        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(6).quantity(2).priority(5).build());
-//        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(15).quantity(2).priority(6).build());
-        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(12).quantity(4).priority(4).build());
-        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(13).quantity(5).priority(5).build());
-        cropDtoList.add(RecommendedDesignCreateRequestDto.builder().cropId(8).quantity(5).priority(1).build());
-
-        // 가로 방향
-        Long designId=10L;
-        // 세로 방향
-//        Long designId=9L;
-
-        // when
-        RecommendedDesignCreateResponseDto response = designService.insertRecommendedDesign(designId, cropDtoList);
-        int[][] designArray = response.getDesignArray();
-        List<CropCoordinateAndCropIdDto> list = response.getCropCoordinateAndCropIdList();
-
-        // then
-        for (int[] ints : designArray) {
-            for (int anInt : ints) {
-                System.out.print(anInt+" ");
-            }
-            System.out.println();
-        }
-        System.out.println("=============================");
-        for (CropCoordinateAndCropIdDto crop : list) {
-            System.out.printf("( r : %d, c : %d, cropId : %d )\n", crop.getRow(),crop.getColumn(),crop.getCropId());
-        }
-
-
+        assertEquals("2024.05.08", response.getSavedTime());
     }
 
     @Test
     @DisplayName("대표 디자인 수정")
-    void 대표디자인_수정(){
+    void 대표디자인_수정() {
         // given
 //        Integer memberId=1;
 //        Design design = designRepository.findById(10L).get();
@@ -282,9 +283,9 @@ class DesignServiceImplTest {
 
     @Test
     @DisplayName("대표 디자인 조회")
-    void 대표디자인_조회(){
+    void 대표디자인_조회() {
         // given
-        int memberId=1;
+        int memberId = 1;
 
         // when
         ThumbnailDesignResponseDto reponse = designService.selectThumbnailDesign(memberId);
@@ -294,43 +295,45 @@ class DesignServiceImplTest {
             System.out.println(Arrays.toString(ints));
         }
 
-        for (CropCoordinateAndCropIdDto dto : reponse.getCropCoordinateAndCropIdDtoList()) {
-            System.out.printf("row : %d, col : %d, cropId : %d", dto.getRow(),dto.getColumn(),dto.getCropId());
+        for (CropNumberAndCropIdDto dto : reponse.getCropNumberAndCropIdDtoList()) {
         }
 
     }
 
     @Test
-    public void 폴리곤테스트(){
+    public void 폴리곤테스트() {
         Polygon polygon = new Polygon();
 
-        List<CoordinateRequestDto> list=new ArrayList<>();
-        list.add(CoordinateRequestDto.builder().x(1).y(0).sequence(1).build());
-        list.add(CoordinateRequestDto.builder().x(10).y(0).sequence(2).build());
-        list.add(CoordinateRequestDto.builder().x(8).y(7).sequence(3).build());
-        list.add(CoordinateRequestDto.builder().x(1).y(7).sequence(4).build());
-        int minX=100; int maxX=0; int minY=100; int maxY=0;
+        List<FarmCoordinateDto> list = new ArrayList<>();
+        list.add(FarmCoordinateDto.builder().row(1).column(0).sequence(1).build());
+        list.add(FarmCoordinateDto.builder().row(10).column(0).sequence(2).build());
+        list.add(FarmCoordinateDto.builder().row(8).column(7).sequence(3).build());
+        list.add(FarmCoordinateDto.builder().row(1).column(7).sequence(4).build());
+        int minX = 100;
+        int maxX = 0;
+        int minY = 100;
+        int maxY = 0;
 
         // X, Y 최대 최소 구하기
-        for (CoordinateRequestDto coordinate : list) {
-            minX=Math.min(minX,coordinate.getX());
-            maxX=Math.max(maxX,coordinate.getX());
-            minY=Math.min(minY,coordinate.getY());
-            maxY=Math.max(maxY,coordinate.getY());
+        for (FarmCoordinateDto coordinate : list) {
+            minX = Math.min(minX, coordinate.getRow());
+            maxX = Math.max(maxX, coordinate.getRow());
+            minY = Math.min(minY, coordinate.getColumn());
+            maxY = Math.max(maxY, coordinate.getColumn());
         }
 
-        int row=maxY-minY;
-        int column=maxX-minX;
+        int row = maxY - minY;
+        int column = maxX - minX;
 
-        char[][] farm=new char[row][column];
+        char[][] farm = new char[row][column];
 
         // 좌표값에서 최소값 빼고 좌표 DB에 저장
-        for (CoordinateRequestDto coordinate : list) {
-            int x = coordinate.getX() - minX;
-            int y = coordinate.getY() - minY;
+        for (FarmCoordinateDto coordinate : list) {
+            int x = coordinate.getRow() - minX;
+            int y = coordinate.getColumn() - minY;
 
 //            polygon.addPoint(x,y);
-            polygon.addPoint(x,Math.abs(row-y));
+            polygon.addPoint(x, Math.abs(row - y));
 
         }
 

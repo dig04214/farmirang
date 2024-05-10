@@ -1,6 +1,6 @@
 package com.cg.farmirang.farm.feature.design.entity;
 
-import com.cg.farmirang.farm.feature.design.dto.CropCoordinateAndCropIdDto;
+import com.cg.farmirang.farm.feature.design.dto.CropNumberAndCropIdDto;
 import jakarta.persistence.Id;
 import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -17,7 +17,7 @@ public class Arrangement {
     private String id;
     private char[][] arrangement;
     private int[][] designArrangement;
-    private List<CropCoordinateAndCropIdDto> cropCoordinateAndCropIdDtoList;
+    private List<CropNumberAndCropIdDto> cropNumberAndCropIdDtoList;
 
     @Builder
     public Arrangement(char[][] arrangement) {

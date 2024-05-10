@@ -34,9 +34,9 @@ public class QDesign extends EntityPathBase<Design> {
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
-    public final BooleanPath isHorizontal = createBoolean("isHorizontal");
-
     public final BooleanPath isThumbnail = createBoolean("isThumbnail");
+
+    public final BooleanPath isVertical = createBoolean("isVertical");
 
     public final QMember member;
 

@@ -8,6 +8,6 @@ import lombok.Setter;
 public class RecommendedDesignInfoDto {
     private Integer ridgeWidth;
     private Integer furrowWidth;
-    private Boolean isHorizontal;
+    private Boolean isVertical;
     private Integer startMonth;
 }

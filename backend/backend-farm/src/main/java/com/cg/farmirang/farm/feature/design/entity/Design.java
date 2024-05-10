@@ -2,11 +2,9 @@ package com.cg.farmirang.farm.feature.design.entity;
 
 import com.cg.farmirang.farm.feature.design.dto.RecommendedDesignInfoDto;
 import jakarta.persistence.*;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -42,7 +40,7 @@ public class Design {
     private Integer startMonth;
     private Integer ridgeWidth;
     private Integer furrowWidth;
-    private Boolean isHorizontal;
+    private Boolean isVertical;
 
     @ColumnDefault("false")
     private Boolean isThumbnail;
@@ -59,7 +57,7 @@ public class Design {
     private List<CropSelection> cropSelections;
 
     @Builder
-    public Design(Member member, String arrangementId, Integer totalArea, Integer ridgeArea, String name, Integer startMonth, Integer ridgeWidth, Integer furrowWidth, Boolean isHorizontal, Boolean isThumbnail) {
+    public Design(Member member, String arrangementId, Integer totalArea, Integer ridgeArea, String name, Integer startMonth, Integer ridgeWidth, Integer furrowWidth, Boolean isVertical, Boolean isThumbnail) {
         this.member = member;
         this.arrangementId = arrangementId;
         this.totalArea = totalArea;
@@ -68,7 +66,7 @@ public class Design {
         this.startMonth = startMonth;
         this.ridgeWidth = ridgeWidth;
         this.furrowWidth = furrowWidth;
-        this.isHorizontal = isHorizontal;
+        this.isVertical = isVertical;
         this.isThumbnail = false;
         this.farmCoordinates = new ArrayList<>();
         this.cropSelections = new ArrayList<>();
@@ -86,9 +84,9 @@ public class Design {
 
     public RecommendedDesignInfoDto getDesignInfo() {
         return RecommendedDesignInfoDto.builder()
-                .ridgeWidth(this.ridgeWidth)
                 .furrowWidth(this.furrowWidth)
-                .isHorizontal(this.isHorizontal)
+                .ridgeWidth(this.ridgeWidth)
+                .isVertical(this.isVertical)
                 .startMonth(this.startMonth)
                 .build();
     }

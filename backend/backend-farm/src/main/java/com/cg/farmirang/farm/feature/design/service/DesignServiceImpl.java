@@ -20,6 +20,7 @@ import java.awt.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,7 +46,7 @@ public class DesignServiceImpl implements DesignService {
      * @return
      */
     @Override
-    @Transactional(readOnly = false)
+    @Transactional
     public EmptyFarmCreateResponseDto insertEmptyFarm(@NotBlank Integer memberId, EmptyFarmCreateRequestDto request) {
 
         Member member = getMember(memberId);
@@ -57,24 +58,26 @@ public class DesignServiceImpl implements DesignService {
                 .startMonth(request.getStartMonth())
                 .ridgeWidth(request.getRidgeWidth())
                 .furrowWidth(request.getFurrowWidth())
-                .isHorizontal(request.getIsHorizontal())
+                .isVertical(request.getIsVertical())
                 .build();
 
         Design savedDesign = designRepository.save(design);
 
         // 배열 생성
-        List<CoordinateRequestDto> coordinates = request.getCoordinates();
+        List<FarmCoordinateDto> coordinates = request.getCoordinates();
+        Collections.sort(coordinates);
+
         int minX = 100;
         int maxX = 0;
         int minY = 100;
         int maxY = 0;
 
         // X, Y 최대 최소 구하기
-        for (CoordinateRequestDto coordinate : coordinates) {
-            minX = Math.min(minX, coordinate.getX());
-            maxX = Math.max(maxX, coordinate.getX());
-            minY = Math.min(minY, coordinate.getY());
-            maxY = Math.max(maxY, coordinate.getY());
+        for (FarmCoordinateDto coordinate : coordinates) {
+            minX = Math.min(minX, coordinate.getRow());
+            maxX = Math.max(maxX, coordinate.getRow());
+            minY = Math.min(minY, coordinate.getColumn());
+            maxY = Math.max(maxY, coordinate.getColumn());
         }
 
         int row = maxY - minY;
@@ -84,15 +87,15 @@ public class DesignServiceImpl implements DesignService {
         Polygon polygon = new Polygon();
 
         // 좌표값에서 최소값 빼고 좌표 DB에 저장
-        for (CoordinateRequestDto coordinate : coordinates) {
-            int x = coordinate.getX() - minX;
-            int y = coordinate.getY() - minY;
+        for (FarmCoordinateDto coordinate : coordinates) {
+            int x = coordinate.getRow() - minX;
+            int y = coordinate.getColumn() - minY;
 
             polygon.addPoint(x, Math.abs(row - y));
             FarmCoordinate farmCoordinate = FarmCoordinate.builder()
                     .design(savedDesign)
-                    .x(x)
-                    .y(Math.abs(row - y))
+                    .column(x)
+                    .row(Math.abs(row - y))
                     .sequence(coordinate.getSequence())
                     .build();
             savedDesign.addFarmCoordinate(farmCoordinate);
@@ -107,7 +110,7 @@ public class DesignServiceImpl implements DesignService {
         int farmHeightCell = farm.length;
         List<FarmCoordinate> farmCoordinates = savedDesign.getFarmCoordinates();
 
-        farm = checkRidgeAndFurrow(farm, polygon, farmWidthCell, farmHeightCell, ridgeWidth / 10, furrowWidth / 10, designInfo.getIsHorizontal(), farmCoordinates);
+        farm = checkRidgeAndFurrow(farm, polygon, farmWidthCell, farmHeightCell, ridgeWidth / 10, furrowWidth / 10, designInfo.getIsVertical(), farmCoordinates);
 
         // 몽고DB에 배열 저장
         Arrangement arrangement = arrangementRepository.save(Arrangement.builder().arrangement(farm).build());
@@ -130,11 +133,11 @@ public class DesignServiceImpl implements DesignService {
     /**
      * 이랑, 고랑, 그리고 빈칸 체크
      */
-    private char[][] checkRidgeAndFurrow(char[][] farm, Polygon polygon, int farmWidthCell, int farmHeightCell, int ridgeLengthCell, int furrowLengthCell, Boolean isHorizontal, List<FarmCoordinate> farmCoordinates) {
+    private char[][] checkRidgeAndFurrow(char[][] farm, Polygon polygon, int farmWidthCell, int farmHeightCell, int ridgeLengthCell, int furrowLengthCell, Boolean isVertical, List<FarmCoordinate> farmCoordinates) {
 
-        int R = isHorizontal ? farmWidthCell : farmHeightCell;
-        int C = isHorizontal ? farmHeightCell : farmWidthCell;
-        int limit = isHorizontal ? farmWidthCell : farmHeightCell;
+        int R = isVertical ? farmWidthCell : farmHeightCell;
+        int C = isVertical ? farmHeightCell : farmWidthCell;
+        int limit = isVertical ? farmWidthCell : farmHeightCell;
 
         int check = 0;
         int currentCount = 0;
@@ -142,7 +145,7 @@ public class DesignServiceImpl implements DesignService {
         while (check < limit) {
             for (int i = 0; i < R && check < limit; i++) {
                 for (int j = 0; j < C; j++) {
-                    farm[isHorizontal ? j : i][isHorizontal ? i : j] = (isRidge) ? isRidgeOrEmpty(isHorizontal ? i : j, isHorizontal ? j : i, polygon, R, C, farmCoordinates) ? 'R' : 'E' : 'F';
+                    farm[isVertical ? j : i][isVertical ? i : j] = (isRidge) ? isRidgeOrEmpty(isVertical ? i : j, isVertical ? j : i, polygon, R, C, farmCoordinates) ? 'R' : 'E' : 'F';
                 }
                 check++;
                 currentCount++;
@@ -187,7 +190,7 @@ public class DesignServiceImpl implements DesignService {
      */
     private boolean isPointInPolygon(int newX, int newY, List<FarmCoordinate> farmCoordinates) {
         for (FarmCoordinate farmCoordinate : farmCoordinates) {
-            if (farmCoordinate.getX() == newX && farmCoordinate.getY() == newY) return true;
+            if (farmCoordinate.getColumn() == newX && farmCoordinate.getRow() == newY) return true;
         }
         return false;
     }
@@ -278,10 +281,16 @@ public class DesignServiceImpl implements DesignService {
         // 두둑에서 알고리즘으로 배치하기
         RecommendedDesignCreateResponseDto response = createDesign(design);
 
+        // 밭 좌표 추가
+        List<FarmCoordinateDto> farmCoordinateList = new ArrayList<>();
+        for (FarmCoordinate farmCoordinate : design.getFarmCoordinates()) {
+            farmCoordinateList.add(FarmCoordinateDto.toDto(farmCoordinate));
+        }
+        response.setFarmCoordinateList(farmCoordinateList);
 
         // 몽고디비에 다시 업데이트
         selectedArrangement.setDesignArrangement(response.getDesignArray());
-        selectedArrangement.setCropCoordinateAndCropIdDtoList(response.getCropCoordinateAndCropIdList());
+        selectedArrangement.setCropNumberAndCropIdDtoList(response.getCropNumberAndCropIdDtoList());
         arrangementRepository.save(selectedArrangement);
 
         return response;
@@ -300,14 +309,14 @@ public class DesignServiceImpl implements DesignService {
 
         char[][] arrangement = getSelectedArrangement(design).getArrangement();
 
-        Boolean isHorizontal = design.getIsHorizontal();
+        Boolean isVertical = design.getIsVertical();
 
         // 밭 가로, 세로
         int farmHeight = arrangement.length;
         int farmWidth = arrangement[0].length;
 
         int[][] cropArray = new int[farmHeight][farmWidth];
-        List<CropCoordinateAndCropIdDto> cropCoordinateAndCropIds = new ArrayList<>();
+        List<CropNumberAndCropIdDto> cropNumberAndCropIdDtoList = new ArrayList<>();
 
         // 방향에 맞는 이랑의 가로, 세로
         int number = 1;
@@ -318,19 +327,19 @@ public class DesignServiceImpl implements DesignService {
             Integer cropHeight = crop.getRidgeSpacing() / 10;
 
             // 좌표 이동
-            int height = isHorizontal ? farmWidth - cropHeight : farmHeight - cropHeight;
-            int width = isHorizontal ? farmHeight - cropWidth : farmWidth - cropWidth;
+            int height = isVertical ? farmWidth - cropHeight : farmHeight - cropHeight;
+            int width = isVertical ? farmHeight - cropWidth : farmWidth - cropWidth;
             outer:
             for (int i = 0; i <= height; i++) {
                 for (int j = 0; j <= width; j++) {
                     // 작물 개수만큼 다 심거나 다 안 줄어도 좌표가 끝으로 갔으면 break
                     if (quantity <= 0) break outer;
 
-                    int h = isHorizontal ? j : i;
-                    int w = isHorizontal ? i : j;
+                    int h = isVertical ? j : i;
+                    int w = isVertical ? i : j;
 
-                    if (canPlantCrop(arrangement, farmWidth, farmHeight, cropArray, cropWidth, cropHeight, w, h, crop, isHorizontal)) {
-                        plantCrop(crop, cropHeight, cropWidth, h, w, cropArray, number, cropCoordinateAndCropIds, isHorizontal);
+                    if (canPlantCrop(arrangement, farmWidth, farmHeight, cropArray, cropWidth, cropHeight, w, h, crop, isVertical)) {
+                        plantCrop(crop, cropHeight, cropWidth, w, h, cropArray, number, cropNumberAndCropIdDtoList, isVertical);
                         number++;
                         quantity--;
                     }
@@ -342,26 +351,25 @@ public class DesignServiceImpl implements DesignService {
 
         return RecommendedDesignCreateResponseDto.builder()
                 .designArray(cropArray)
-                .cropCoordinateAndCropIdList(cropCoordinateAndCropIds)
+                .cropNumberAndCropIdDtoList(cropNumberAndCropIdDtoList)
                 .build();
     }
 
     /**
      * 작물 배치
      */
-    private static void plantCrop(CropSelectionOrderedByCropDto crop, Integer cropHeight, Integer cropWidth, int h, int w, int[][] cropArray, int number, List<CropCoordinateAndCropIdDto> cropNumberAndNameList, Boolean isHorizontal) {
-        cropNumberAndNameList.add(
-                CropCoordinateAndCropIdDto.builder()
-                        .row(isHorizontal ? w : h)
-                        .column(isHorizontal ? h : w)
+    private static void plantCrop(CropSelectionOrderedByCropDto crop, Integer cropHeight, Integer cropWidth, int w, int h, int[][] cropArray, int number, List<CropNumberAndCropIdDto> cropNumberAndCropIdDtoList, Boolean isVertical) {
+        cropNumberAndCropIdDtoList.add(
+                CropNumberAndCropIdDto.builder()
                         .cropId(crop.getCropId())
+                        .number(number)
                         .build()
         );
         for (int addHeight = 0; addHeight < cropHeight; addHeight++) {
             for (int addWidth = 0; addWidth < cropWidth; addWidth++) {
                 int newHeight = h + addHeight;
                 int newWidth = w + addWidth;
-                cropArray[isHorizontal ? newWidth : newHeight][isHorizontal ? newHeight : newWidth] = number;
+                cropArray[isVertical ? newWidth : newHeight][isVertical ? newHeight : newWidth] = number;
             }
         }
     }
@@ -369,7 +377,7 @@ public class DesignServiceImpl implements DesignService {
     /**
      * 배치 가능한 지 확인
      */
-    private boolean canPlantCrop(char[][] arrangement, int farmWidth, int farmHeight, int[][] cropArray, Integer cropWidth, Integer cropHeight, int w, int h, CropSelectionOrderedByCropDto crop, Boolean isHorizontal) {
+    private boolean canPlantCrop(char[][] arrangement, int farmWidth, int farmHeight, int[][] cropArray, Integer cropWidth, Integer cropHeight, int w, int h, CropSelectionOrderedByCropDto crop, Boolean isVertical) {
         if (w + cropWidth >= farmWidth || h + cropHeight >= farmHeight) return false;
 
         for (int addHeight = 0; addHeight < cropHeight; addHeight++) {
@@ -377,7 +385,7 @@ public class DesignServiceImpl implements DesignService {
                 int newHeight = h + addHeight;
                 int newWidth = w + addWidth;
 
-                if (arrangement[isHorizontal ? newWidth : newHeight][isHorizontal ? newHeight : newWidth] != 'R' || cropArray[isHorizontal ? newWidth : newHeight][isHorizontal ? newHeight : newWidth] != 0)
+                if (arrangement[isVertical ? newWidth : newHeight][isVertical ? newHeight : newWidth] != 'R' || cropArray[isVertical ? newWidth : newHeight][isVertical ? newHeight : newWidth] != 0)
                     return false;
             }
         }
@@ -439,7 +447,7 @@ public class DesignServiceImpl implements DesignService {
         return DesignDetailResponseDto.builder()
                 .arrangement(selectedArrangement.getArrangement())
                 .designArray(selectedArrangement.getDesignArrangement())
-                .cropCoordinateAndCropIdDtoList(selectedArrangement.getCropCoordinateAndCropIdDtoList())
+                .cropNumberAndCropIdDtoList(selectedArrangement.getCropNumberAndCropIdDtoList())
                 .name(design.getName())
                 .savedTime(savedTime.format(DateTimeFormatter.ofPattern("YYYY.MM.dd")))
                 .cropList(cropList)
@@ -463,7 +471,7 @@ public class DesignServiceImpl implements DesignService {
         // 배치 수정
         Arrangement selectedArrangement = getSelectedArrangement(design);
         selectedArrangement.setDesignArrangement(request.getDesignArray());
-        selectedArrangement.setCropCoordinateAndCropIdDtoList(request.getCropNumberAndNameList());
+        selectedArrangement.setCropNumberAndCropIdDtoList(request.getCropNumberAndNameList());
 
         // CropSelection 기존 목록 삭제
         cropSelectionRepository.deleteAllByDesign(design);
@@ -495,7 +503,7 @@ public class DesignServiceImpl implements DesignService {
         Design design = getDesign(designId);
         Arrangement selectedArrangement = getSelectedArrangement(design);
         selectedArrangement.setDesignArrangement(request.getDesignArray());
-        selectedArrangement.setCropCoordinateAndCropIdDtoList(request.getCropCoordinateAndCropIdDtoList());
+        selectedArrangement.setCropNumberAndCropIdDtoList(request.getCropNumberAndCropIdDtoList());
 
         List<CropSelection> newCropSelectionList = getNewCropSelectionList(request.getCropIdAndQuantityDtoList(), design);
         // TODO : 디버깅 하기
@@ -593,6 +601,7 @@ public class DesignServiceImpl implements DesignService {
 
     /**
      * 대표 디자인 수정
+     *
      * @param designId
      * @param memberId
      * @return
@@ -648,7 +657,7 @@ public class DesignServiceImpl implements DesignService {
             Arrangement selectedArrangement = getSelectedArrangement(design);
             return ThumbnailDesignResponseDto.builder()
                     .designArray(selectedArrangement.getDesignArrangement())
-                    .cropCoordinateAndCropIdDtoList(selectedArrangement.getCropCoordinateAndCropIdDtoList())
+                    .cropNumberAndCropIdDtoList(selectedArrangement.getCropNumberAndCropIdDtoList())
                     .build();
         }
     }
