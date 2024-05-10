@@ -1,6 +1,5 @@
 package com.cg.farmirang.farm.feature.design.entity;
 
-import com.cg.farmirang.farm.feature.design.dto.FarmCoordinateDto;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,14 +17,14 @@ public class FarmCoordinate {
     @JoinColumn(name = "design_id")
     private Design design;
 
-    private int column;
+    private int col;
     private int row;
     private int sequence;
 
     @Builder
-    public FarmCoordinate(Design design, int column, int row, int sequence) {
+    public FarmCoordinate(Design design, int col, int row, int sequence) {
         this.design = design;
-        this.column = column;
+        this.col = col;
         this.row = row;
         this.sequence = sequence;
     }

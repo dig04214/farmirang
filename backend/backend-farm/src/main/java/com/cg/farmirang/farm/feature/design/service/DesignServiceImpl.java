@@ -64,7 +64,7 @@ public class DesignServiceImpl implements DesignService {
         Design savedDesign = designRepository.save(design);
 
         // 배열 생성
-        List<FarmCoordinateDto> coordinates = request.getCoordinates();
+        List<XYCoordinateDto> coordinates = request.getCoordinates();
         Collections.sort(coordinates);
 
         int minX = 100;
@@ -73,11 +73,11 @@ public class DesignServiceImpl implements DesignService {
         int maxY = 0;
 
         // X, Y 최대 최소 구하기
-        for (FarmCoordinateDto coordinate : coordinates) {
-            minX = Math.min(minX, coordinate.getRow());
-            maxX = Math.max(maxX, coordinate.getRow());
-            minY = Math.min(minY, coordinate.getColumn());
-            maxY = Math.max(maxY, coordinate.getColumn());
+        for (XYCoordinateDto coordinate : coordinates) {
+            minX = Math.min(minX, coordinate.getX());
+            maxX = Math.max(maxX, coordinate.getY());
+            minY = Math.min(minY, coordinate.getY());
+            maxY = Math.max(maxY, coordinate.getY());
         }
 
         int row = maxY - minY;
@@ -87,14 +87,14 @@ public class DesignServiceImpl implements DesignService {
         Polygon polygon = new Polygon();
 
         // 좌표값에서 최소값 빼고 좌표 DB에 저장
-        for (FarmCoordinateDto coordinate : coordinates) {
-            int x = coordinate.getRow() - minX;
-            int y = coordinate.getColumn() - minY;
+        for (XYCoordinateDto coordinate : coordinates) {
+            int x = coordinate.getX() - minX;
+            int y = coordinate.getY() - minY;
 
             polygon.addPoint(x, Math.abs(row - y));
             FarmCoordinate farmCoordinate = FarmCoordinate.builder()
                     .design(savedDesign)
-                    .column(x)
+                    .col(x)
                     .row(Math.abs(row - y))
                     .sequence(coordinate.getSequence())
                     .build();
@@ -190,7 +190,7 @@ public class DesignServiceImpl implements DesignService {
      */
     private boolean isPointInPolygon(int newX, int newY, List<FarmCoordinate> farmCoordinates) {
         for (FarmCoordinate farmCoordinate : farmCoordinates) {
-            if (farmCoordinate.getColumn() == newX && farmCoordinate.getRow() == newY) return true;
+            if (farmCoordinate.getCol() == newX && farmCoordinate.getRow() == newY) return true;
         }
         return false;
     }

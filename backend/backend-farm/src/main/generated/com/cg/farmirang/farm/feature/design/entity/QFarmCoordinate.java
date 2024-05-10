@@ -22,15 +22,15 @@ public class QFarmCoordinate extends EntityPathBase<FarmCoordinate> {
 
     public static final QFarmCoordinate farmCoordinate = new QFarmCoordinate("farmCoordinate");
 
+    public final NumberPath<Integer> col = createNumber("col", Integer.class);
+
     public final QDesign design;
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
+    public final NumberPath<Integer> row = createNumber("row", Integer.class);
+
     public final NumberPath<Integer> sequence = createNumber("sequence", Integer.class);
-
-    public final NumberPath<Integer> x = createNumber("x", Integer.class);
-
-    public final NumberPath<Integer> y = createNumber("y", Integer.class);
 
     public QFarmCoordinate(String variable) {
         this(FarmCoordinate.class, forVariable(variable), INITS);

@@ -1,6 +1,7 @@
 package com.cg.farmirang.farm.feature.design.dto.request;
 
 import com.cg.farmirang.farm.feature.design.dto.FarmCoordinateDto;
+import com.cg.farmirang.farm.feature.design.dto.XYCoordinateDto;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,7 +12,7 @@ import java.util.List;
 @Getter
 @Setter
 public class EmptyFarmCreateRequestDto {
-    private List<FarmCoordinateDto> coordinates;
+    private List<XYCoordinateDto> coordinates;
     @NotNull
     private Integer area;
     @NotNull

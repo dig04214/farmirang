@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Builder @Getter @Setter
-public class FarmCoordinateDto implements Comparable<FarmCoordinateDto> {
+public class FarmCoordinateDto {
     private Integer row;
     private Integer column;
     private Integer sequence;
@@ -14,13 +14,9 @@ public class FarmCoordinateDto implements Comparable<FarmCoordinateDto> {
     public static FarmCoordinateDto toDto(FarmCoordinate farmCoordinate){
         return FarmCoordinateDto.builder()
                 .row(farmCoordinate.getRow())
-                .column(farmCoordinate.getColumn())
+                .column(farmCoordinate.getCol())
                 .sequence(farmCoordinate.getSequence())
                 .build();
     }
 
-    @Override
-    public int compareTo(FarmCoordinateDto o) {
-        return this.sequence-o.sequence;
-    }
 }

@@ -2,6 +2,7 @@ package com.cg.farmirang.farm.feature.design.service;
 
 import com.cg.farmirang.farm.feature.design.dto.CropNumberAndCropIdDto;
 import com.cg.farmirang.farm.feature.design.dto.FarmCoordinateDto;
+import com.cg.farmirang.farm.feature.design.dto.XYCoordinateDto;
 import com.cg.farmirang.farm.feature.design.dto.request.DesignNameUpdateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.request.EmptyFarmCreateRequestDto;
 import com.cg.farmirang.farm.feature.design.dto.request.RecommendedDesignCreateRequestDto;
@@ -83,11 +84,11 @@ class DesignServiceImplTest {
         Member member = Member.builder().build();
         Member savedMember = memberRepository.save(member);
 
-        List<FarmCoordinateDto> list = new ArrayList<>();
-        list.add(FarmCoordinateDto.builder().row(0).column(10).sequence(1).build());
-        list.add(FarmCoordinateDto.builder().row(10).column(0).sequence(4).build());
-        list.add(FarmCoordinateDto.builder().row(20).column(10).sequence(3).build());
-        list.add(FarmCoordinateDto.builder().row(10).column(20).sequence(2).build());
+        List<XYCoordinateDto> list = new ArrayList<>();
+        list.add(XYCoordinateDto.builder().x(1).y(0).sequence(0).build());
+        list.add(XYCoordinateDto.builder().x(10).y(0).sequence(1).build());
+        list.add(XYCoordinateDto.builder().x(9).y(9).sequence(2).build());
+        list.add(XYCoordinateDto.builder().x(1).y(10).sequence(3).build());
 
         EmptyFarmCreateRequestDto request = EmptyFarmCreateRequestDto.builder()
                 .coordinates(list)
@@ -120,11 +121,11 @@ class DesignServiceImplTest {
         Member member = Member.builder().build();
         Member savedMember = memberRepository.save(member);
 
-        List<FarmCoordinateDto> list = new ArrayList<>();
-        list.add(FarmCoordinateDto.builder().row(0).column(10).sequence(1).build());
-        list.add(FarmCoordinateDto.builder().row(10).column(0).sequence(4).build());
-        list.add(FarmCoordinateDto.builder().row(20).column(10).sequence(3).build());
-        list.add(FarmCoordinateDto.builder().row(10).column(20).sequence(2).build());
+        List<XYCoordinateDto> list = new ArrayList<>();
+        list.add(XYCoordinateDto.builder().x(1).y(0).sequence(0).build());
+        list.add(XYCoordinateDto.builder().x(10).y(0).sequence(1).build());
+        list.add(XYCoordinateDto.builder().x(9).y(9).sequence(2).build());
+        list.add(XYCoordinateDto.builder().x(1).y(10).sequence(3).build());
 
         EmptyFarmCreateRequestDto request = EmptyFarmCreateRequestDto.builder()
                 .coordinates(list)
@@ -174,7 +175,7 @@ class DesignServiceImplTest {
         request.add(RecommendedDesignCreateRequestDto.builder().cropId(13).quantity(5).priority(1).build());
 
 
-        designId = 19L;
+        designId = 2L;
         Design design = designRepository.findById(designId).get();
 
         // when
@@ -187,6 +188,11 @@ class DesignServiceImplTest {
         }
         System.out.println("============================");
         for (CropNumberAndCropIdDto dto : response.getCropNumberAndCropIdDtoList()) {
+            System.out.println(dto.toString());
+        }
+        System.out.println("============================");
+        for (FarmCoordinateDto farmCoordinateDto : response.getFarmCoordinateList()) {
+            System.out.printf("row : %d, col : %d\n", farmCoordinateDto.getRow(),farmCoordinateDto.getColumn());
         }
 
     }

@@ -2,6 +2,7 @@ package com.cg.farmirang.farm.feature.design.dto.response;
 
 import com.cg.farmirang.farm.feature.design.dto.CropNumberAndCropIdDto;
 import com.cg.farmirang.farm.feature.design.dto.FarmCoordinateDto;
+import com.cg.farmirang.farm.feature.design.dto.XYCoordinateDto;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
