@@ -1,12 +1,11 @@
 package com.cg.farmirang.farm.feature.design.entity;
 
 import com.cg.farmirang.farm.feature.design.dto.RecommendedDesignInfoDto;
+import com.cg.farmirang.farm.global.common.BaseTimeEntity;
 import jakarta.persistence.*;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -15,10 +14,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@NoArgsConstructor(access=AccessLevel.PROTECTED)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @EntityListeners(AuditingEntityListener.class)
-public class Design {
+public class Design extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,7 +28,8 @@ public class Design {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @OneToMany(mappedBy = "design", orphanRemoval = true)
+    @OneToMany(mappedBy = "design", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE},
+            orphanRemoval = true)
     private List<FarmCoordinate> farmCoordinates;
 
     private String arrangementId;
@@ -42,53 +42,60 @@ public class Design {
     private Integer startMonth;
     private Integer ridgeWidth;
     private Integer furrowWidth;
-    private Boolean isHorizontal;
-    @CreatedDate
-    @Column(updatable = false)
-    private LocalDateTime createdAt;
+    private Boolean isVertical;
 
-    @LastModifiedDate
-    private LocalDateTime updatedAt;
+    @ColumnDefault("false")
+    private Boolean isThumbnail;
 
     @Getter
-    @OneToMany(mappedBy = "design", orphanRemoval = true)
+    @OneToMany(mappedBy = "design", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)
     private List<CropSelection> cropSelections;
 
     @Builder
-    public Design(Member member, String arrangementId, Integer totalArea, Integer ridgeArea, String name, Integer startMonth, Integer ridgeWidth, Integer furrowWidth, Boolean isHorizontal) {
+    public Design(Member member, String arrangementId, Integer totalArea, Integer ridgeArea, String name, Integer startMonth, Integer ridgeWidth, Integer furrowWidth, Boolean isVertical, Boolean isThumbnail) {
         this.member = member;
         this.arrangementId = arrangementId;
         this.totalArea = totalArea;
         this.ridgeArea = ridgeArea;
-        this.name = name;
+        this.name = "제목 없음";
         this.startMonth = startMonth;
         this.ridgeWidth = ridgeWidth;
         this.furrowWidth = furrowWidth;
-        this.isHorizontal = isHorizontal;
-        this.farmCoordinates=new ArrayList<>();
+        this.isVertical = isVertical;
+        this.isThumbnail = false;
+        this.farmCoordinates = new ArrayList<>();
         this.cropSelections = new ArrayList<>();
     }
 
-    public void addFarmCoordinate(FarmCoordinate farmCoordinate){
+    public void addFarmCoordinate(FarmCoordinate farmCoordinate) {
         this.farmCoordinates.add(farmCoordinate);
+        farmCoordinate.updateDesign(this);
     }
-    public void addCropSelection(CropSelection cropSelection){
+
+    public void addCropSelection(CropSelection cropSelection) {
         this.cropSelections.add(cropSelection);
+        cropSelection.updateDesign(this);
     }
-    public RecommendedDesignInfoDto getDesignInfo(){
+
+    public RecommendedDesignInfoDto getDesignInfo() {
         return RecommendedDesignInfoDto.builder()
-                .ridgeWidth(this.ridgeWidth)
                 .furrowWidth(this.furrowWidth)
-                .isHorizontal(this.isHorizontal)
+                .ridgeWidth(this.ridgeWidth)
+                .isVertical(this.isVertical)
                 .startMonth(this.startMonth)
                 .build();
     }
-    public void updateArrangementIdAndRidgeArea(String arrangementId, Integer ridgeArea){
-        this.arrangementId=arrangementId;
-        this.ridgeArea=ridgeArea;
+
+    public void updateArrangementIdAndRidgeArea(String arrangementId, Integer ridgeArea) {
+        this.arrangementId = arrangementId;
+        this.ridgeArea = ridgeArea;
     }
 
     public void updateName(String name) {
-        this.name=name;
+        this.name = name;
+    }
+
+    public void updateIsThumbnail() {
+        this.isThumbnail = !isThumbnail;
     }
 }

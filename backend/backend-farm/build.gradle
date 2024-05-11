@@ -39,6 +39,15 @@ dependencies {
 	implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.3.0'
 
 	implementation group: 'com.google.code.gson', name: 'gson', version: '2.7'
+
+	// Spring Cloud Starter OpenFeign
+	implementation 'org.springframework.cloud:spring-cloud-starter-openfeign:4.1.1'
+
+}
+
+// MongoDB 파라미터 이름 못찾는 에러 해결
+compileJava {
+	options.compilerArgs << '-parameters'
 }
 
 // gradle clean 시에 QClass 디렉토리 삭제

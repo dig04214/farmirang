@@ -1,13 +1,11 @@
 package com.cg.farmirang.farm.feature.design.dto.request;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import com.cg.farmirang.farm.feature.design.dto.CropIdAndQuantityAndPriorityDto;
+import lombok.*;
 
-@Getter @Setter
-@Builder
+import java.util.List;
+
+@Data @Builder @NoArgsConstructor(access = AccessLevel.PROTECTED) @AllArgsConstructor
 public class RecommendedDesignCreateRequestDto {
-    private Integer cropId;
-    private Integer quantity;
-    private Integer priority;
+    private List<CropIdAndQuantityAndPriorityDto> cropList;
 }

@@ -3,7 +3,8 @@ package com.cg.farmirang.farm.feature.design.dto;
 import lombok.*;
 
 @Data @Builder @NoArgsConstructor(access = AccessLevel.PROTECTED) @AllArgsConstructor
-public class CropIdAndQuantityDto {
+public class CropNumberAndCropIdDto {
     private Integer cropId;
-    private Integer quantity;
+    private Integer number;
 }
+

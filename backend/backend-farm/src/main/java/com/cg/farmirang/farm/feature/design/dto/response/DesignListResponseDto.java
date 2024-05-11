@@ -1,16 +1,15 @@
 package com.cg.farmirang.farm.feature.design.dto.response;
 
+import com.cg.farmirang.farm.feature.design.dto.DesignForListDto;
 import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
-@Builder
-@Getter
-@Setter
+@Builder @Data
 public class DesignListResponseDto {
-    private char[][] arrangement;
-    private String name;
-    private LocalDateTime savedTime;
+    private List<DesignForListDto> designList;
 }

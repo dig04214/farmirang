@@ -3,8 +3,6 @@ package com.cg.farmirang.farm.feature.design.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.Comparator;
-
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -20,7 +18,7 @@ public class Crop {
     private Integer ridgeSpacing;
     private Integer cropSpacing;
     private String companionPlant;
-    private String competetivePlant;
+    private String competitivePlant;
     private String sowingTime;
     private String harvestingTime;
     private Boolean isRepeated;
@@ -32,16 +30,14 @@ public class Crop {
     private Double minFieldHumidity;
     private Double maxFieldHumidity;
 
-    @Enumerated(EnumType.STRING)
-    private Difficulty difficulty;
 
     @Builder
-    public Crop(String name, Integer ridgeSpacing, Integer cropSpacing, String companionPlant, String competetivePlant, String sowingTime, String harvestingTime, Boolean isRepeated, Integer height, Double minTemperature, Double maxTemperature, Double minHumidity, Double maxHumidity, Double minFieldHumidity, Double maxFieldHumidity, Difficulty difficulty) {
+    public Crop(String name, Integer ridgeSpacing, Integer cropSpacing, String companionPlant, String competitivePlant, String sowingTime, String harvestingTime, Boolean isRepeated, Integer height, Double minTemperature, Double maxTemperature, Double minHumidity, Double maxHumidity, Double minFieldHumidity, Double maxFieldHumidity) {
         this.name = name;
         this.ridgeSpacing = ridgeSpacing;
         this.cropSpacing = cropSpacing;
         this.companionPlant = companionPlant;
-        this.competetivePlant = competetivePlant;
+        this.competitivePlant = competitivePlant;
         this.sowingTime = sowingTime;
         this.harvestingTime = harvestingTime;
         this.isRepeated = isRepeated;
@@ -52,6 +48,5 @@ public class Crop {
         this.maxHumidity = maxHumidity;
         this.minFieldHumidity = minFieldHumidity;
         this.maxFieldHumidity = maxFieldHumidity;
-        this.difficulty = difficulty;
     }
 }

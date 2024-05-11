@@ -10,6 +10,7 @@ import java.util.List;
 
 public interface CropRepository extends JpaRepository<Crop, Integer> {
 
+    // TODO : NoSuchMethodError 뜸;;
 //    @Query("SELECT t.id,t.name, " +
 //            "CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN true ELSE false END AS isRecommended, " +
 //            "t.ridgeSpacing, t.cropSpacing,t.ridgeSpacing * t.cropSpacing AS area " +

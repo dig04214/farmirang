@@ -2,29 +2,30 @@ package com.cg.farmirang.farm.feature.design.service;
 
 import com.cg.farmirang.farm.feature.design.dto.request.*;
 import com.cg.farmirang.farm.feature.design.dto.response.*;
-import jakarta.servlet.http.HttpServletRequest;
-
-import java.util.List;
+import jakarta.validation.constraints.NotBlank;
 
 public interface DesignService {
-    public EmptyFarmCreateResponseDto insertEmptyFarm(HttpServletRequest token, EmptyFarmCreateRequestDto request);
+    public EmptyFarmCreateResponseDto insertEmptyFarm(@NotBlank Integer memberId, EmptyFarmCreateRequestDto request);
 
-    public RecommendedDesignCreateResponseDto insertRecommendedDesign(Long designId, List<RecommendedDesignCreateRequestDto> request);
+    public RecommendedDesignCreateResponseDto insertRecommendedDesign(@NotBlank Integer memberId, Long designId, RecommendedDesignCreateRequestDto request);
 
-    List<DesignListResponseDto> selectDesignList(Integer memberId);
+    DesignListResponseDto selectDesignList(@NotBlank Integer memberId);
 
-    DesignDetailResponseDto selectDesign(Long designId);
+    DesignDetailResponseDto selectDesign(@NotBlank Integer memberId, Long designId);
 
-    Boolean updateDesign(Long designId, DesignUpdateRequestDto request);
+    Boolean updateDesign(@NotBlank Integer memberId, Long designId, DesignUpdateRequestDto request);
 
-    Boolean deleteDesign(Long designId);
+    Boolean deleteDesign(@NotBlank Integer memberId, Long designId);
 
-    CropGetResponseDto selectCropList(Long designId);
+    CropGetResponseDto selectCropList(@NotBlank Integer memberId, Long designId);
 
-    EmptyFarmGetResponseDto selectEmptyFarm(Long designId);
+    EmptyFarmGetResponseDto selectEmptyFarm(@NotBlank Integer memberId, Long designId);
 
-    Boolean insertCustomDesign(Long designId, CustomDesignCreateRequestDto request);
+    Boolean insertCustomDesign(@NotBlank Integer memberId, Long designId, CustomDesignCreateRequestDto request);
 
-    Boolean updateDesignName(Long designId, DesignNameUpdateRequestDto request);
+    Boolean updateDesignName(@NotBlank Integer memberId, Long designId, DesignNameUpdateRequestDto request);
 
+    Boolean updateThumbnailDesign(Long designId, @NotBlank Integer memberId);
+
+    ThumbnailDesignResponseDto selectThumbnailDesign(@NotBlank Integer memberId);
 }
