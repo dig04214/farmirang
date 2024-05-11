@@ -6,8 +6,10 @@ export default function ChangePicture() {
       <ImageComponent
         title={"변경할 사진"}
         titlecss={""}
+        heightcss={""}
         topcss={""}
         topsecondcss={""}
+        handleEvent={() => {}}
       />
     </>
   );
