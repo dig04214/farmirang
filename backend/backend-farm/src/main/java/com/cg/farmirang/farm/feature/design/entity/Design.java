@@ -1,6 +1,7 @@
 package com.cg.farmirang.farm.feature.design.entity;
 
 import com.cg.farmirang.farm.feature.design.dto.RecommendedDesignInfoDto;
+import com.cg.farmirang.farm.global.common.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
@@ -16,7 +17,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @EntityListeners(AuditingEntityListener.class)
-public class Design {
+public class Design extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,13 +46,6 @@ public class Design {
 
     @ColumnDefault("false")
     private Boolean isThumbnail;
-
-    @CreatedDate
-    @Column(updatable = false)
-    private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    private LocalDateTime updatedAt;
 
     @Getter
     @OneToMany(mappedBy = "design", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, orphanRemoval = true)

@@ -21,7 +21,7 @@ public class QCrop extends EntityPathBase<Crop> {
 
     public final StringPath companionPlant = createString("companionPlant");
 
-    public final StringPath competetivePlant = createString("competetivePlant");
+    public final StringPath competitivePlant = createString("competitivePlant");
 
     public final NumberPath<Integer> cropSpacing = createNumber("cropSpacing", Integer.class);
 

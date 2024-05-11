@@ -196,13 +196,14 @@ public class DesignServiceImpl implements DesignService {
     /**
      * 작물 리스트 조회 - 심는 시기에 맞는 작물 우선 정렬
      *
+     * @param memberId
      * @param designId
      * @return
      */
     @Override
-    public CropGetResponseDto selectCropList(Long designId) {
+    public CropGetResponseDto selectCropList(@NotBlank Integer memberId, Long designId) {
         Design design = getDesign(designId);
-
+        checkMember(memberId, design);
         // 시작 달이 추천 파종시기인 작물부터 정렬
         List<Object> list = getCropInfoListAndRidgeAreaWidth(design);
         return CropGetResponseDto.builder()
@@ -256,14 +257,16 @@ public class DesignServiceImpl implements DesignService {
     /**
      * 디자인 추천 생성
      *
+     * @param memberId
      * @param designId
      * @param request
      * @return
      */
     @Override
     @Transactional
-    public RecommendedDesignCreateResponseDto insertRecommendedDesign(Long designId, @NotBlank RecommendedDesignCreateRequestDto request) {
+    public RecommendedDesignCreateResponseDto insertRecommendedDesign(@NotBlank Integer memberId, Long designId, @NotBlank RecommendedDesignCreateRequestDto request) {
         Design design = getDesign(designId);
+        checkMember(memberId, design);
         // 밭 불러오기
         Arrangement selectedArrangement = getSelectedArrangement(design);
         List<Integer> cropIds = new ArrayList<>();
@@ -405,17 +408,19 @@ public class DesignServiceImpl implements DesignService {
      * @return
      */
     @Override
-    public DesignListResponseDto selectDesignList(Integer memberId) {
+    public DesignListResponseDto selectDesignList(@NotBlank Integer memberId) {
         List<DesignForListDto> list = new ArrayList<>();
 
-        Optional<List<Design>> optionalDesignList = designRepository.findAllByMemberId(memberId);
+        Optional<List<Design>> optionalDesignList = designRepository.findAllByMemberIdOrderByModifiedAtDesc(memberId);
 
         // 디자인 리스트 있는 경우만 추가
         if (optionalDesignList.isPresent()) {
             List<Design> designList = optionalDesignList.get();
+
+
             for (Design design : designList) {
                 Arrangement selectedArrangement = getSelectedArrangement(design);
-                list.add(DesignForListDto.toDto(design,selectedArrangement.getArrangement()));
+                list.add(DesignForListDto.toDto(design, selectedArrangement));
             }
         }
 
@@ -425,12 +430,16 @@ public class DesignServiceImpl implements DesignService {
     /**
      * 디자인 상세보기
      *
+     * @param memberId
      * @param designId
      * @return
      */
     @Override
-    public DesignDetailResponseDto selectDesign(Long designId) {
+    public DesignDetailResponseDto selectDesign(@NotBlank Integer memberId, Long designId) {
         Design design = getDesign(designId);
+
+        // 유효성 검사
+        checkMember(memberId, design);
         Arrangement selectedArrangement = getSelectedArrangement(design);
         List<String> cropList = new ArrayList<>();
 
@@ -440,7 +449,7 @@ public class DesignServiceImpl implements DesignService {
             cropList.add(cropSelection.getCrop().getName());
         }
 
-        LocalDateTime savedTime = design.getUpdatedAt();
+        LocalDateTime savedTime = design.getModifiedAt();
 
         return DesignDetailResponseDto.builder()
                 .arrangement(selectedArrangement.getArrangement())
@@ -455,32 +464,36 @@ public class DesignServiceImpl implements DesignService {
     /**
      * 디자인 이름, 배치 수정
      *
+     * @param memberId
      * @param designId
      * @param request
      * @return
      */
     @Override
     @Transactional
-    public Boolean updateDesign(Long designId, DesignUpdateRequestDto request) {
+    public Boolean updateDesign(@NotBlank Integer memberId, Long designId, DesignUpdateRequestDto request) {
         // 이름 수정
         Design design = getDesign(designId);
+        checkMember(memberId, design);
         design.updateName(request.getName());
 
         // 배치, CropSelection 수정
-        return updateArrangementAndCropSelection(design, request.getDesignArray(), request.getCropNumberAndNameList(), request.getCropIdAndQuantityDtoList());
+        return updateArrangementAndCropSelection(design, request.getDesignArray(), request.getCropNumberAndCropIdDtoList(), request.getCropIdAndQuantityDtoList());
     }
 
     /**
      * 커스텀 디자인 추가
      *
+     * @param memberId
      * @param designId
      * @param request
      * @return
      */
     @Override
     @Transactional
-    public Boolean insertCustomDesign(Long designId, CustomDesignCreateRequestDto request) {
+    public Boolean insertCustomDesign(@NotBlank Integer memberId, Long designId, CustomDesignCreateRequestDto request) {
         Design design = getDesign(designId);
+        checkMember(memberId, design);
         return updateArrangementAndCropSelection(design, request.getDesignArray(), request.getCropNumberAndCropIdDtoList(), request.getCropIdAndQuantityDtoList());
 
     }
@@ -495,7 +508,6 @@ public class DesignServiceImpl implements DesignService {
 
         // CropSelection 새로 추가
         getNewCropSelectionList(cropIdAndQuantityDtoList, design);
-        // TODO : 디버깅하기
         try {
             arrangementRepository.save(selectedArrangement);
             return true;
@@ -535,13 +547,16 @@ public class DesignServiceImpl implements DesignService {
     /**
      * 디자인 삭제
      *
+     * @param memberId
      * @param designId
      * @return
      */
     @Override
     @Transactional
-    public Boolean deleteDesign(Long designId) {
+    public Boolean deleteDesign(@NotBlank Integer memberId, Long designId) {
         Design design = getDesign(designId);
+        checkMember(memberId, design);
+
         String arrangementId = design.getArrangementId();
 
         try {
@@ -559,12 +574,14 @@ public class DesignServiceImpl implements DesignService {
     /**
      * 커스텀용 밭 조회
      *
+     * @param memberId
      * @param designId
      * @return
      */
     @Override
-    public EmptyFarmGetResponseDto selectEmptyFarm(Long designId) {
+    public EmptyFarmGetResponseDto selectEmptyFarm(@NotBlank Integer memberId, Long designId) {
         Design design = getDesign(designId);
+        checkMember(memberId, design);
 
         Arrangement selectedArrangement = getSelectedArrangement(design);
         List<Object> list = getCropInfoListAndRidgeAreaWidth(design);
@@ -580,14 +597,16 @@ public class DesignServiceImpl implements DesignService {
     /**
      * 디자인 이름 수정
      *
+     * @param memberId
      * @param designId
      * @param request
      * @return
      */
     @Override
     @Transactional
-    public Boolean updateDesignName(Long designId, DesignNameUpdateRequestDto request) {
+    public Boolean updateDesignName(@NotBlank Integer memberId, Long designId, DesignNameUpdateRequestDto request) {
         Design design = getDesign(designId);
+        checkMember(memberId, design);
         design.updateName(request.getName());
         try {
             designRepository.save(design);
@@ -611,9 +630,7 @@ public class DesignServiceImpl implements DesignService {
         Design design = getDesign(designId);
 
         // memberId로 유효성 검사
-        if (!Objects.equals(memberId, design.getMember().getId())) {
-            throw new BusinessExceptionHandler(ErrorCode.FORBIDDEN_MEMBER);
-        }
+        checkMember(memberId, design);
 
         // 선택한 디자인 찾아오기
         Design newThumbnailDesign = designRepository.findByMemberIdAndId(memberId, designId)
@@ -662,6 +679,15 @@ public class DesignServiceImpl implements DesignService {
                     .designArray(selectedArrangement.getDesignArrangement())
                     .cropNumberAndCropIdDtoList(selectedArrangement.getCropNumberAndCropIdDtoList())
                     .build();
+        }
+    }
+
+    /**
+     * 유저 유효성 검사
+     */
+    private static void checkMember(Integer memberId, Design design) {
+        if (!Objects.equals(memberId, design.getMember().getId())) {
+            throw new BusinessExceptionHandler(ErrorCode.FORBIDDEN_MEMBER);
         }
     }
 

@@ -1,12 +1,8 @@
 package com.cg.farmirang.farm.feature.design.dto.request;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-@Builder
-@Setter
-@Getter
+@Builder @Data @NoArgsConstructor(access = AccessLevel.PROTECTED) @AllArgsConstructor
 public class DesignNameUpdateRequestDto {
     private String name;
 }

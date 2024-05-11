@@ -22,9 +22,12 @@ public class QDesign extends EntityPathBase<Design> {
 
     public static final QDesign design = new QDesign("design");
 
+    public final com.cg.farmirang.farm.global.common.QBaseTimeEntity _super = new com.cg.farmirang.farm.global.common.QBaseTimeEntity(this);
+
     public final StringPath arrangementId = createString("arrangementId");
 
-    public final DateTimePath<java.time.LocalDateTime> createdAt = createDateTime("createdAt", java.time.LocalDateTime.class);
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> createAt = _super.createAt;
 
     public final ListPath<CropSelection, QCropSelection> cropSelections = this.<CropSelection, QCropSelection>createList("cropSelections", CropSelection.class, QCropSelection.class, PathInits.DIRECT2);
 
@@ -40,6 +43,9 @@ public class QDesign extends EntityPathBase<Design> {
 
     public final QMember member;
 
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> modifiedAt = _super.modifiedAt;
+
     public final StringPath name = createString("name");
 
     public final NumberPath<Integer> ridgeArea = createNumber("ridgeArea", Integer.class);
@@ -49,8 +55,6 @@ public class QDesign extends EntityPathBase<Design> {
     public final NumberPath<Integer> startMonth = createNumber("startMonth", Integer.class);
 
     public final NumberPath<Integer> totalArea = createNumber("totalArea", Integer.class);
-
-    public final DateTimePath<java.time.LocalDateTime> updatedAt = createDateTime("updatedAt", java.time.LocalDateTime.class);
 
     public QDesign(String variable) {
         this(Design.class, forVariable(variable), INITS);

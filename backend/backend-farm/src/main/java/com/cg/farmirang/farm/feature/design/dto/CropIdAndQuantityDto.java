@@ -1,9 +1,8 @@
 package com.cg.farmirang.farm.feature.design.dto;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
-@Data @Builder
+@Data @Builder @NoArgsConstructor(access = AccessLevel.PROTECTED) @AllArgsConstructor
 public class CropIdAndQuantityDto {
     private Integer cropId;
     private Integer quantity;
