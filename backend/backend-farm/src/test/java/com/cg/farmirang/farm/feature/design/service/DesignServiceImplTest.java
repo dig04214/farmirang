@@ -153,7 +153,7 @@ class DesignServiceImplTest {
     @DisplayName("작물 리스트 조회")
     public void select_cropList() {
         // given
-
+        Integer memberId=1;
         // when
         CropGetResponseDto response = designService.selectCropList(memberId, designId);
 
@@ -173,7 +173,7 @@ class DesignServiceImplTest {
         cropList.add(CropIdAndQuantityAndPriorityDto.builder().cropId(13).quantity(5).priority(1).build());
 
         RecommendedDesignCreateRequestDto request = RecommendedDesignCreateRequestDto.builder().cropList(cropList).build();
-
+        Integer memberId=1;
         designId = 2L;
         Design design = designRepository.findById(designId).get();
 
@@ -202,7 +202,7 @@ class DesignServiceImplTest {
         Throwable exception = assertThrows(RuntimeException.class, () -> {
             // given
             designId = 1L;
-
+            Integer memberId=1;
             // when
             RecommendedDesignCreateResponseDto response = designService.insertRecommendedDesign(memberId, designId, null);
 
@@ -216,8 +216,7 @@ class DesignServiceImplTest {
     @DisplayName("커스텀용 밭 조회")
     public void select_emptyFarm(){
         // given
-        Long designId=1L;
-
+        Integer memberId=1;
         // when
         EmptyFarmGetResponseDto response = designService.selectEmptyFarm(memberId, designId);
         char[][] farm = response.getFarm();
