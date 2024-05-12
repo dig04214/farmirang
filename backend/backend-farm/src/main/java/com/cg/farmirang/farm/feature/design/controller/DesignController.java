@@ -27,15 +27,15 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/api/v1/design")
-@Tag(name = "field", description = "텃밭 디자인 API")
+@RequestMapping("/api/v1/designs")
+@Tag(name = "design", description = "텃밭 디자인 API")
 public class DesignController {
 
     private final DesignService designService;
     private final JwtClient jwtClient;
 
     // TODO : 에러 해결되면 지우기
-    Integer memberId = 1;
+    Integer memberId = 5;
 
     /**
      * 빈 밭 생성
@@ -66,7 +66,7 @@ public class DesignController {
      * @param designId
      * @return
      */
-    @GetMapping("/{designId}/crop")
+    @GetMapping("/{designId}/crops")
     @Operation(summary = "작물 정보 조회", description = "작물 선택을 위해 작물 정보를 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "작물 정보 조회에 성공했습니다.", content = {@Content(array = @ArraySchema(schema = @Schema(implementation = CropGetResponseDto.class)))}),
@@ -86,7 +86,7 @@ public class DesignController {
      * @param request
      * @return
      */
-    @PostMapping("/{designId}/recommend")
+    @PostMapping("/{designId}/recommendations")
     @Operation(summary = "추천 디자인 생성", description = "입력된 내용으로 추천 디자인을 생성합니다.")
     @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "추천 디자인 생성을 성공하였습니다.",
             content = {@Content(schema = @Schema(implementation = Boolean.class))}),
@@ -106,7 +106,7 @@ public class DesignController {
      * @param designId
      * @return
      */
-    @GetMapping("/{designId}/custom")
+    @GetMapping("/{designId}/customs")
     @Operation(summary = "커스텀용 빈 밭 조회", description = "밭 커스텀을 위해 빈 밭을 조회합니다.")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "빈 밭 조회에 성공했습니다.",
             content = {@Content(schema = @Schema(implementation = EmptyFarmGetResponseDto.class))}),
@@ -126,7 +126,7 @@ public class DesignController {
      * @param request
      * @return
      */
-    @PostMapping("/{designId}/custom")
+    @PostMapping("/{designId}/customs")
     @Operation(summary = "커스텀 디자인 생성", description = "입력된 내용으로 커스텀 디자인을 생성합니다.")
     @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "커스텀 디자인 생성을 성공하였습니다.",
             content = {@Content(schema = @Schema(implementation = Boolean.class))}),
@@ -147,7 +147,7 @@ public class DesignController {
      * @param request
      * @return
      */
-    @PutMapping("/{designId}/update")
+    @PutMapping("/{designId}/updates")
     @Operation(summary = "디자인 수정", description = "디자인을 수정합니다.")
     @ApiResponses(value = {@ApiResponse(responseCode = "204", description = "디자인 수정에 성공했습니다.",
             content = {@Content(schema = @Schema(implementation = Boolean.class))}),
@@ -167,7 +167,7 @@ public class DesignController {
      * @param request
      * @return
      */
-    @PutMapping("/{designId}/name")
+    @PutMapping("/{designId}/names")
     @Operation(summary = "디자인 이름 수정", description = "디자인 이름을 수정합니다.")
     @ApiResponses(value = {@ApiResponse(responseCode = "204", description = "디자인 이름 수정에 성공했습니다.",
             content = {@Content(schema = @Schema(implementation = Boolean.class))}),
@@ -185,7 +185,7 @@ public class DesignController {
      *
      * @return
      */
-    @GetMapping("/list")
+    @GetMapping("/lists")
     @Operation(summary = "디자인 리스트 조회", description = "회원의 디자인 리스트를 조회합니다.")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "디자인 리스트 조회에 성공했습니다.",
             content = {@Content(array = @ArraySchema(schema = @Schema(implementation = CropGetResponseDto.class)))}),

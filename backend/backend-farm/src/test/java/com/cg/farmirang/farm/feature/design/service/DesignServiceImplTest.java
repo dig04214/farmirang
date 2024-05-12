@@ -219,15 +219,15 @@ class DesignServiceImplTest {
         Integer memberId=1;
         // when
         EmptyFarmGetResponseDto response = designService.selectEmptyFarm(memberId, designId);
-        char[][] farm = response.getFarm();
+        Boolean[][] farm = response.getFarm();
         List<CropDataDto> cropList = response.getCropList();
         Integer ridgeWidth = response.getRidgeWidth();
         Integer totalRidgeArea = response.getTotalRidgeArea();
 
         // then
         assertNotNull(farm);
-        for (char[] chars : farm) {
-            System.out.println(Arrays.toString(chars));
+        for (Boolean[] booleans : farm) {
+            System.out.println(Arrays.toString(booleans));
         }
         System.out.println("=======================");
         assertEquals(16, cropList.size());
