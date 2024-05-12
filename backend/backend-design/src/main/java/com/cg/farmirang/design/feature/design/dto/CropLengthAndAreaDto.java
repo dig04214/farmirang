@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Builder @Getter @Setter
 public class CropLengthAndAreaDto {
-    private Integer ridgeSpacing;
-    private Integer cropSpacing;
+    private Integer cropHeight;
+    private Integer cropWidth;
     private Integer area;
 }

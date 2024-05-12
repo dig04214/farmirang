@@ -84,7 +84,7 @@ public class DesignController {
     @PostMapping("/{designId}/recommendations")
     @Operation(summary = "추천 디자인 생성", description = "입력된 내용으로 추천 디자인을 생성합니다.")
     @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "추천 디자인 생성을 성공하였습니다.",
-            content = {@Content(schema = @Schema(implementation = Boolean.class))}),
+            content = {@Content(schema = @Schema(implementation = RecommendedDesignCreateResponseDto.class))}),
             @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
