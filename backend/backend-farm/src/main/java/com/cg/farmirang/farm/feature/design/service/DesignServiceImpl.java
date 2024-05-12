@@ -584,9 +584,27 @@ public class DesignServiceImpl implements DesignService {
         checkMember(memberId, design);
 
         Arrangement selectedArrangement = getSelectedArrangement(design);
+        char[][] arrangement = selectedArrangement.getArrangement();
+        int R = arrangement.length;
+        int C = arrangement[0].length;
+        Boolean[][] booleanArrangement=new Boolean[R][C];
+        for (int i = 0; i < R; i++) {
+            for (int j = 0; j <C; j++) {
+                switch (arrangement[i][j]){
+                    case 'R':
+                        booleanArrangement[i][j]=true;
+                        break;
+                    default:
+                        booleanArrangement[i][j]=false;
+                        break;
+                }
+            }
+        }
+
+
         List<Object> list = getCropInfoListAndRidgeAreaWidth(design);
         return EmptyFarmGetResponseDto.builder()
-                .farm(selectedArrangement.getArrangement())
+                .farm(booleanArrangement)
                 .cropList((List<CropDataDto>) list.get(0))
                 .totalRidgeArea((Integer) list.get(1))
                 .ridgeWidth((Integer) list.get(2))

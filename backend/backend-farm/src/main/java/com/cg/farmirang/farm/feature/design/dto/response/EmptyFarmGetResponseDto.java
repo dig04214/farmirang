@@ -10,7 +10,7 @@ import java.util.List;
 
 @Builder @Data
 public class EmptyFarmGetResponseDto {
-    private char[][] farm;
+    private Boolean[][] farm;
     private List<CropDataDto> cropList;
     private Integer totalRidgeArea;
     private Integer ridgeWidth;
