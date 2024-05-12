@@ -30,10 +30,7 @@ public class SwaggerConfig {
 				.addSecuritySchemes("Refresh Token", refreshTokenSecurityScheme);
 
 		return new OpenAPI()
-				.info(new Info()
-						.title("Famirang Agency API")
-						.description("Famirang Agency API Documentation")
-						.version("0.0.1"))
+				.info(apiInfo())
 				.components(components)
 				.addSecurityItem(securityRequirement);
 
@@ -41,8 +38,8 @@ public class SwaggerConfig {
 
 	private Info apiInfo() {
 		return new Info()
-			.title("Springdoc 테스트")
-			.description("Springdoc을 사용한 Swagger UI 테스트")
+			.title("Famirang Design API")
+			.description("Famirang Design API Documentation")
 			.version("1.0.0");
 	}
 }
