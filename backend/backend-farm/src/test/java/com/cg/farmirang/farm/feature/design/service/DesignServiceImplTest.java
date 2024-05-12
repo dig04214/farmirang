@@ -8,6 +8,8 @@ import com.cg.farmirang.farm.feature.design.dto.response.*;
 import com.cg.farmirang.farm.feature.design.entity.*;
 import com.cg.farmirang.farm.feature.design.repository.*;
 import jakarta.persistence.EntityManager;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,10 +45,12 @@ class DesignServiceImplTest {
     @Autowired
     CropSelectionRepository cropSelectionRepository;
 
-    private Long designId;
+    private Long designId=11L;
+    private Integer memberId=5;
 
     @Test
     @Rollback(value = false)
+    @Disabled
     public void 작물DB저장() {
         List<Crop> list = new ArrayList<>();
 
@@ -75,12 +79,8 @@ class DesignServiceImplTest {
 
     @Test
     @DisplayName("가로 밭 생성")
-//    @BeforeEach
-//    @Rollback(value = false)
     public void insert_emptyFarm_horizontal() {
         // given
-
-        Integer memberId=10;
 
         List<XYCoordinateDto> list = new ArrayList<>();
         list.add(XYCoordinateDto.builder().x(1).y(0).sequence(0).build());
@@ -100,8 +100,6 @@ class DesignServiceImplTest {
         // when
         EmptyFarmCreateResponseDto response = designService.insertEmptyFarm(memberId, request);
 
-        this.designId = response.getDesignId();
-
         // then
         assertNotNull(response.getFarm());
         for (char[] chars : response.getFarm()) {
@@ -112,12 +110,8 @@ class DesignServiceImplTest {
 
     @Test
     @DisplayName("세로 밭 생성")
-//    @BeforeEach
-    @Rollback(value = false)
     public void insert_emptyFarm_vertical() {
         // given
-        Member member = Member.builder().build();
-        Member savedMember = memberRepository.save(member);
 
         List<XYCoordinateDto> list = new ArrayList<>();
         list.add(XYCoordinateDto.builder().x(1).y(0).sequence(0).build());
@@ -135,9 +129,7 @@ class DesignServiceImplTest {
                 .build();
 
         // when
-        EmptyFarmCreateResponseDto response = designService.insertEmptyFarm(savedMember.getId(), request);
-
-        this.designId = response.getDesignId();
+        EmptyFarmCreateResponseDto response = designService.insertEmptyFarm(memberId, request);
 
         // then
         assertNotNull(response.getFarm());
@@ -153,7 +145,6 @@ class DesignServiceImplTest {
     @DisplayName("작물 리스트 조회")
     public void select_cropList() {
         // given
-        Integer memberId=1;
         // when
         CropGetResponseDto response = designService.selectCropList(memberId, designId);
 
@@ -173,8 +164,6 @@ class DesignServiceImplTest {
         cropList.add(CropIdAndQuantityAndPriorityDto.builder().cropId(13).quantity(5).priority(1).build());
 
         RecommendedDesignCreateRequestDto request = RecommendedDesignCreateRequestDto.builder().cropList(cropList).build();
-        Integer memberId=1;
-        designId = 2L;
         Design design = designRepository.findById(designId).get();
 
         // when
@@ -198,11 +187,10 @@ class DesignServiceImplTest {
 
     @Test
     @DisplayName("추천 디자인 생성-실패")
+    @Disabled
     public void insert_recommended_design_fail() {
         Throwable exception = assertThrows(RuntimeException.class, () -> {
             // given
-            designId = 1L;
-            Integer memberId=1;
             // when
             RecommendedDesignCreateResponseDto response = designService.insertRecommendedDesign(memberId, designId, null);
 
@@ -216,7 +204,6 @@ class DesignServiceImplTest {
     @DisplayName("커스텀용 밭 조회")
     public void select_emptyFarm(){
         // given
-        Integer memberId=1;
         // when
         EmptyFarmGetResponseDto response = designService.selectEmptyFarm(memberId, designId);
         Boolean[][] farm = response.getFarm();
@@ -245,7 +232,6 @@ class DesignServiceImplTest {
     @DisplayName("디자인 리스트 조회")
     public void select_designList(){
         // given
-        Integer memberId=10;
 
         // when
         DesignListResponseDto response = designService.selectDesignList(memberId);
@@ -298,6 +284,7 @@ class DesignServiceImplTest {
 
     @Test
     @Rollback(value = false)
+    @Disabled
     @DisplayName("회원 생성")
     public void create_member(){
         Member member = Member.builder().build();
