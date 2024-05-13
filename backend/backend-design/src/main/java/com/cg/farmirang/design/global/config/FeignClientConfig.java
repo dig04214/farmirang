@@ -37,8 +37,6 @@ public class FeignClientConfig {
 			try {
 				return ((SuccessResponse<?>) decoder.decode(res, forClassWithGenerics.getType())).getData();
 			} catch (Exception e) {
-				log.error(Arrays.toString(e.getStackTrace()));
-				log.error("{}",111111);
 				return (ErrorResponse) decoder.decode(res, forClassWithGenerics.getType());
 			}
 		};
