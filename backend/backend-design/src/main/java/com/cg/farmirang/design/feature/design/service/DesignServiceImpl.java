@@ -62,7 +62,7 @@ public class DesignServiceImpl implements DesignService {
         Design savedDesign = designRepository.save(design);
 
         // 배열 생성
-        List<XYCoordinateDto> coordinates = request.getCoordinates();
+        List<FarmCoordinateDto> coordinates = request.getCoordinates();
         Collections.sort(coordinates);
 
         int minX = 50;
@@ -71,11 +71,11 @@ public class DesignServiceImpl implements DesignService {
         int maxY = 0;
 
         // X, Y 최대 최소 구하기
-        for (XYCoordinateDto coordinate : coordinates) {
-            minX = Math.min(minX, coordinate.getX());
-            maxX = Math.max(maxX, coordinate.getY());
-            minY = Math.min(minY, coordinate.getY());
-            maxY = Math.max(maxY, coordinate.getY());
+        for (FarmCoordinateDto coordinate : coordinates) {
+            minX = Math.min(minX, coordinate.getColumn());
+            maxX = Math.max(maxX, coordinate.getColumn());
+            minY = Math.min(minY, coordinate.getRow());
+            maxY = Math.max(maxY, coordinate.getRow());
         }
 
         int row = maxY - minY;
@@ -85,20 +85,7 @@ public class DesignServiceImpl implements DesignService {
         Polygon polygon = new Polygon();
 
         // 좌표값에서 최소값 빼고 좌표 DB에 저장
-        for (XYCoordinateDto coordinate : coordinates) {
-            int x = coordinate.getX() - minX;
-            int y = coordinate.getY() - minY;
-
-            polygon.addPoint(x, Math.abs(row - y));
-            FarmCoordinate farmCoordinate = FarmCoordinate.builder()
-                    .design(savedDesign)
-                    .col(x)
-                    .row(Math.abs(row - y))
-                    .sequence(coordinate.getSequence())
-                    .build();
-            savedDesign.addFarmCoordinate(farmCoordinate);
-        }
-        designRepository.save(savedDesign);
+        saveFarmCoordinate(coordinates, minX, minY, polygon, savedDesign);
         // 이랑 배열 생성
         RecommendedDesignInfoDto designInfo = savedDesign.getDesignInfo();
 
@@ -108,6 +95,7 @@ public class DesignServiceImpl implements DesignService {
         int farmHeightCell = farm.length;
         List<FarmCoordinate> farmCoordinates = savedDesign.getFarmCoordinates();
 
+        // 두둑인지 고랑인지 확인 후 R(두둑), E(두둑줄이지만 범위에 벗어나서 빈 곳), F(고랑) 표시
         farm = checkRidgeAndFurrow(farm, polygon, farmWidthCell, farmHeightCell, ridgeWidth / 10, furrowWidth / 10, designInfo.getIsVertical(), farmCoordinates);
 
         // 몽고DB에 배열 저장
@@ -125,6 +113,26 @@ public class DesignServiceImpl implements DesignService {
                 .designId(savedDesign.getId())
                 .farm(farm)
                 .build();
+    }
+
+    /**
+     * 좌표값에서 최소값 빼고 FarmCoordinate에 저장
+     */
+    private void saveFarmCoordinate(List<FarmCoordinateDto> coordinates, int minX, int minY, Polygon polygon, Design savedDesign) {
+        for (FarmCoordinateDto coordinate : coordinates) {
+            int c = coordinate.getColumn() - minX;
+            int r = coordinate.getRow() - minY;
+
+            polygon.addPoint(c, r);
+            FarmCoordinate farmCoordinate = FarmCoordinate.builder()
+                    .design(savedDesign)
+                    .col(c)
+                    .row(r)
+                    .sequence(coordinate.getSequence())
+                    .build();
+            savedDesign.addFarmCoordinate(farmCoordinate);
+        }
+        designRepository.save(savedDesign);
     }
 
 
