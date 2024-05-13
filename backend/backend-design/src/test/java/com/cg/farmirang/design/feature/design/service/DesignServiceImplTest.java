@@ -43,8 +43,8 @@ class DesignServiceImplTest {
     @Autowired
     CropSelectionRepository cropSelectionRepository;
 
-    private Long designId=11L;
-    private Integer memberId=5;
+    private Long designId=8L;
+    private Integer memberId=10;
 
     @Test
     @Rollback(value = false)
@@ -79,12 +79,11 @@ class DesignServiceImplTest {
     @DisplayName("가로 밭 생성")
     public void insert_emptyFarm_horizontal() {
         // given
-
-        List<XYCoordinateDto> list = new ArrayList<>();
-        list.add(XYCoordinateDto.builder().x(1).y(0).sequence(0).build());
-        list.add(XYCoordinateDto.builder().x(10).y(0).sequence(1).build());
-        list.add(XYCoordinateDto.builder().x(9).y(9).sequence(2).build());
-        list.add(XYCoordinateDto.builder().x(1).y(10).sequence(3).build());
+        List<FarmCoordinateDto> list = new ArrayList<>();
+        list.add(FarmCoordinateDto.builder().row(0).column(1).sequence(0).build());
+        list.add(FarmCoordinateDto.builder().row(0).column(10).sequence(1).build());
+        list.add(FarmCoordinateDto.builder().row(9).column(9).sequence(2).build());
+        list.add(FarmCoordinateDto.builder().row(10).column(1).sequence(3).build());
 
         EmptyFarmCreateRequestDto request = EmptyFarmCreateRequestDto.builder()
                 .coordinates(list)
@@ -111,11 +110,11 @@ class DesignServiceImplTest {
     public void insert_emptyFarm_vertical() {
         // given
 
-        List<XYCoordinateDto> list = new ArrayList<>();
-        list.add(XYCoordinateDto.builder().x(1).y(0).sequence(0).build());
-        list.add(XYCoordinateDto.builder().x(10).y(0).sequence(1).build());
-        list.add(XYCoordinateDto.builder().x(9).y(9).sequence(2).build());
-        list.add(XYCoordinateDto.builder().x(1).y(10).sequence(3).build());
+        List<FarmCoordinateDto> list = new ArrayList<>();
+        list.add(FarmCoordinateDto.builder().row(0).column(1).sequence(0).build());
+        list.add(FarmCoordinateDto.builder().row(0).column(10).sequence(1).build());
+        list.add(FarmCoordinateDto.builder().row(9).column(9).sequence(2).build());
+        list.add(FarmCoordinateDto.builder().row(10).column(1).sequence(3).build());
 
         EmptyFarmCreateRequestDto request = EmptyFarmCreateRequestDto.builder()
                 .coordinates(list)

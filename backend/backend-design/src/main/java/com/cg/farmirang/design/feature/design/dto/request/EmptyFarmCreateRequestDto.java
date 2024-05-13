@@ -1,13 +1,13 @@
 package com.cg.farmirang.design.feature.design.dto.request;
 
-import com.cg.farmirang.design.feature.design.dto.XYCoordinateDto;
+import com.cg.farmirang.design.feature.design.dto.FarmCoordinateDto;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.util.List;
 @Builder @Data @NoArgsConstructor(access = AccessLevel.PROTECTED) @AllArgsConstructor
 public class EmptyFarmCreateRequestDto {
-    private List<XYCoordinateDto> coordinates;
+    private List<FarmCoordinateDto> coordinates;
     @NotNull
     private Integer area;
     @NotNull
