@@ -97,6 +97,8 @@ public class DesignServiceImpl implements DesignService {
 
         // 두둑인지 고랑인지 확인 후 R(두둑), E(두둑줄이지만 범위에 벗어나서 빈 곳), F(고랑) 표시
         farm = checkRidgeAndFurrow(farm, polygon, farmWidthCell, farmHeightCell, ridgeWidth / 10, furrowWidth / 10, designInfo.getIsVertical(), farmCoordinates);
+        // Boolean 2차원 배열로 변환
+        Boolean[][] booleanArrangement = getBooleanArrangement(farm.length, farm[0].length, farm);
 
         // 몽고DB에 배열 저장
         Arrangement arrangement = arrangementRepository.save(Arrangement.builder().arrangement(farm).build());
@@ -111,7 +113,7 @@ public class DesignServiceImpl implements DesignService {
 
         return EmptyFarmCreateResponseDto.builder()
                 .designId(savedDesign.getId())
-                .farm(farm)
+                .farm(booleanArrangement)
                 .build();
     }
 
@@ -235,7 +237,6 @@ public class DesignServiceImpl implements DesignService {
                 .setParameter("substring", design.getStartMonth().toString())
                 .getResultList();
 
-//        List<Object[]> results = cropRepository.findCropInfoAndCropArea(String.valueOf(design.getStartMonth()));
         List<CropDataDto> list = new ArrayList<>();
 
         for (Object[] result : results) {
@@ -318,7 +319,6 @@ public class DesignServiceImpl implements DesignService {
      */
     private RecommendedDesignCreateResponseDto createDesign(Design design) {
         Long designId = design.getId();
-        // TODO : 수확시기를 생각해 비슷한 수확시기의 작물끼리 모으기 => 이건..조금 나중에
         // 작물 길이, 그리고 1m 기준으로 그룹 생성 후 연작 가능한 것, 파종 시기 있는 것, 우선순위 순으로 나열
         List<CropSelectionOrderedByCropDto> cropList = cropSelectionRepository.findByCropHeightGreaterThanEqual100(designId, design.getStartMonth().toString());
         // 1m 미만
@@ -355,7 +355,7 @@ public class DesignServiceImpl implements DesignService {
                     int h = isVertical ? j : i;
                     int w = isVertical ? i : j;
 
-                    if (canPlantCrop(arrangement, farmWidth, farmHeight, cropArray, cropWidth, cropHeight, w, h, crop, isVertical)) {
+                    if (canPlantCrop(arrangement, farmWidth, farmHeight, cropArray, cropWidth, cropHeight, w, h, isVertical)) {
                         plantCrop(crop, cropHeight, cropWidth, w, h, cropArray, number, cropNumberAndCropIdDtoList, isVertical);
                         number++;
                         quantity--;
@@ -394,7 +394,7 @@ public class DesignServiceImpl implements DesignService {
     /**
      * 배치 가능한 지 확인
      */
-    private boolean canPlantCrop(char[][] arrangement, int farmWidth, int farmHeight, int[][] cropArray, Integer cropWidth, Integer cropHeight, int w, int h, CropSelectionOrderedByCropDto crop, Boolean isVertical) {
+    private boolean canPlantCrop(char[][] arrangement, int farmWidth, int farmHeight, int[][] cropArray, Integer cropWidth, Integer cropHeight, int w, int h, Boolean isVertical) {
         if (w + cropWidth >= farmWidth || h + cropHeight >= farmHeight) return false;
 
         for (int addHeight = 0; addHeight < cropHeight; addHeight++) {
@@ -464,7 +464,7 @@ public class DesignServiceImpl implements DesignService {
                 .designArray(selectedArrangement.getDesignArrangement())
                 .cropNumberAndCropIdDtoList(selectedArrangement.getCropNumberAndCropIdDtoList())
                 .name(design.getName())
-                .savedTime(savedTime.format(DateTimeFormatter.ofPattern("YYYY.MM.dd")))
+                .savedTime(savedTime.format(DateTimeFormatter.ofPattern("yyyy.MM.dd")))
                 .cropList(cropList)
                 .build();
     }
@@ -595,9 +595,22 @@ public class DesignServiceImpl implements DesignService {
         char[][] arrangement = selectedArrangement.getArrangement();
         int R = arrangement.length;
         int C = arrangement[0].length;
+        Boolean[][] booleanArrangement = getBooleanArrangement(R, C, arrangement);
+
+
+        List<Object> list = getCropInfoListAndRidgeAreaWidth(design);
+        return EmptyFarmGetResponseDto.builder()
+                .farm(booleanArrangement)
+                .cropList((List<CropDataDto>) list.get(0))
+                .totalRidgeArea((Integer) list.get(1))
+                .ridgeWidth((Integer) list.get(2))
+                .build();
+    }
+
+    private static Boolean[][] getBooleanArrangement(int R, int C, char[][] arrangement) {
         Boolean[][] booleanArrangement=new Boolean[R][C];
         for (int i = 0; i < R; i++) {
-            for (int j = 0; j <C; j++) {
+            for (int j = 0; j < C; j++) {
                 switch (arrangement[i][j]){
                     case 'R':
                         booleanArrangement[i][j]=true;
@@ -608,15 +621,7 @@ public class DesignServiceImpl implements DesignService {
                 }
             }
         }
-
-
-        List<Object> list = getCropInfoListAndRidgeAreaWidth(design);
-        return EmptyFarmGetResponseDto.builder()
-                .farm(booleanArrangement)
-                .cropList((List<CropDataDto>) list.get(0))
-                .totalRidgeArea((Integer) list.get(1))
-                .ridgeWidth((Integer) list.get(2))
-                .build();
+        return booleanArrangement;
     }
 
 
@@ -722,13 +727,6 @@ public class DesignServiceImpl implements DesignService {
      */
     private Optional<Design> getThumbnailDesign(@NotBlank Integer memberId) {
         return designRepository.findByMemberIdAndIsThumbnailTrue(memberId);
-    }
-
-    /**
-     * 유저 불러오기
-     */
-    private Member getMember(Integer memberId) {
-        return memberRepository.findById(memberId).orElseThrow(() -> new BusinessExceptionHandler(ErrorCode.MEMBER_NOT_FOUND));
     }
 
     /**
