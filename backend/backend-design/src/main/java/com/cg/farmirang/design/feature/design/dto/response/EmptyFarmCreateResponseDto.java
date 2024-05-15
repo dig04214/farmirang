@@ -9,5 +9,5 @@ import lombok.Setter;
 @Setter
 public class EmptyFarmCreateResponseDto {
     private Long designId;
-    private char[][] farm;
+    private Boolean[][] farm;
 }
