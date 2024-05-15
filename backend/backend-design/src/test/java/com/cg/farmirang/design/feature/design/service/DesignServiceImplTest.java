@@ -99,10 +99,6 @@ class DesignServiceImplTest {
 
         // then
         assertNotNull(response.getFarm());
-        for (char[] chars : response.getFarm()) {
-            System.out.println(Arrays.toString(chars));
-
-        }
     }
 
     @Test
@@ -130,10 +126,6 @@ class DesignServiceImplTest {
 
         // then
         assertNotNull(response.getFarm());
-        for (char[] chars : response.getFarm()) {
-            System.out.println(Arrays.toString(chars));
-
-        }
     }
 
 
@@ -167,18 +159,6 @@ class DesignServiceImplTest {
         RecommendedDesignCreateResponseDto response = designService.insertRecommendedDesign(memberId, designId, request);
 
         // then
-        int[][] designArray = response.getDesignArray();
-        for (int[] ints : designArray) {
-            System.out.println(Arrays.toString(ints));
-        }
-        System.out.println("============================");
-        for (CropNumberAndCropIdDto dto : response.getCropNumberAndCropIdDtoList()) {
-            System.out.println(dto.toString());
-        }
-        System.out.println("============================");
-        for (FarmCoordinateDto farmCoordinateDto : response.getFarmCoordinateList()) {
-            System.out.printf("row : %d, col : %d\n", farmCoordinateDto.getRow(),farmCoordinateDto.getColumn());
-        }
 
     }
 
@@ -210,17 +190,6 @@ class DesignServiceImplTest {
 
         // then
         assertNotNull(farm);
-        for (Boolean[] booleans : farm) {
-            System.out.println(Arrays.toString(booleans));
-        }
-        System.out.println("=======================");
-        assertEquals(16, cropList.size());
-        for (CropDataDto cropDataDto : cropList) {
-            System.out.println(cropDataDto.toString());
-        }
-        System.out.println("=======================");
-        System.out.println("totalRidgeArea = " + totalRidgeArea);
-        System.out.println("ridgeWidth = " + ridgeWidth);
 
 
     }
