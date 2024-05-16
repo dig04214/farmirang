@@ -127,7 +127,7 @@ public class DesignController {
     })
     public SuccessResponse<?> createCustomDesign(@PathVariable("designId") Long designId, @Validated @RequestBody CustomDesignCreateRequestDto request, @Parameter(hidden = true) @RequestHeader("Authorization") String accessToken) {
                 var result=jwtClient.validateAccessToken(accessToken);
-        Boolean response = designService.insertCustomDesign(result.memberId(), designId, request);
+        CustomDesignCreateResponseDto response = designService.insertCustomDesign(result.memberId(), designId, request);
 
         return SuccessResponse.builder().data(response).status(SuccessCode.INSERT_SUCCESS).build();
     }
@@ -199,7 +199,7 @@ public class DesignController {
     @GetMapping("/{designId}")
     @Operation(summary = "디자인 상세조회", description = "선택된 디자인을 상세조회합니다.")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "디자인 상세조회에 성공했습니다.",
-            content = {@Content(schema = @Schema(implementation = DesignListResponseDto.class))}),
+            content = {@Content(schema = @Schema(implementation = DesignDetailResponseDto.class))}),
             @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
@@ -255,7 +255,7 @@ public class DesignController {
     @GetMapping("/thumbnails")
     @Operation(summary = "대표 디자인 조회", description = "대표 디자인 조회")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "대표 디자인 조회에 성공했습니다.",
-            content = {@Content(schema = @Schema(implementation = DesignListResponseDto.class))}),
+            content = {@Content(schema = @Schema(implementation = ThumbnailDesignResponseDto.class))}),
             @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })

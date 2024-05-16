@@ -1,5 +1,6 @@
 package com.cg.farmirang.design.feature.design.service;
 
+import com.cg.farmirang.design.feature.design.controller.CustomDesignCreateResponseDto;
 import com.cg.farmirang.design.feature.design.dto.request.*;
 import com.cg.farmirang.design.feature.design.dto.response.*;
 import jakarta.validation.constraints.NotBlank;
@@ -21,7 +22,7 @@ public interface DesignService {
 
     EmptyFarmGetResponseDto selectEmptyFarm(@NotBlank Integer memberId, Long designId);
 
-    Boolean insertCustomDesign(@NotBlank Integer memberId, Long designId, CustomDesignCreateRequestDto request);
+    CustomDesignCreateResponseDto insertCustomDesign(@NotBlank Integer memberId, Long designId, CustomDesignCreateRequestDto request);
 
     Boolean updateDesignName(@NotBlank Integer memberId, Long designId, DesignNameUpdateRequestDto request);
 

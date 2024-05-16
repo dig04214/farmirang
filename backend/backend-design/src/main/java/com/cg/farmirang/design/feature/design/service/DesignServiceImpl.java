@@ -1,5 +1,6 @@
 package com.cg.farmirang.design.feature.design.service;
 
+import com.cg.farmirang.design.feature.design.controller.CustomDesignCreateResponseDto;
 import com.cg.farmirang.design.feature.design.dto.*;
 import com.cg.farmirang.design.feature.design.dto.request.*;
 import com.cg.farmirang.design.feature.design.dto.response.*;
@@ -456,11 +457,13 @@ public class DesignServiceImpl implements DesignService {
         for (CropSelection cropSelection : cropSelections) {
             cropList.add(cropSelection.getCrop().getName());
         }
+        char[][] arrangement = selectedArrangement.getArrangement();
+        Boolean[][] farm = getBooleanArrangement(arrangement.length, arrangement[0].length, arrangement);
 
         LocalDateTime savedTime = design.getModifiedAt();
 
         return DesignDetailResponseDto.builder()
-                .arrangement(selectedArrangement.getArrangement())
+                .farm(farm)
                 .designArray(selectedArrangement.getDesignArrangement())
                 .cropNumberAndCropIdDtoList(selectedArrangement.getCropNumberAndCropIdDtoList())
                 .name(design.getName())
@@ -486,7 +489,8 @@ public class DesignServiceImpl implements DesignService {
         design.updateName(request.getName());
 
         // 배치, CropSelection 수정
-        return updateArrangementAndCropSelection(design, request.getDesignArray(), request.getCropNumberAndCropIdDtoList(), request.getCropIdAndQuantityDtoList());
+        updateArrangementAndCropSelection(design, request.getDesignArray(), request.getCropNumberAndCropIdDtoList(), request.getCropIdAndQuantityDtoList());
+        return true;
     }
 
     /**
@@ -499,17 +503,24 @@ public class DesignServiceImpl implements DesignService {
      */
     @Override
     @Transactional
-    public Boolean insertCustomDesign(@NotBlank Integer memberId, Long designId, CustomDesignCreateRequestDto request) {
+    public CustomDesignCreateResponseDto insertCustomDesign(@NotBlank Integer memberId, Long designId, CustomDesignCreateRequestDto request) {
         Design design = getDesign(designId);
         checkMember(memberId, design);
-        return updateArrangementAndCropSelection(design, request.getDesignArray(), request.getCropNumberAndCropIdDtoList(), request.getCropIdAndQuantityDtoList());
 
+        Arrangement arrangement = updateArrangementAndCropSelection(design, request.getDesignArray(), request.getCropNumberAndCropIdDtoList(), request.getCropIdAndQuantityDtoList());
+        char[][] charArrangement = arrangement.getArrangement();
+        Boolean[][] farm = getBooleanArrangement(charArrangement.length, charArrangement[0].length, charArrangement);
+
+        return CustomDesignCreateResponseDto.builder()
+                .designId(designId)
+                .farm(farm)
+                .build();
     }
 
     /**
      * 작물 배치도, CropSelection 수정
      */
-    private boolean updateArrangementAndCropSelection(Design design, int[][] designArrangement, List<CropNumberAndCropIdDto> cropNumberAndCropIdDtoList, List<CropIdAndQuantityDto> cropIdAndQuantityDtoList) {
+    private Arrangement updateArrangementAndCropSelection(Design design, int[][] designArrangement, List<CropNumberAndCropIdDto> cropNumberAndCropIdDtoList, List<CropIdAndQuantityDto> cropIdAndQuantityDtoList) {
         Arrangement selectedArrangement = getSelectedArrangement(design);
         selectedArrangement.setDesignArrangement(designArrangement);
         selectedArrangement.setCropNumberAndCropIdDtoList(cropNumberAndCropIdDtoList);
@@ -517,8 +528,8 @@ public class DesignServiceImpl implements DesignService {
         // CropSelection 새로 추가
         getNewCropSelectionList(cropIdAndQuantityDtoList, design);
         try {
-            arrangementRepository.save(selectedArrangement);
-            return true;
+            Arrangement arrangement = arrangementRepository.save(selectedArrangement);
+            return arrangement;
         } catch (Exception e) {
             e.printStackTrace();
             throw new BusinessExceptionHandler(ErrorCode.INSERT_ERROR);
@@ -595,12 +606,9 @@ public class DesignServiceImpl implements DesignService {
         char[][] arrangement = selectedArrangement.getArrangement();
         int R = arrangement.length;
         int C = arrangement[0].length;
-        Boolean[][] booleanArrangement = getBooleanArrangement(R, C, arrangement);
-
 
         List<Object> list = getCropInfoListAndRidgeAreaWidth(design);
         return EmptyFarmGetResponseDto.builder()
-                .farm(booleanArrangement)
                 .cropList((List<CropDataDto>) list.get(0))
                 .totalRidgeArea((Integer) list.get(1))
                 .ridgeWidth((Integer) list.get(2))
