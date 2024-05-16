@@ -20,7 +20,7 @@ public interface DesignService {
 
     CropGetResponseDto selectCropList(@NotBlank Integer memberId, Long designId);
 
-    EmptyFarmGetResponseDto selectEmptyFarm(@NotBlank Integer memberId, Long designId);
+    FarmForCustomGetResponseDto selectEmptyFarm(@NotBlank Integer memberId, Long designId);
 
     CustomDesignCreateResponseDto insertCustomDesign(@NotBlank Integer memberId, Long designId, CustomDesignCreateRequestDto request);
 

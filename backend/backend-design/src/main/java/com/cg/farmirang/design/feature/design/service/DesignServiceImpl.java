@@ -234,6 +234,18 @@ public class DesignServiceImpl implements DesignService {
      * 작물 정보 리스트, 전체 넓이, 이랑 너비 불러오기
      */
     private List<Object> getCropInfoListAndRidgeAreaWidth(Design design) {
+        List<CropDataDto> list = getCropDataDtoList(design);
+
+        List<Object> returnList = new ArrayList<>();
+
+        returnList.add(list);
+        returnList.add(design.getRidgeArea());
+        returnList.add(design.getRidgeWidth());
+
+        return returnList;
+    }
+
+    private List<CropDataDto> getCropDataDtoList(Design design) {
         List<Object[]> results = em.createQuery("SELECT t.id,t.name, " +
                         "CASE WHEN :substring IN (SELECT UNNEST(FUNCTION('string_to_array', t.sowingTime, ',')) AS st) THEN true ELSE false END AS isRecommended, " +
                         "t.ridgeSpacing, t.cropSpacing,t.ridgeSpacing * t.cropSpacing AS area " +
@@ -260,14 +272,7 @@ public class DesignServiceImpl implements DesignService {
                     .build();
             list.add(cropDto);
         }
-
-        List<Object> returnList = new ArrayList<>();
-
-        returnList.add(list);
-        returnList.add(design.getRidgeArea());
-        returnList.add(design.getRidgeWidth());
-
-        return returnList;
+        return list;
     }
 
     /**
@@ -597,14 +602,14 @@ public class DesignServiceImpl implements DesignService {
 
 
     /**
-     * 커스텀용 밭 조회
+     * 커스텀용 조회
      *
      * @param memberId
      * @param designId
      * @return
      */
     @Override
-    public EmptyFarmGetResponseDto selectEmptyFarm(@NotBlank Integer memberId, Long designId) {
+    public FarmForCustomGetResponseDto selectEmptyFarm(@NotBlank Integer memberId, Long designId) {
         Design design = getDesign(designId);
         checkMember(memberId, design);
 
@@ -613,11 +618,9 @@ public class DesignServiceImpl implements DesignService {
         int R = arrangement.length;
         int C = arrangement[0].length;
 
-        List<Object> list = getCropInfoListAndRidgeAreaWidth(design);
-        return EmptyFarmGetResponseDto.builder()
-                .cropList((List<CropDataDto>) list.get(0))
-                .totalRidgeArea((Integer) list.get(1))
-                .ridgeWidth((Integer) list.get(2))
+        List<CropDataDto> cropList = getCropDataDtoList(design);
+        return FarmForCustomGetResponseDto.builder()
+                .cropList(cropList)
                 .build();
     }
 

@@ -99,15 +99,15 @@ public class DesignController {
      * @return
      */
     @GetMapping("/{designId}/customs")
-    @Operation(summary = "커스텀용 빈 밭 조회", description = "밭 커스텀을 위해 빈 밭을 조회합니다.")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "빈 밭 조회에 성공했습니다.",
-            content = {@Content(schema = @Schema(implementation = EmptyFarmGetResponseDto.class))}),
+    @Operation(summary = "커스텀용 조회", description = "밭 커스텀을 위해 조회합니다.")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "커스텀용 조회에 성공했습니다.",
+            content = {@Content(schema = @Schema(implementation = FarmForCustomGetResponseDto.class))}),
             @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
     public SuccessResponse<?> getFarm(@PathVariable("designId") Long designId, @Parameter(hidden = true) @RequestHeader("Authorization") String accessToken) {
                 var result=jwtClient.validateAccessToken(accessToken);
-        EmptyFarmGetResponseDto response = designService.selectEmptyFarm(result.memberId(), designId);
+        FarmForCustomGetResponseDto response = designService.selectEmptyFarm(result.memberId(), designId);
         return SuccessResponse.builder().data(response).status(SuccessCode.SELECT_SUCCESS).build();
     }
 
