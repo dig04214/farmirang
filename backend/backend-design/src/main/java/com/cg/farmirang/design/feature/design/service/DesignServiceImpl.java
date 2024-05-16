@@ -114,7 +114,7 @@ public class DesignServiceImpl implements DesignService {
         String jsonFarm = gson.toJson(arrangement.getArrangement());
 
         Integer count = (int) jsonFarm.chars().filter(ch -> ch == 'R').count();
-        savedDesign.updateArrangementIdAndRidgeArea(arrangement.getId(), count);
+        savedDesign.updateArrangementIdAndRidgeArea(arrangement.getId(), count*100);
         designRepository.save(savedDesign);
 
         return EmptyFarmCreateResponseDto.builder()
@@ -222,25 +222,40 @@ public class DesignServiceImpl implements DesignService {
         Design design = getDesign(designId);
         checkMember(memberId, design);
         // 시작 달이 추천 파종시기인 작물부터 정렬
-        List<Object> list = getCropInfoListAndRidgeAreaWidth(design);
+        List<Object> list = getCropInfoListAndRidgeAreaLength(design);
         return CropGetResponseDto.builder()
                 .cropList((List<CropDataDto>) list.get(0))
                 .totalRidgeArea((Integer) list.get(1))
                 .ridgeWidth((Integer) list.get(2))
+                .ridgeHeight((Integer) list.get(3))
                 .build();
     }
 
     /**
      * 작물 정보 리스트, 전체 넓이, 이랑 너비 불러오기
      */
-    private List<Object> getCropInfoListAndRidgeAreaWidth(Design design) {
+    private List<Object> getCropInfoListAndRidgeAreaLength(Design design) {
         List<CropDataDto> list = getCropDataDtoList(design);
 
         List<Object> returnList = new ArrayList<>();
 
+        Arrangement selectedArrangement = getSelectedArrangement(design);
+        char[][] arrangement = selectedArrangement.getArrangement();
+        Integer ridgeWidth = 0;
+        Integer ridgeHeight = 0;
+
+        // 세로밭일 때
+        if (design.getIsVertical()) {
+            ridgeWidth = arrangement.length;
+        } else {
+            ridgeWidth = arrangement[0].length;
+        }
+        ridgeHeight = design.getRidgeWidth();
+
         returnList.add(list);
         returnList.add(design.getRidgeArea());
-        returnList.add(design.getRidgeWidth());
+        returnList.add(ridgeWidth);
+        returnList.add(ridgeHeight);
 
         return returnList;
     }
