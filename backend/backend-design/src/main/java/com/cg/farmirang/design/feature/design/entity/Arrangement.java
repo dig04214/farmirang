@@ -8,10 +8,12 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.List;
 
 @ToString
-@Document(collection="design_arrangement")
-@Getter @Setter
-@NoArgsConstructor
+@Document(collection = "design_arrangement")
+@Getter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@Builder
 public class Arrangement {
     @Id
     private String id;
@@ -19,8 +21,4 @@ public class Arrangement {
     private int[][] designArrangement;
     private List<CropNumberAndCropIdDto> cropNumberAndCropIdDtoList;
 
-    @Builder
-    public Arrangement(char[][] arrangement) {
-        this.arrangement = arrangement;
-    }
 }

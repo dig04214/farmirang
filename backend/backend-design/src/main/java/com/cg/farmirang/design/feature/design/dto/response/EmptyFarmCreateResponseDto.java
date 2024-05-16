@@ -8,6 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class EmptyFarmCreateResponseDto {
+    private int[][] designArray;
     private Long designId;
     private Boolean[][] farm;
 }

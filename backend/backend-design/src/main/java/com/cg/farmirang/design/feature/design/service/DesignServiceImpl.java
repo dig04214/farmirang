@@ -102,7 +102,12 @@ public class DesignServiceImpl implements DesignService {
         Boolean[][] booleanArrangement = getBooleanArrangement(farm.length, farm[0].length, farm);
 
         // 몽고DB에 배열 저장
-        Arrangement arrangement = arrangementRepository.save(Arrangement.builder().arrangement(farm).build());
+        Arrangement arrangement = arrangementRepository.save(
+                Arrangement.builder()
+                        .arrangement(farm)
+                        .designArrangement(new int[farm.length][farm[0].length])
+                        .build()
+        );
 
         // design에 arrangementId과 두둑 넓이 추가
         Gson gson = new Gson();
@@ -115,6 +120,7 @@ public class DesignServiceImpl implements DesignService {
         return EmptyFarmCreateResponseDto.builder()
                 .designId(savedDesign.getId())
                 .farm(booleanArrangement)
+                .designArray(arrangement.getDesignArrangement())
                 .build();
     }
 
@@ -616,15 +622,15 @@ public class DesignServiceImpl implements DesignService {
     }
 
     private static Boolean[][] getBooleanArrangement(int R, int C, char[][] arrangement) {
-        Boolean[][] booleanArrangement=new Boolean[R][C];
+        Boolean[][] booleanArrangement = new Boolean[R][C];
         for (int i = 0; i < R; i++) {
             for (int j = 0; j < C; j++) {
-                switch (arrangement[i][j]){
+                switch (arrangement[i][j]) {
                     case 'R':
-                        booleanArrangement[i][j]=true;
+                        booleanArrangement[i][j] = true;
                         break;
                     default:
-                        booleanArrangement[i][j]=false;
+                        booleanArrangement[i][j] = false;
                         break;
                 }
             }
