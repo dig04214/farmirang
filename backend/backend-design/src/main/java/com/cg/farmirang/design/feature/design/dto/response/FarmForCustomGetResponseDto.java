@@ -7,9 +7,6 @@ import lombok.Data;
 import java.util.List;
 
 @Builder @Data
-public class EmptyFarmGetResponseDto {
-    private Boolean[][] farm;
+public class FarmForCustomGetResponseDto {
     private List<CropDataDto> cropList;
-    private Integer totalRidgeArea;
-    private Integer ridgeWidth;
 }

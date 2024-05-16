@@ -10,4 +10,5 @@ public class CropGetResponseDto {
     private List<CropDataDto> cropList;
     private Integer totalRidgeArea;
     private Integer ridgeWidth;
+    private Integer ridgeHeight;
 }

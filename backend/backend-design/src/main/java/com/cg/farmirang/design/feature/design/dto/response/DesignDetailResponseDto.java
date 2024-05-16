@@ -11,7 +11,7 @@ import java.util.List;
 @Getter
 @Setter
 public class DesignDetailResponseDto {
-    private char[][] arrangement;
+    private Boolean[][] farm;
     private int[][] designArray;
     private List<CropNumberAndCropIdDto> cropNumberAndCropIdDtoList;
     private String name;

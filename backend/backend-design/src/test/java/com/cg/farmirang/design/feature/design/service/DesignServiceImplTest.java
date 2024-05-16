@@ -182,7 +182,7 @@ class DesignServiceImplTest {
     public void select_emptyFarm(){
         // given
         // when
-        EmptyFarmGetResponseDto response = designService.selectEmptyFarm(memberId, designId);
+        FarmForCustomGetResponseDto response = designService.selectEmptyFarm(memberId, designId);
         Boolean[][] farm = response.getFarm();
         List<CropDataDto> cropList = response.getCropList();
         Integer ridgeWidth = response.getRidgeWidth();
