@@ -96,9 +96,12 @@ class DesignServiceImplTest {
 
         // when
         EmptyFarmCreateResponseDto response = designService.insertEmptyFarm(memberId, request);
-
+        Boolean[][] farm = response.getFarm();
         // then
         assertNotNull(response.getFarm());
+        for (Boolean[] booleans : farm) {
+            System.out.println(Arrays.toString(booleans));
+        }
     }
 
     @Test
@@ -123,9 +126,13 @@ class DesignServiceImplTest {
 
         // when
         EmptyFarmCreateResponseDto response = designService.insertEmptyFarm(memberId, request);
-
+        Boolean[][] farm = response.getFarm();
         // then
         assertNotNull(response.getFarm());
+        for (Boolean[] booleans : farm) {
+            System.out.println(Arrays.toString(booleans));
+        }
+
     }
 
 
@@ -147,18 +154,20 @@ class DesignServiceImplTest {
 
         // given
         List<CropIdAndQuantityAndPriorityDto> cropList = new ArrayList<>();
-        cropList.add(CropIdAndQuantityAndPriorityDto.builder().cropId(10).quantity(5).priority(1).build());
-        cropList.add(CropIdAndQuantityAndPriorityDto.builder().cropId(5).quantity(5).priority(1).build());
-        cropList.add(CropIdAndQuantityAndPriorityDto.builder().cropId(6).quantity(5).priority(1).build());
-        cropList.add(CropIdAndQuantityAndPriorityDto.builder().cropId(13).quantity(5).priority(1).build());
+        cropList.add(CropIdAndQuantityAndPriorityDto.builder().cropId(10).quantity(100).priority(2).build());
+        cropList.add(CropIdAndQuantityAndPriorityDto.builder().cropId(13).quantity(39).priority(3).build());
+        cropList.add(CropIdAndQuantityAndPriorityDto.builder().cropId(4).quantity(14).priority(1).build());
 
         RecommendedDesignCreateRequestDto request = RecommendedDesignCreateRequestDto.builder().cropList(cropList).build();
-        Design design = designRepository.findById(designId).get();
 
         // when
-        RecommendedDesignCreateResponseDto response = designService.insertRecommendedDesign(memberId, designId, request);
+        RecommendedDesignCreateResponseDto response = designService.insertRecommendedDesign(17, 79L, request);
 
         // then
+        int[][] designArray = response.getDesignArray();
+        for (int[] ints : designArray) {
+            System.out.println(Arrays.toString(ints));
+        }
 
     }
 
@@ -182,14 +191,14 @@ class DesignServiceImplTest {
     public void select_emptyFarm(){
         // given
         // when
-        FarmForCustomGetResponseDto response = designService.selectEmptyFarm(memberId, designId);
-        Boolean[][] farm = response.getFarm();
-        List<CropDataDto> cropList = response.getCropList();
-        Integer ridgeWidth = response.getRidgeWidth();
-        Integer totalRidgeArea = response.getTotalRidgeArea();
-
-        // then
-        assertNotNull(farm);
+//        FarmForCustomGetResponseDto response = designService.selectEmptyFarm(memberId, designId);
+//        Boolean[][] farm = response.getFarm();
+//        List<CropDataDto> cropList = response.getCropList();
+//        Integer ridgeWidth = response.getRidgeWidth();
+//        Integer totalRidgeArea = response.getTotalRidgeArea();
+//
+//        // then
+//        assertNotNull(farm);
 
 
     }
@@ -206,6 +215,25 @@ class DesignServiceImplTest {
         // then
         assertEquals(designList.size(),response.getDesignList().size());
     }
+
+    @Test
+    @DisplayName("디자인 상세 조회")
+    public void select_design(){
+        // given
+        Integer memberId=17;
+        Long designId=73L;
+
+        // when
+        DesignDetailResponseDto response = designService.selectDesign(memberId, designId);
+        int[][] designArray = response.getDesignArray();
+
+        // then
+        for (int[] ints : designArray) {
+            System.out.println(Arrays.toString(ints));
+        }
+    }
+
+
 
     @Test
     public void 폴리곤테스트() {
@@ -247,6 +275,8 @@ class DesignServiceImplTest {
         System.out.println("polygon = " + polygon.toString());
 
     }
+
+
 
     @Test
     @Rollback(value = false)

@@ -31,8 +31,6 @@ public class DesignServiceImpl implements DesignService {
 
     private final EntityManager em;
     private final DesignRepository designRepository;
-    private final MemberRepository memberRepository;
-    private final FarmCoordinateRepository farmCoordinateRepository;
     private final ArrangementRepository arrangementRepository;
     private final CropRepository cropRepository;
     private final CropSelectionRepository cropSelectionRepository;
@@ -114,7 +112,7 @@ public class DesignServiceImpl implements DesignService {
         String jsonFarm = gson.toJson(arrangement.getArrangement());
 
         Integer count = (int) jsonFarm.chars().filter(ch -> ch == 'R').count();
-        savedDesign.updateArrangementIdAndRidgeArea(arrangement.getId(), count*100);
+        savedDesign.updateArrangementIdAndRidgeArea(arrangement.getId(), count * 100);
         designRepository.save(savedDesign);
 
         return EmptyFarmCreateResponseDto.builder()
@@ -356,8 +354,8 @@ public class DesignServiceImpl implements DesignService {
         Boolean isVertical = design.getIsVertical();
 
         // 밭 가로, 세로
-        int farmHeight = arrangement.length;
-        int farmWidth = arrangement[0].length;
+        int farmHeight = arrangement.length; // row 개수
+        int farmWidth = arrangement[0].length; // column 개수
 
         int[][] cropArray = new int[farmHeight][farmWidth];
         List<CropNumberAndCropIdDto> cropNumberAndCropIdDtoList = new ArrayList<>();
@@ -371,19 +369,27 @@ public class DesignServiceImpl implements DesignService {
             Integer cropHeight = crop.getRidgeSpacing() / 10;
 
             // 좌표 이동
-            int height = isVertical ? farmWidth - cropHeight : farmHeight - cropHeight;
-            int width = isVertical ? farmHeight - cropWidth : farmWidth - cropWidth;
+            int height, width;
+            // 작물 시작 부분의 범위 정하기
+            if (isVertical) {
+                //세로밭인 경우 세로의 범위는 밭의 가로에서 작물의 세로를 뺀 곳까지
+                height = farmWidth - cropHeight; // column 범위 제한
+                width = farmHeight - cropWidth; // row 범위 제한
+            } else {
+                height = farmHeight - cropHeight; // row 범위 제한
+                width = farmWidth - cropWidth; // column 범위 제한
+            }
             outer:
             for (int i = 0; i <= height; i++) {
                 for (int j = 0; j <= width; j++) {
                     // 작물 개수만큼 다 심거나 다 안 줄어도 좌표가 끝으로 갔으면 break
                     if (quantity <= 0) break outer;
 
-                    int h = isVertical ? j : i;
-                    int w = isVertical ? i : j;
+                    int col = isVertical ? j : i;
+                    int row = isVertical ? i : j;
 
-                    if (canPlantCrop(arrangement, farmWidth, farmHeight, cropArray, cropWidth, cropHeight, w, h, isVertical)) {
-                        plantCrop(crop, cropHeight, cropWidth, w, h, cropArray, number, cropNumberAndCropIdDtoList, isVertical);
+                    if (canPlantCrop(arrangement, farmWidth, farmHeight, cropArray, cropWidth, cropHeight, col, row, isVertical)) {
+                        plantCrop(crop, cropHeight, cropWidth, col, row, cropArray, number, cropNumberAndCropIdDtoList, isVertical);
                         number++;
                         quantity--;
                     }
@@ -402,7 +408,7 @@ public class DesignServiceImpl implements DesignService {
     /**
      * 작물 배치
      */
-    private static void plantCrop(CropSelectionOrderedByCropDto crop, Integer cropHeight, Integer cropWidth, int w, int h, int[][] cropArray, int number, List<CropNumberAndCropIdDto> cropNumberAndCropIdDtoList, Boolean isVertical) {
+    private static void plantCrop(CropSelectionOrderedByCropDto crop, Integer cropHeight, Integer cropWidth, int col, int row, int[][] cropArray, int number, List<CropNumberAndCropIdDto> cropNumberAndCropIdDtoList, Boolean isVertical) {
         cropNumberAndCropIdDtoList.add(
                 CropNumberAndCropIdDto.builder()
                         .cropId(crop.getCropId())
@@ -411,9 +417,15 @@ public class DesignServiceImpl implements DesignService {
         );
         for (int addHeight = 0; addHeight < cropHeight; addHeight++) {
             for (int addWidth = 0; addWidth < cropWidth; addWidth++) {
-                int newHeight = h + addHeight;
-                int newWidth = w + addWidth;
-                cropArray[isVertical ? newWidth : newHeight][isVertical ? newHeight : newWidth] = number;
+                int r, c;
+                if (isVertical) {
+                    r = row+addWidth;
+                    c = col+addHeight;
+                } else {
+                    r = row+addHeight;
+                    c = col+addWidth;
+                }
+                cropArray[r][c] = number;
             }
         }
     }
@@ -421,16 +433,27 @@ public class DesignServiceImpl implements DesignService {
     /**
      * 배치 가능한 지 확인
      */
-    private boolean canPlantCrop(char[][] arrangement, int farmWidth, int farmHeight, int[][] cropArray, Integer cropWidth, Integer cropHeight, int w, int h, Boolean isVertical) {
-        if (w + cropWidth >= farmWidth || h + cropHeight >= farmHeight) return false;
+    private boolean canPlantCrop(char[][] arrangement, int farmWidth, int farmHeight, int[][] cropArray, Integer cropWidth, Integer cropHeight, int col, int row, Boolean isVertical) {
+        if (isVertical) {
+            if (row + cropWidth >= farmHeight || col + cropHeight >= farmWidth) return false;
+        } else {
+            if (row + cropHeight >= farmHeight || col + cropWidth >= farmWidth) return false;
+        }
 
         for (int addHeight = 0; addHeight < cropHeight; addHeight++) {
             for (int addWidth = 0; addWidth < cropWidth; addWidth++) {
-                int newHeight = h + addHeight;
-                int newWidth = w + addWidth;
+                int r, c;
+                if (isVertical) {
+                    r = row+addWidth;
+                    c = col+addHeight;
+                } else {
+                    r = row+addHeight;
+                    c = col+addWidth;
+                }
 
-                if (arrangement[isVertical ? newWidth : newHeight][isVertical ? newHeight : newWidth] != 'R' || cropArray[isVertical ? newWidth : newHeight][isVertical ? newHeight : newWidth] != 0)
+                if (arrangement[r][c] != 'R' || cropArray[r][c] != 0) {
                     return false;
+                }
             }
         }
         return true;
