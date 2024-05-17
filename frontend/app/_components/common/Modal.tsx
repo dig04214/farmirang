@@ -27,8 +27,16 @@ interface Props {
   Titlebottom: any;
   // 확인 혹은 다음 버튼 텍스트
   next: string;
+  // 확인 버튼 클릭시 함수 실행
+  onSuccess?: () => void;
+  // 모달 staet 변수
+  data?: any;
+  // 모달 setState 변수
+  setData?: React.Dispatch<any>;
   handleFunction?: () => void;
   noButton?: boolean;
+  grid?: number[][];
+  buttonStyle?: string;
 }
 
 export default function MyModal({
@@ -43,8 +51,11 @@ export default function MyModal({
   Modalcss,
   Titlebottom,
   next,
+  onSuccess,
   handleFunction,
   noButton,
+  grid,
+  buttonStyle,
 }: Props) {
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
@@ -54,6 +65,7 @@ export default function MyModal({
         text={buttonText}
         bgStyles={buttonBgStyles}
         textStyles={buttonTextStyles}
+        buttonStyle={buttonStyle ? "reset" : ""}
         handleClick={() => setIsOpen(true)}
       />
 
@@ -77,6 +89,14 @@ export default function MyModal({
               >
                 <Dialog.Panel
                   className={`transform border border-gray-300 overflow-hidden rounded-2xl bg-white-100 p-6 text-left align-middle shadow-xl transition-all ${Modalcss}`}
+                  style={{
+                    maxWidth: `${grid ? "90vw" : ""}`,
+
+                    maxHeight: `${grid ? "90vh" : ""}`,
+                    aspectRatio: `${grid ? grid[0].length : 1} / ${
+                      grid ? grid.length : null
+                    }`,
+                  }}
                 >
                   <>
                     <Dialog.Title
@@ -91,8 +111,9 @@ export default function MyModal({
                         {subTitle}
                       </p>
                     </div>
-                    <div className="mt-6">{contents}</div>
-
+                    <div className={`${Title === "" ? null : "mt-6"}`}>
+                      {contents}
+                    </div>
                     {noButton && !handleFunction ? null : (
                       <div className="flex justify-end mt-10">
                         <button
@@ -105,12 +126,12 @@ export default function MyModal({
                         <button
                           type="button"
                           className="inline-flex justify-center rounded-md shadow-xl border border-transparent bg-green-400 px-4 py-2 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2"
-                          onClick={handleFunction}
+                          onClick={onSuccess}
                         >
                           <div className="text-white-100 font-bold">{next}</div>
                         </button>
                       </div>
-                    )}
+                    )}{" "}
                   </>
                 </Dialog.Panel>
               </Transition.Child>

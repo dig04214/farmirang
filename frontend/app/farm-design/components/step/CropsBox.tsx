@@ -25,13 +25,21 @@ import { useEffect, useState } from "react";
 
 interface Props {
   id: number;
+  index: number;
   name: string;
   isClick: boolean;
   isRecommend: boolean;
-  handleClick: (id: number) => void;
+  handleClick: (index: number) => void;
 }
 
-const CropsBox = ({ id, name, isClick, isRecommend, handleClick }: Props) => {
+const CropsBox = ({
+  id,
+  index,
+  name,
+  isClick,
+  isRecommend,
+  handleClick,
+}: Props) => {
   const picList: StaticImageData[] = [
     Potato,
     SweetPotato,
@@ -59,7 +67,6 @@ const CropsBox = ({ id, name, isClick, isRecommend, handleClick }: Props) => {
   const [clickBackColor, setClickBackColor] = useState<string>(`bg-white-100`);
 
   useEffect(() => {
-    console.log(isClick);
     if (isClick) {
       setClickShadow("shadow-inner");
       setClickTextColor("text-white-100");
@@ -74,7 +81,7 @@ const CropsBox = ({ id, name, isClick, isRecommend, handleClick }: Props) => {
   return (
     <div className="m-3">
       <button
-        onClick={() => handleClick(id)}
+        onClick={() => handleClick(index)}
         className={`${isRecommend ? "border-yellow-200" : "border-gray-200"}
           ${isClick ? `hover:bg-green-400` : `hover:bg-green-100`}
           

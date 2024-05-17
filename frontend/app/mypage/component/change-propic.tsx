@@ -1,6 +1,19 @@
 import ImageComponent from "@/app/_components/common/Image";
+import React from "react";
 
-export default function ChangePicture() {
+interface ChangePictureProps {
+  selectImage: any;
+  setSelectImage: React.Dispatch<any>;
+  showImage?: any;
+  setShowImage?: React.Dispatch<any>;
+}
+
+export default function ChangePicture({
+  selectImage,
+  setSelectImage,
+  showImage,
+  setShowImage,
+}: ChangePictureProps) {
   return (
     <>
       <ImageComponent
@@ -9,7 +22,11 @@ export default function ChangePicture() {
         heightcss={""}
         topcss={""}
         topsecondcss={""}
-        handleEvent={() => {}}
+        displayImage={selectImage}
+        setDisplayImage={setSelectImage}
+        showImage={showImage}
+        setShowImage={setShowImage}
+        // handleEvent={() => {}}
       />
     </>
   );
