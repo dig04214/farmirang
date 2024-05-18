@@ -475,10 +475,11 @@ public class DesignServiceImpl implements DesignService {
         if (optionalDesignList.isPresent()) {
             List<Design> designList = optionalDesignList.get();
 
-
             for (Design design : designList) {
                 Arrangement selectedArrangement = getSelectedArrangement(design);
-                list.add(DesignForListDto.toDto(design, selectedArrangement));
+                char[][] arrangement = selectedArrangement.getArrangement();
+                Boolean[][] booleanArrangement = getBooleanArrangement(arrangement.length, arrangement[0].length, arrangement);
+                list.add(DesignForListDto.toDto(design, selectedArrangement,booleanArrangement));
             }
         }
 

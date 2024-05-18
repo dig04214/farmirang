@@ -180,7 +180,7 @@ public class DesignController {
     @GetMapping("/lists")
     @Operation(summary = "디자인 리스트 조회", description = "회원의 디자인 리스트를 조회합니다.")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "디자인 리스트 조회에 성공했습니다.",
-            content = {@Content(array = @ArraySchema(schema = @Schema(implementation = CropGetResponseDto.class)))}),
+            content = {@Content(array = @ArraySchema(schema = @Schema(implementation = DesignListResponseDto.class)))}),
             @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
