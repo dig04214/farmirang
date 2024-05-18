@@ -10,5 +10,5 @@ import lombok.Setter;
 public class EmptyFarmCreateResponseDto {
     private int[][] designArray;
     private Long designId;
-    private Boolean[][] farm;
+    private boolean[][] farm;
 }

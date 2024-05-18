@@ -97,13 +97,14 @@ public class DesignServiceImpl implements DesignService {
         // 두둑인지 고랑인지 확인 후 R(두둑), E(두둑줄이지만 범위에 벗어나서 빈 곳), F(고랑) 표시
         farm = checkRidgeAndFurrow(farm, polygon, farmWidthCell, farmHeightCell, ridgeWidth / 10, furrowWidth / 10, designInfo.getIsVertical(), farmCoordinates);
         // Boolean 2차원 배열로 변환
-        Boolean[][] booleanArrangement = getBooleanArrangement(farm.length, farm[0].length, farm);
+        boolean[][] booleanArrangement = getBooleanArrangement(farm.length, farm[0].length, farm);
 
         // 몽고DB에 배열 저장
         Arrangement arrangement = arrangementRepository.save(
                 Arrangement.builder()
                         .arrangement(farm)
                         .designArrangement(new int[farm.length][farm[0].length])
+                        .booleanFarmArrangement(booleanArrangement)
                         .build()
         );
 
@@ -117,7 +118,7 @@ public class DesignServiceImpl implements DesignService {
 
         return EmptyFarmCreateResponseDto.builder()
                 .designId(savedDesign.getId())
-                .farm(booleanArrangement)
+                .farm(arrangement.getBooleanFarmArrangement())
                 .designArray(arrangement.getDesignArrangement())
                 .build();
     }
@@ -419,11 +420,11 @@ public class DesignServiceImpl implements DesignService {
             for (int addWidth = 0; addWidth < cropWidth; addWidth++) {
                 int r, c;
                 if (isVertical) {
-                    r = row+addWidth;
-                    c = col+addHeight;
+                    r = row + addWidth;
+                    c = col + addHeight;
                 } else {
-                    r = row+addHeight;
-                    c = col+addWidth;
+                    r = row + addHeight;
+                    c = col + addWidth;
                 }
                 cropArray[r][c] = number;
             }
@@ -444,11 +445,11 @@ public class DesignServiceImpl implements DesignService {
             for (int addWidth = 0; addWidth < cropWidth; addWidth++) {
                 int r, c;
                 if (isVertical) {
-                    r = row+addWidth;
-                    c = col+addHeight;
+                    r = row + addWidth;
+                    c = col + addHeight;
                 } else {
-                    r = row+addHeight;
-                    c = col+addWidth;
+                    r = row + addHeight;
+                    c = col + addWidth;
                 }
 
                 if (arrangement[r][c] != 'R' || cropArray[r][c] != 0) {
@@ -477,13 +478,24 @@ public class DesignServiceImpl implements DesignService {
 
             for (Design design : designList) {
                 Arrangement selectedArrangement = getSelectedArrangement(design);
-                char[][] arrangement = selectedArrangement.getArrangement();
-                Boolean[][] booleanArrangement = getBooleanArrangement(arrangement.length, arrangement[0].length, arrangement);
-                list.add(DesignForListDto.toDto(design, selectedArrangement,booleanArrangement));
+                ifBooleanArrangementNullThenGetAndSave(selectedArrangement);
+                list.add(DesignForListDto.toDto(design, selectedArrangement));
             }
         }
 
         return DesignListResponseDto.builder().designList(list).build();
+    }
+
+    /**
+     * boolean[][] 없으면 구한 후 저장
+     */
+    private void ifBooleanArrangementNullThenGetAndSave(Arrangement selectedArrangement) {
+        if (selectedArrangement.getBooleanFarmArrangement() == null) {
+            char[][] arrangement = selectedArrangement.getArrangement();
+            boolean[][] booleanArrangement = getBooleanArrangement(arrangement.length, arrangement[0].length, arrangement);
+            selectedArrangement.setBooleanFarmArrangement(booleanArrangement);
+            arrangementRepository.save(selectedArrangement);
+        }
     }
 
     /**
@@ -507,19 +519,11 @@ public class DesignServiceImpl implements DesignService {
         for (CropSelection cropSelection : cropSelections) {
             cropList.add(cropSelection.getCrop().getName());
         }
-        char[][] arrangement = selectedArrangement.getArrangement();
-        Boolean[][] farm = getBooleanArrangement(arrangement.length, arrangement[0].length, arrangement);
+        ifBooleanArrangementNullThenGetAndSave(selectedArrangement);
 
         LocalDateTime savedTime = design.getModifiedAt();
 
-        return DesignDetailResponseDto.builder()
-                .farm(farm)
-                .designArray(selectedArrangement.getDesignArrangement())
-                .cropNumberAndCropIdDtoList(selectedArrangement.getCropNumberAndCropIdDtoList())
-                .name(design.getName())
-                .savedTime(savedTime.format(DateTimeFormatter.ofPattern("yyyy.MM.dd")))
-                .cropList(cropList)
-                .build();
+        return DesignDetailResponseDto.toDto(selectedArrangement, design.getName(), savedTime, cropList);
     }
 
     /**
@@ -558,12 +562,11 @@ public class DesignServiceImpl implements DesignService {
         checkMember(memberId, design);
 
         Arrangement arrangement = updateArrangementAndCropSelection(design, request.getDesignArray(), request.getCropNumberAndCropIdDtoList(), request.getCropIdAndQuantityDtoList());
-        char[][] charArrangement = arrangement.getArrangement();
-        Boolean[][] farm = getBooleanArrangement(charArrangement.length, charArrangement[0].length, charArrangement);
+        ifBooleanArrangementNullThenGetAndSave(arrangement);
 
         return CustomDesignCreateResponseDto.builder()
                 .designId(designId)
-                .farm(farm)
+                .farm(arrangement.getBooleanFarmArrangement())
                 .build();
     }
 
@@ -663,24 +666,6 @@ public class DesignServiceImpl implements DesignService {
                 .build();
     }
 
-    private static Boolean[][] getBooleanArrangement(int R, int C, char[][] arrangement) {
-        Boolean[][] booleanArrangement = new Boolean[R][C];
-        for (int i = 0; i < R; i++) {
-            for (int j = 0; j < C; j++) {
-                switch (arrangement[i][j]) {
-                    case 'R':
-                        booleanArrangement[i][j] = true;
-                        break;
-                    default:
-                        booleanArrangement[i][j] = false;
-                        break;
-                }
-            }
-        }
-        return booleanArrangement;
-    }
-
-
     /**
      * 디자인 이름 수정
      *
@@ -762,11 +747,33 @@ public class DesignServiceImpl implements DesignService {
         else {
             Design design = thumbnailDesign.get();
             Arrangement selectedArrangement = getSelectedArrangement(design);
+            ifBooleanArrangementNullThenGetAndSave(selectedArrangement);
             return ThumbnailDesignResponseDto.builder()
                     .designArray(selectedArrangement.getDesignArrangement())
+                    .booleanFarmArrangement(selectedArrangement.getBooleanFarmArrangement())
                     .cropNumberAndCropIdDtoList(selectedArrangement.getCropNumberAndCropIdDtoList())
                     .build();
         }
+    }
+
+    /**
+     * 밭 배열을 boolean으로 변환
+     */
+    private boolean[][] getBooleanArrangement(int R, int C, char[][] arrangement) {
+        boolean[][] booleanArrangement = new boolean[R][C];
+        for (int i = 0; i < R; i++) {
+            for (int j = 0; j < C; j++) {
+                switch (arrangement[i][j]) {
+                    case 'R':
+                        booleanArrangement[i][j] = true;
+                        break;
+                    default:
+                        booleanArrangement[i][j] = false;
+                        break;
+                }
+            }
+        }
+        return booleanArrangement;
     }
 
     /**

@@ -19,6 +19,7 @@ public class Arrangement {
     private String id;
     private char[][] arrangement;
     private int[][] designArrangement;
+    private boolean[][] booleanFarmArrangement;
     private List<CropNumberAndCropIdDto> cropNumberAndCropIdDtoList;
 
 }

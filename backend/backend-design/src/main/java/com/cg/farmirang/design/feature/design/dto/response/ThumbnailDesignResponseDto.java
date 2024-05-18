@@ -9,5 +9,6 @@ import java.util.List;
 @Data @Builder
 public class ThumbnailDesignResponseDto {
     private int[][] designArray;
+    private boolean[][] booleanFarmArrangement;
     private List<CropNumberAndCropIdDto> cropNumberAndCropIdDtoList;
 }

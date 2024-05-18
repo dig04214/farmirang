@@ -6,5 +6,5 @@ import lombok.Data;
 @Builder @Data
 public class CustomDesignCreateResponseDto {
     private Long designId;
-    private Boolean[][] farm;
+    private boolean[][] farm;
 }

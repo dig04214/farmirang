@@ -12,17 +12,17 @@ import java.util.List;
 public class DesignForListDto {
     private Long designId;
     private int[][] designArray;
-    private Boolean[][] farm;
+    private boolean[][] farm;
     private List<CropNumberAndCropIdDto> cropNumberAndCropIdDtoList;
     private String name;
     private String savedTime;
     private Boolean isThumbnail;
 
-    public static DesignForListDto toDto(Design design, Arrangement arrangement, Boolean[][] farm) {
+    public static DesignForListDto toDto(Design design, Arrangement arrangement) {
         return DesignForListDto.builder()
                 .designId(design.getId())
                 .designArray(arrangement.getDesignArrangement())
-                .farm(farm)
+                .farm(arrangement.getBooleanFarmArrangement())
                 .cropNumberAndCropIdDtoList(arrangement.getCropNumberAndCropIdDtoList())
                 .name(design.getName())
                 .savedTime(design.getModifiedAt().format(DateTimeFormatter.ofPattern("YYYY.MM.dd")))
