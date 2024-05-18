@@ -470,7 +470,7 @@ public class DesignServiceImpl implements DesignService {
     public DesignListResponseDto selectDesignList(@NotBlank Integer memberId) {
         List<DesignForListDto> list = new ArrayList<>();
 
-        Optional<List<Design>> optionalDesignList = designRepository.findAllByMemberIdOrderByModifiedAtDesc(memberId);
+        Optional<List<Design>> optionalDesignList = designRepository.findAllByMemberIdOrderByIsThumbnailDescCreateAtDesc(memberId);
 
         // 디자인 리스트 있는 경우만 추가
         if (optionalDesignList.isPresent()) {

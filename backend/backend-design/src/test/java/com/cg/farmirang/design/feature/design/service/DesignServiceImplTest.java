@@ -191,17 +191,20 @@ class DesignServiceImplTest {
 
 
     @Test
-    @Disabled
+//    @Disabled
     @DisplayName("디자인 리스트 조회")
     public void select_designList(){
         // given
 
         // when
         DesignListResponseDto response = designService.selectDesignList(memberId);
-        List<Design> designList = designRepository.findAllByMemberIdOrderByModifiedAtDesc(memberId).get();
+        List<DesignForListDto> designList = response.getDesignList();
 
         // then
         assertEquals(designList.size(),response.getDesignList().size());
+        for (DesignForListDto designForListDto : designList) {
+            System.out.println("designForListDto.getDesignId() = " + designForListDto.getDesignId());
+        }
     }
 
     @Test
