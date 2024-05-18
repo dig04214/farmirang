@@ -245,9 +245,9 @@ public class DesignServiceImpl implements DesignService {
 
         // 세로밭일 때
         if (design.getIsVertical()) {
-            ridgeWidth = arrangement.length;
+            ridgeWidth = arrangement.length*10;
         } else {
-            ridgeWidth = arrangement[0].length;
+            ridgeWidth = arrangement[0].length*10;
         }
         ridgeHeight = design.getRidgeWidth();
 
