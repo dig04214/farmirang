@@ -1,4 +1,4 @@
-package com.cg.farmirang.design.feature.design.controller;
+package com.cg.farmirang.design.feature.design.dto.response;
 
 import lombok.Builder;
 import lombok.Data;

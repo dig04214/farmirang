@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 @Builder
@@ -26,7 +27,7 @@ public class DesignDetailResponseDto {
         return DesignDetailResponseDto.builder()
                 .farm(selectedArrangement.getBooleanFarmArrangement())
                 .designArray(selectedArrangement.getDesignArrangement())
-                .cropNumberAndCropIdDtoList(selectedArrangement.getCropNumberAndCropIdDtoList())
+                .cropNumberAndCropIdDtoList((selectedArrangement.getCropNumberAndCropIdDtoList()!=null) ? selectedArrangement.getCropNumberAndCropIdDtoList() : new ArrayList<>())
                 .name(name)
                 .savedTime(savedTime.format(DateTimeFormatter.ofPattern("yyyy.MM.dd")))
                 .cropList(cropList)

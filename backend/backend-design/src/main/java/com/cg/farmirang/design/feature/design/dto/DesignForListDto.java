@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data @Builder
@@ -23,7 +24,7 @@ public class DesignForListDto {
                 .designId(design.getId())
                 .designArray(arrangement.getDesignArrangement())
                 .farm(arrangement.getBooleanFarmArrangement())
-                .cropNumberAndCropIdDtoList(arrangement.getCropNumberAndCropIdDtoList())
+                .cropNumberAndCropIdDtoList((arrangement.getCropNumberAndCropIdDtoList()!=null) ? arrangement.getCropNumberAndCropIdDtoList() : new ArrayList<>())
                 .name(design.getName())
                 .savedTime(design.getModifiedAt().format(DateTimeFormatter.ofPattern("YYYY.MM.dd")))
                 .isThumbnail(design.getIsThumbnail())

@@ -1,6 +1,6 @@
 package com.cg.farmirang.design.feature.design.service;
 
-import com.cg.farmirang.design.feature.design.controller.CustomDesignCreateResponseDto;
+import com.cg.farmirang.design.feature.design.dto.response.CustomDesignCreateResponseDto;
 import com.cg.farmirang.design.feature.design.dto.*;
 import com.cg.farmirang.design.feature.design.dto.request.*;
 import com.cg.farmirang.design.feature.design.dto.response.*;
@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.awt.*;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
 
@@ -751,7 +750,7 @@ public class DesignServiceImpl implements DesignService {
             return ThumbnailDesignResponseDto.builder()
                     .designArray(selectedArrangement.getDesignArrangement())
                     .booleanFarmArrangement(selectedArrangement.getBooleanFarmArrangement())
-                    .cropNumberAndCropIdDtoList(selectedArrangement.getCropNumberAndCropIdDtoList())
+                    .cropNumberAndCropIdDtoList((selectedArrangement.getCropNumberAndCropIdDtoList()!=null) ? selectedArrangement.getCropNumberAndCropIdDtoList() : new ArrayList<>())
                     .build();
         }
     }

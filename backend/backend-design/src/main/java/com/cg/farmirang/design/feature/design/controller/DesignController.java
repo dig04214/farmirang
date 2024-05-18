@@ -121,7 +121,7 @@ public class DesignController {
     @PostMapping("/{designId}/customs")
     @Operation(summary = "커스텀 디자인 생성", description = "입력된 내용으로 커스텀 디자인을 생성합니다.")
     @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "커스텀 디자인 생성을 성공하였습니다.",
-            content = {@Content(schema = @Schema(implementation = Boolean.class))}),
+            content = {@Content(schema = @Schema(implementation = CustomDesignCreateResponseDto.class))}),
             @ApiResponse(responseCode = "400", description = "잘못된 요청입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "서버 내부 문제입니다.", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
