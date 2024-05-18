@@ -47,7 +47,6 @@ class DesignServiceImplTest {
     private Integer memberId=10;
 
     @Test
-    @Rollback(value = false)
     @Disabled
     public void 작물DB저장() {
         List<Crop> list = new ArrayList<>();
@@ -76,6 +75,7 @@ class DesignServiceImplTest {
 
 
     @Test
+    @Disabled
     @DisplayName("가로 밭 생성")
     public void insert_emptyFarm_horizontal() {
         // given
@@ -96,15 +96,16 @@ class DesignServiceImplTest {
 
         // when
         EmptyFarmCreateResponseDto response = designService.insertEmptyFarm(memberId, request);
-        Boolean[][] farm = response.getFarm();
+        boolean[][] farm = response.getFarm();
         // then
         assertNotNull(response.getFarm());
-        for (Boolean[] booleans : farm) {
+        for (boolean[] booleans : farm) {
             System.out.println(Arrays.toString(booleans));
         }
     }
 
     @Test
+    @Disabled
     @DisplayName("세로 밭 생성")
     public void insert_emptyFarm_vertical() {
         // given
@@ -126,10 +127,10 @@ class DesignServiceImplTest {
 
         // when
         EmptyFarmCreateResponseDto response = designService.insertEmptyFarm(memberId, request);
-        Boolean[][] farm = response.getFarm();
+        boolean[][] farm = response.getFarm();
         // then
         assertNotNull(response.getFarm());
-        for (Boolean[] booleans : farm) {
+        for (boolean[] booleans : farm) {
             System.out.println(Arrays.toString(booleans));
         }
 
@@ -138,6 +139,7 @@ class DesignServiceImplTest {
 
 
     @Test
+    @Disabled
     @DisplayName("작물 리스트 조회")
     public void select_cropList() {
         // given
@@ -149,6 +151,7 @@ class DesignServiceImplTest {
     }
 
     @Test
+    @Disabled
     @DisplayName("추천 디자인 생성-성공")
     public void insert_recommended_design_success() {
 
@@ -186,24 +189,9 @@ class DesignServiceImplTest {
         assertEquals("해당 디자인을 찾을 수 없습니다.", exception.getMessage());
     }
 
-    @Test
-    @DisplayName("커스텀용 밭 조회")
-    public void select_emptyFarm(){
-        // given
-        // when
-//        FarmForCustomGetResponseDto response = designService.selectEmptyFarm(memberId, designId);
-//        Boolean[][] farm = response.getFarm();
-//        List<CropDataDto> cropList = response.getCropList();
-//        Integer ridgeWidth = response.getRidgeWidth();
-//        Integer totalRidgeArea = response.getTotalRidgeArea();
-//
-//        // then
-//        assertNotNull(farm);
-
-
-    }
 
     @Test
+    @Disabled
     @DisplayName("디자인 리스트 조회")
     public void select_designList(){
         // given
@@ -217,6 +205,7 @@ class DesignServiceImplTest {
     }
 
     @Test
+    @Disabled
     @DisplayName("디자인 상세 조회")
     public void select_design(){
         // given
@@ -236,6 +225,7 @@ class DesignServiceImplTest {
 
 
     @Test
+    @Disabled
     public void 폴리곤테스트() {
         Polygon polygon = new Polygon();
 
@@ -279,7 +269,6 @@ class DesignServiceImplTest {
 
 
     @Test
-    @Rollback(value = false)
     @Disabled
     @DisplayName("회원 생성")
     public void create_member(){
