@@ -12,9 +12,6 @@ const nextConfig = {
   env: {
     CUSTOM_URL: process.env.NEXT_PUBLIC_API_URL,
   },
-  experimental: {
-    nextScriptWorkers: true,
-  },
 };
 
 module.exports = nextConfig;
