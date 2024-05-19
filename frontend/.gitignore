@@ -38,4 +38,3 @@ next-env.d.ts
 # kakao
 .env.local
 .env.development
-.env.production
