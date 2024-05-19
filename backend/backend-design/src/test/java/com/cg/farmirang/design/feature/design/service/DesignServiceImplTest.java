@@ -81,9 +81,9 @@ class DesignServiceImplTest {
         // given
         List<FarmCoordinateDto> list = new ArrayList<>();
         list.add(FarmCoordinateDto.builder().row(0).column(1).sequence(0).build());
-        list.add(FarmCoordinateDto.builder().row(0).column(10).sequence(1).build());
+        list.add(FarmCoordinateDto.builder().row(0).column(50).sequence(1).build());
         list.add(FarmCoordinateDto.builder().row(9).column(9).sequence(2).build());
-        list.add(FarmCoordinateDto.builder().row(10).column(1).sequence(3).build());
+        list.add(FarmCoordinateDto.builder().row(50).column(1).sequence(3).build());
 
         EmptyFarmCreateRequestDto request = EmptyFarmCreateRequestDto.builder()
                 .coordinates(list)
@@ -157,14 +157,15 @@ class DesignServiceImplTest {
 
         // given
         List<CropIdAndQuantityAndPriorityDto> cropList = new ArrayList<>();
-        cropList.add(CropIdAndQuantityAndPriorityDto.builder().cropId(10).quantity(100).priority(2).build());
-        cropList.add(CropIdAndQuantityAndPriorityDto.builder().cropId(13).quantity(39).priority(3).build());
-        cropList.add(CropIdAndQuantityAndPriorityDto.builder().cropId(4).quantity(14).priority(1).build());
+//        cropList.add(CropIdAndQuantityAndPriorityDto.builder().cropId(10).quantity(5).priority(2).build());
+//        cropList.add(CropIdAndQuantityAndPriorityDto.builder().cropId(13).quantity(100).priority(3).build());
+        cropList.add(CropIdAndQuantityAndPriorityDto.builder().cropId(3).quantity(10).priority(1).build());
+        cropList.add(CropIdAndQuantityAndPriorityDto.builder().cropId(7).quantity(5).priority(4).build());
 
         RecommendedDesignCreateRequestDto request = RecommendedDesignCreateRequestDto.builder().cropList(cropList).build();
 
         // when
-        RecommendedDesignCreateResponseDto response = designService.insertRecommendedDesign(17, 79L, request);
+        RecommendedDesignCreateResponseDto response = designService.insertRecommendedDesign(28, 127L, request);
 
         // then
         int[][] designArray = response.getDesignArray();
@@ -191,7 +192,7 @@ class DesignServiceImplTest {
 
 
     @Test
-//    @Disabled
+    @Disabled
     @DisplayName("디자인 리스트 조회")
     public void select_designList(){
         // given
