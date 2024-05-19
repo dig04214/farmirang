@@ -148,17 +148,37 @@ public class DesignServiceImpl implements DesignService {
      */
     private char[][] checkRidgeAndFurrow(char[][] farm, Polygon polygon, int farmWidthCell, int farmHeightCell, int ridgeLengthCell, int furrowLengthCell, Boolean isVertical, List<FarmCoordinate> farmCoordinates) {
 
-        int R = isVertical ? farmWidthCell : farmHeightCell;
+        int widthCell = isVertical ? farmHeightCell : farmWidthCell; // 세로면 두둑의 가로는 밭의 세로
+        int heightCell = isVertical ? farmWidthCell : farmHeightCell;
         int C = isVertical ? farmHeightCell : farmWidthCell;
-        int limit = isVertical ? farmWidthCell : farmHeightCell;
+        int R = isVertical ? farmWidthCell : farmHeightCell;
+        int limit = isVertical ? farmWidthCell : farmHeightCell; // 가장 밑
 
-        int check = 0;
-        int currentCount = 0;
-        boolean isRidge = true;
+        int check = 0; // 각 줄 체크
+        int currentCount = 0; // 두둑, 고랑 체크
+        boolean isRidge = true; // 기본으로는 두둑부터 시작
         while (check < limit) {
             for (int i = 0; i < R && check < limit; i++) {
                 for (int j = 0; j < C; j++) {
-                    farm[isVertical ? j : i][isVertical ? i : j] = (isRidge) ? isRidgeOrEmpty(isVertical ? i : j, isVertical ? j : i, polygon, R, C, farmCoordinates) ? 'R' : 'E' : 'F';
+
+                    // row, col 지정
+                    int row, col;
+                    if (isVertical) {
+                        row = j;
+                        col = i;
+                    } else {
+                        row = i;
+                        col = j;
+                    }
+                    if (isRidge) {
+                        if (isRidgeOrEmpty(row, col, polygon, R, C, farmCoordinates)) {
+                            farm[row][col] = 'R';
+                        } else {
+                            farm[row][col] = 'E';
+                        }
+                    } else {
+                        farm[row][col] = 'F';
+                    }
                 }
                 check++;
                 currentCount++;
@@ -181,14 +201,14 @@ public class DesignServiceImpl implements DesignService {
     /**
      * 도형 안에 있는지 확인
      */
-    private boolean isRidgeOrEmpty(int x, int y, Polygon polygon, int height, int width, List<FarmCoordinate> farmCoordinates) {
-        // 네군데 다 확인
+    private boolean isRidgeOrEmpty(int row, int col, Polygon polygon, int height, int width, List<FarmCoordinate> farmCoordinates) {
+        // 네군데 시계방향 확인
         int[] changeX = {0, 1, 1, 0};
         int[] changeY = {0, 0, 1, 1};
 
         for (int i = 0; i < 4; i++) {
-            int newX = x + changeX[i];
-            int newY = y + changeY[i];
+            int newX = col + changeX[i];
+            int newY = row + changeY[i];
 
             if ((0 <= newX && newX <= width) && (0 <= newY && newY < height) && !polygon.contains(newX, newY) && !isPointInPolygon(newX, newY, farmCoordinates)) {
                 return false;
@@ -244,9 +264,9 @@ public class DesignServiceImpl implements DesignService {
 
         // 세로밭일 때
         if (design.getIsVertical()) {
-            ridgeWidth = arrangement.length*10;
+            ridgeWidth = arrangement.length * 10;
         } else {
-            ridgeWidth = arrangement[0].length*10;
+            ridgeWidth = arrangement[0].length * 10;
         }
         ridgeHeight = design.getRidgeWidth();
 
@@ -368,7 +388,6 @@ public class DesignServiceImpl implements DesignService {
             Integer cropWidth = crop.getCropSpacing() / 10;
             Integer cropHeight = crop.getRidgeSpacing() / 10;
 
-            // 좌표 이동
             int height, width;
             // 작물 시작 부분의 범위 정하기
             if (isVertical) {
@@ -379,14 +398,15 @@ public class DesignServiceImpl implements DesignService {
                 height = farmHeight - cropHeight; // row 범위 제한
                 width = farmWidth - cropWidth; // column 범위 제한
             }
+            // 좌표 이동
             outer:
-            for (int i = 0; i <= height; i++) {
+            for (int i = 0; i <= height; i++) { // 가로일 땐 col, 세로일 땐 row
                 for (int j = 0; j <= width; j++) {
                     // 작물 개수만큼 다 심거나 다 안 줄어도 좌표가 끝으로 갔으면 break
                     if (quantity <= 0) break outer;
 
-                    int col = isVertical ? j : i;
-                    int row = isVertical ? i : j;
+                    int row = isVertical ? j : i;
+                    int col = isVertical ? i : j;
 
                     if (canPlantCrop(arrangement, farmWidth, farmHeight, cropArray, cropWidth, cropHeight, col, row, isVertical)) {
                         plantCrop(crop, cropHeight, cropWidth, col, row, cropArray, number, cropNumberAndCropIdDtoList, isVertical);
@@ -750,7 +770,7 @@ public class DesignServiceImpl implements DesignService {
             return ThumbnailDesignResponseDto.builder()
                     .designArray(selectedArrangement.getDesignArrangement())
                     .booleanFarmArrangement(selectedArrangement.getBooleanFarmArrangement())
-                    .cropNumberAndCropIdDtoList((selectedArrangement.getCropNumberAndCropIdDtoList()!=null) ? selectedArrangement.getCropNumberAndCropIdDtoList() : new ArrayList<>())
+                    .cropNumberAndCropIdDtoList((selectedArrangement.getCropNumberAndCropIdDtoList() != null) ? selectedArrangement.getCropNumberAndCropIdDtoList() : new ArrayList<>())
                     .build();
         }
     }
