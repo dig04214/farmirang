@@ -7,12 +7,11 @@ spring:
     multipart:
       max-file-size: 5MB
       max-request-size: 5MB
-      location: C:\Users\SSAFY\AppData\Local\Temp
+#      location: C:\Users\SSAFY\AppData\Local\Temp
     #      location: /tmp
 
 
   jwt:
-    secret: mTdgMIUk22VnKmkPntuSyW81eXjR86MgHKRAzjwE62UaZn4O1dvJYllqSGYXxlQj
     access-token-validity-in-seconds: 86400  # 1 day
     refresh-token-validity-in-seconds: 604800  # 7 days
 
@@ -26,17 +25,6 @@ logging:
     com:
       cg:
         farmirang: DEBUG
-
-
-com:
-  farmirang:
-    user:
-      login:
-        location: /v1/security/oauth2/**
-        redirect: /v1/security/code/**
-
-
-
 
 server:
   port: 8081
