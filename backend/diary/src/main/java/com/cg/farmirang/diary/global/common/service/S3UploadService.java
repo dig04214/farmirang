@@ -25,6 +25,10 @@ public class S3UploadService {
 
 	@Value("${cloud.aws.s3.bucket}")
 	private String bucket;
+
+	@Value("${cloud.aws.s3.url}")
+	private String publicURI;
+
 	public String makeDir(){
 		String folderPath = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd"));
 
@@ -54,7 +58,8 @@ public class S3UploadService {
 				log.debug(e.getMessage());
 				throw new BusinessExceptionHandler("파일 업로드 중 에러 발생", ErrorCode.FAIL_FILE_UPLOAD);
 			}
-			return amazonS3.getUrl(bucket+"/"+folderPath, originalFilename).toString();
+			// return amazonS3.getUrl(bucket+"/"+folderPath, originalFilename).toString();
+			return publicURI + '/' + folderPath + '/' + originalFilename;
 		}
 		else {
 			throw new BusinessExceptionHandler("이미지가 없습니다.", ErrorCode.EMPTY_IMAGE);
@@ -65,7 +70,8 @@ public class S3UploadService {
 		try {
 			if(imgsrc !=null && !"".equals(imgsrc)) {
 				//            String path = imgsrc.substring(0,imgsrc.lastIndexOf(bucket)+);
-				String fileName = imgsrc.substring(imgsrc.lastIndexOf(bucket)+bucket.length()+1);
+				// String fileName = imgsrc.substring(imgsrc.lastIndexOf(bucket)+bucket.length()+1);
+				String fileName = imgsrc.substring(imgsrc.lastIndexOf(publicURI)+publicURI.length()+1);
 				//            System.out.println(path);
 				System.out.println(fileName);
 
