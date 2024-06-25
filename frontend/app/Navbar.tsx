@@ -29,6 +29,9 @@ export default function Navbar() {
       // 경고창 띄우고 들어가지 못하게
       alert("로그인이 필요한 서비스입니다");
       return;
+    } else if (index === 1 && userInfo.accessToken === "") {
+      alert("로그인이 필요한 서비스입니다");
+      return
     }
 
     const newNavigation = navigation.map((item, idx) => ({
