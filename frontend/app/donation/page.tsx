@@ -7,7 +7,6 @@ import Link from "next/link";
 
 export default async function Donation() {
   const res = await fetchDonationData({ cursor: 0, size: 12, user: null});
-
   return (
     <>
       <div className="w-full h-full">
