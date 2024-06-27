@@ -12,21 +12,21 @@ export default function Card({ imgSrc, Title, contents, progress }: Props) {
   let stateClass;
   return (
     <div
-      className={`relative flex flex-col mb-[10rem] text-gray-700 bg-white bg-clip-border rounded-xl w-10/12`}
+      className={`relative flex flex-col mb-[10rem] text-gray-700 bg-white bg-clip-border rounded-xl w-10/12 h-[500px]`}
     >
       <div
-        className={`relative h-64 mx-4 mt-6 overflow-hidden text-white bg-clip-border rounded-xl shadow-blue-gray-500/40`}
+        className={`relative h-[250px] mx-4 mt-6 overflow-hidden text-white bg-clip-border rounded-xl shadow-blue-gray-500/40`}
       >
         <div
           className={`relative w-full h-full bg-white-300 overflow-hidden ${stateClass}`}
         >
           <div className="relative w-full h-full top-[0.5%] left-[0.5%]">
-            <Image
+          <Image
               src={imgSrc}
               alt=""
-              fill
+              layout="fill"
               className="object-cover object-center transition-transform duration-200 ease-out transform hover:scale-110"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              sizes="100vw"
             />
           </div>
         </div>
@@ -36,10 +36,10 @@ export default function Card({ imgSrc, Title, contents, progress }: Props) {
         <p className="block text-h6 font-extrabold text-green-400">
           {stateText}
         </p>
-        <h5 className="block mb-2 text-h2 font-bold antialiased font-semibold leading-snug tracking-normal text-blue-gray-900">
+        <h5 className="block mb-2 text-h4 font-bold antialiased font-semibold leading-snug tracking-normal text-blue-gray-900">
           {Title}
         </h5>
-        <p className="block font-sans text-h5 antialiased font-light leading-relaxed text-inherit">
+        <p className="block text-lg antialiased font-light leading-relaxed text-inherit font-bold">
           {contents}
         </p>
         <div className="flex text-green-400 text-h6 font-bold mt-4 justify-end">

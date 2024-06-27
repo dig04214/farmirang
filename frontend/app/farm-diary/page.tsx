@@ -9,8 +9,18 @@ import Spinner from "../_components/common/Spinner";
 export default function Diary() {
   const [isTrue, setIsTrue] = useState<boolean>(true);
   const router = useRouter();
+
+  // localStorage에서 accessToken 받는 방법
+  // memberId 받음.
   let memberId = "";
-  
+  if (typeof window !== "undefined") {
+    const ls = window.localStorage.getItem("userInfo");
+    if (ls) {
+      const lsInfo = JSON.parse(ls);
+      memberId = lsInfo.state.userInfo.memberId;
+    }
+  }
+
   const fetchDataBoolean = (res: { data: { fields: fetchFarmListType[] } }) => {
     if (res.data.fields && res.data.fields.length > 0) {
       router.push(`/farm-diary/${res.data.fields[0].fieldId}`);

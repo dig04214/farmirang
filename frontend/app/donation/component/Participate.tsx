@@ -72,12 +72,10 @@ export default async function Participate({
         {combinedData.map((item, idx: number) => (
           <div
             key={idx}
-            className="mx-[2.5rem] my-[2rem] w-[110px] h-[110px] border border-black-100 rounded-full relative flex items-center justify-center"
+            className="mx-[2.5rem] my-[2rem] w-[110px] h-[110px] border border-black-100 rounded-full flex flex-col items-center justify-center"
           >
-            <div className="text-center">
-              <div className="stroke-black">{item.cropImage}</div>
-              <div className="font-bold text-h5 mt-[2px]">{item.current}개</div>
-            </div>
+            <div className="stroke-black">{item.cropImage}</div>
+            <div className="font-bold text-h5 mt-[2px]">{item.current}개</div>
           </div>
         ))}
       </div>

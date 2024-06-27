@@ -30,7 +30,6 @@ export default async function Donation() {
                         contents={`${item.summary}`}
                         Title={`${item.title}`}
                         progress={item.progress}
-                        
                       />
                     </Link>
                   </React.Fragment>

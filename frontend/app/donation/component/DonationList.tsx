@@ -39,10 +39,13 @@ export default function DonationList({ donationData }: Props) {
           {item.amount > item.current ? (
             <div className="my-10 flex justify-between relative">
               <div className="flex justify-between w-[10rem]">
-                <div className="w-[80px] h-[80px] border border-black-100 rounded-full relative flex items-center justify-center">
-                  <div className="stroke-black">{item.cropImage}</div>
+                <div className="flex flex-col justify-center">
+                  <div className="w-[80px] h-[80px] border border-black-100 rounded-full flex flex-col justify-center items-center">
+                    <div className="stroke-black">
+                      {item.cropImage}
+                    </div>
+                  </div>
                 </div>
-
                 <div className="text-h5 font-semibold flex flex-col justify-center">
                   {item.cropName}
                 </div>
