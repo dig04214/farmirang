@@ -42,7 +42,7 @@ export default function CalendarDateComponent({
             type="button"
             disabled={pastmonth === 0}
             onClick={() => pastsetMonth(pastmonth - 1)}
-            className="flex h-9 w-12 items-center justify-center rounded-l-md border border-gray-300 pr-1 hover:text-gray-500 focus:relative md:w-9 md:pr-0 md:hover:bg-gray-50"
+            className="flex h-9 w-12 items-center justify-center rounded-l-md border border-gray-400 pr-1 hover:text-gray-500 focus:relative md:w-9 md:pr-0 md:hover:bg-gray-50"
           >
             <GoChevronLeft />
           </button>
@@ -52,13 +52,12 @@ export default function CalendarDateComponent({
             type="button"
             disabled={pastmonth === 11}
             onClick={() => pastsetMonth(pastmonth + 1)}
-            className="flex h-9 w-12 items-center justify-center rounded-r-md border border-gray-300 pl-1 hover:text-gray-500 focus:relative md:w-9 md:pl-0 md:hover:bg-gray-50"
+            className="flex h-9 w-12 items-center justify-center rounded-r-md border border-gray-400 pl-1 hover:text-gray-500 focus:relative md:w-9 md:pl-0 md:hover:bg-gray-50"
           >
             <GoChevronRight />
           </button>
         </div>
-        <div className="hidden md:ml-4 md:flex md:items-center">
-        </div>
+        <div className="hidden md:ml-4 md:flex md:items-center"></div>
       </div>
     </>
   );

@@ -36,7 +36,7 @@ export default function Card({ imgSrc, Title, contents, progress }: Props) {
         <p className="block text-h6 font-extrabold text-green-400">
           {stateText}
         </p>
-        <h5 className="block mb-2 text-h4 font-bold antialiased font-semibold leading-snug tracking-normal text-blue-gray-900">
+        <h5 className="block mb-2 text-[30px] font-bold antialiased font-semibold leading-snug tracking-normal text-blue-gray-900">
           {Title}
         </h5>
         <p className="block text-lg antialiased font-light leading-relaxed text-inherit font-bold">

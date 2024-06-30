@@ -17,6 +17,12 @@ const nextConfig = {
         hostname: 'pub-39e7fe41840f42498dc3dc0995f0c666.r2.dev',
         pathname: '/**'
       },
+      {
+        protocol: 'https',
+        hostname: 'wp-ht-s3.s3.ap-northeast-2.amazonaws.com',
+        pathname: '/**'
+      },
+
     ],
   },
   reactStrictMode: false,

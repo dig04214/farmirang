@@ -46,6 +46,8 @@ const DatePicker = ({ parentData, setParentData }: Props) => {
     function initDate() {
       const today = new Date();
       setDatepickerValue(dateToStr(today));
+      const isoString = today.toISOString();
+      setParentData(isoString)
     }
 
     function getNoOfDays() {
@@ -63,7 +65,7 @@ const DatePicker = ({ parentData, setParentData }: Props) => {
   }, [month, year]);
 
   const getDateValue = (date: number) => {
-    const selectedDate = new Date(year, month, date);
+    const selectedDate = new Date(year, month, date + 1);
     const isoString = selectedDate.toISOString();
     setParentData(isoString);
     setDatepickerValue(dateToStr(selectedDate));

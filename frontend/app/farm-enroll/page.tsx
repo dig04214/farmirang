@@ -78,7 +78,6 @@ export default function FarmEnroll() {
         router.push("/farm-diary");
       } else {
         alert("IoT 기기 등록은 반드시 등록해야 합니다.");
-        // window.location.reload();
       }
     }
   };
@@ -169,7 +168,7 @@ export default function FarmEnroll() {
                   밭 등록
                 </h2>
                 <div className="grid grid-cols-1 gap-y-8 sm:grid-cols-6">
-                  <div className="col-span-full mt-10">
+                  <div className="col-span-full mt-14">
                     <Input
                       name={"title"}
                       labeltext={"밭 이름"}
@@ -186,7 +185,7 @@ export default function FarmEnroll() {
                       onChange={stringHandleEvent}
                     />
                   </div>
-                  <div className="col-span-full mt-8">
+                  <div className="col-span-full mt-14">
                     {fetchDesignList ? (
                       <SelectMenu
                         handleDirectionChange={handleDirectionChange}
@@ -202,7 +201,7 @@ export default function FarmEnroll() {
                     ) : null}
                   </div>
 
-                  <div className="col-span-full mt-8">
+                  <div className="col-span-full mt-14">
                     <div className="block text-h5 font-bold leading-12 text-black-100">
                       IoT 기기 등록
                     </div>
@@ -221,11 +220,11 @@ export default function FarmEnroll() {
                     </div>
                   </div>
 
-                  <div className="col-span-full mt-8">
+                  <div className="col-span-full mt-14">
                     <div className="block text-h5 font-bold leading-12 text-black-100">
                       경작 시작 시기
                     </div>
-                    <div className="mt">
+                    <div>
                       <DatePicker
                         parentData={parentData}
                         setParentData={setParentData}
@@ -233,7 +232,7 @@ export default function FarmEnroll() {
                     </div>
                   </div>
 
-                  <div className="col-span-full mt-8">
+                  <div className="col-span-full mt-14">
                     <div className="flex w-full justify-between">
                       <div className="block text-h5 font-bold leading-12 text-black-100 flex flex-col justify-center">
                         내 밭 주소
@@ -269,7 +268,7 @@ export default function FarmEnroll() {
                     </div>
                   </div>
 
-                  <div className="col-span-full mt-8">
+                  <div className="col-span-full mt-14">
                     <div className="block text-h5 font-bold leading-12 text-black-100">
                       텃밭 소개
                     </div>

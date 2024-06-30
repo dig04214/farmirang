@@ -38,7 +38,7 @@ export default function DonationList({ donationData }: Props) {
         <React.Fragment key={idx}>
           {item.amount > item.current ? (
             <div className="my-10 flex justify-between relative">
-              <div className="flex justify-between w-[10rem]">
+              <div className="flex justify-between w-[16rem]">
                 <div className="flex flex-col justify-center">
                   <div className="w-[80px] h-[80px] border border-black-100 rounded-full flex flex-col justify-center items-center">
                     <div className="stroke-black">
@@ -46,7 +46,7 @@ export default function DonationList({ donationData }: Props) {
                     </div>
                   </div>
                 </div>
-                <div className="text-h5 font-semibold flex flex-col justify-center">
+                <div className="w-[8rem] text-h5 font-semibold flex flex-col justify-center text-left">
                   {item.cropName}
                 </div>
               </div>
@@ -64,7 +64,7 @@ export default function DonationList({ donationData }: Props) {
                     {item.amount - item.current}
                   </span>
                   <span className="text-h5 flex flex-col justify-center">
-                    개 남았어요 !
+                    개 남았어요
                   </span>
                 </div>
               </div>
@@ -103,7 +103,7 @@ export default function DonationList({ donationData }: Props) {
                     {item.amount - item.current}
                   </span>
                   <span className="text-h5 flex flex-col justify-center">
-                    개 남았어요 !
+                    개 남았어요
                   </span>
                 </div>
               </div>

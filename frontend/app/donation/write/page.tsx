@@ -57,6 +57,10 @@ export default function DonationWrite() {
     }
   }
 
+  useEffect(() => {
+    console.log(totalValue)
+  }, [totalValue])
+
   const handleAmountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setAmount(Number(event.target.value));
   };
@@ -83,10 +87,6 @@ export default function DonationWrite() {
     }
   };
 
-  useEffect(() => {
-    console.log(cropsJSON);
-  }, [cropsJSON]);
-
   const handleInputFunction = (event: React.ChangeEvent<HTMLInputElement>) => {
     const name = event.target.name;
     const value = event.target.value;
@@ -99,7 +99,6 @@ export default function DonationWrite() {
   const handleTextareaFunction = (
     event: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
-    console.log(event);
     const name = event.target.name;
     const value = event.target.value;
     setTotalValue((prev: postDonationDataType) => ({
@@ -124,6 +123,7 @@ export default function DonationWrite() {
   }, [addressObj]);
 
   const onSubmit = async () => {
+    console.log(totalValue)
     const formdata = new FormData();
     formdata.append("head", headPicture);
     formdata.append("main", detailPicture);
@@ -135,7 +135,6 @@ export default function DonationWrite() {
       router.push("/");
     } else {
       alert("등록 실패");
-      // window.location.reload();
     }
   };
 
