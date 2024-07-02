@@ -15,7 +15,8 @@ export default function Calendar() {
   const [month, setMonth] = useState<number>(today.getMonth() + 1);
   const todayDay = today.getDate();
   const todayMonth = today.getMonth() + 1;
-  const [calendarDate, setCalendarDate] = useState([]);
+  const [calendarDate, setCalendarDate] = useState<any>([]);
+  const garbage_data = [1, 1, 1, 1, 1, 1, 1];
   const { diaryid } = useParams<{ diaryid: string }>() as { diaryid: string };
   const setData = (res: any) => {
     setCalendarDate(res.data.result);
@@ -148,28 +149,20 @@ export default function Calendar() {
                     </React.Fragment>
                   ))
                 )}
+                {garbage_data.map((item: number, index: number) => (
+                  <div
+                    key={index}
+                    className="relative bg-gray-100 px-3 py-2 text-gray-500 border-b border-gray-300 border-r border-gray-300"
+                  >
+                  </div>
+                ))}
               </div>
+
               <div className="isolate grid w-full grid-cols-7 grid-rows-6 gap-px lg:hidden">
-                {/* <!--
-          Always include: "flex h-14 flex-col py-2 px-3 hover:bg-gray-100 focus:z-10"
-          Is current month, include: "bg-white"
-          Is not current month, include: "bg-gray-50"
-          Is selected or is today, include: "font-semibold"
-          Is selected, include: "text-white"
-          Is not selected and is today, include: "text-indigo-600"
-          Is not selected and is current month, and is not today, include: "text-gray-900"
-          Is not selected, is not current month, and is not today: "text-gray-500"
-        --> */}
                 <button
                   type="button"
                   className="flex h-14 flex-col bg-gray-50 px-3 py-2 text-gray-500 hover:bg-gray-100 focus:z-10 border-r border-gray-200"
                 >
-                  {/* <!--
-            Always include: "ml-auto"
-            Is selected, include: "flex h-6 w-6 items-center justify-center rounded-full"
-            Is selected and is today, include: "bg-indigo-600"
-            Is selected and is not today, include: "bg-gray-900"
-          --> */}
                   <time dateTime="2021-12-27" className="ml-auto">
                     27
                   </time>

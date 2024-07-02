@@ -13,7 +13,7 @@ import {
 } from "react";
 import { cropData } from "./Crop";
 import SelectMenu from "@/app/_components/common/SelectMenus";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { postDonationCrops } from "@/api/farm-donation";
 
 export default function FirstModal({
@@ -51,6 +51,7 @@ export default function FirstModal({
         cropImage: crop?.image,
       };
     });
+    const router = useRouter();
   const [direction, setDirection] = useState<number>(1);
   const [state, setState] = useState<boolean>(true);
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -87,6 +88,9 @@ export default function FirstModal({
     const res = combinedData.filter((crop) => crop.crop_id === totalValue.crop_id)[0]
     if ((res.amount - res.current) < totalValue.amount) {
       alert("후원 수량이 남은 수량보다 많습니다. 재조정해주세요")
+    } else if (accessToken === "") {
+      alert("로그인이 필요한 서비스입니다")
+      router.push("/login")
     } else {
       const formData = new FormData();
       formData.append("img", diaryPicture);
@@ -184,8 +188,8 @@ export default function FirstModal({
                                 key={idx}
                                 className="mx-[1.2rem] my-[1.2rem] w-[110px] h-[110px] border border-black-100 rounded-full relative flex items-center justify-center"
                               >
-                                <div className="text-center">
-                                  <div className="stroke-black">
+                                <div className="text-center flex flex-col justify-center items-center">
+                                  <div className="stroke-black ">
                                     {item.cropImage}
                                   </div>
                                   <div className="font-bold text-h6 mt-[2px]">
