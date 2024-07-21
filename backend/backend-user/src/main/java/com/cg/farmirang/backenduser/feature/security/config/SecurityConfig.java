@@ -32,9 +32,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SecurityConfig {
 
-	@Value("${com.farmirang.user.login.location}")
+	@Value("${com.farmirang.security.login.location}")
 	private String loginLocation;
-	@Value("${com.farmirang.user.login.redirect}")
+	@Value("${com.farmirang.security.login.redirect}")
 	private String loginRedirect;
 	@Value("${com.farmirang.user.login.redirect.host}")
 	private String loginResultHost;
