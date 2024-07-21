@@ -1,5 +1,7 @@
 package com.cg.farmirang.donation.global.config;
 
+import java.net.URI;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,10 +19,13 @@ public class S3Config {
 	private String secretKey;
 	@Value("${cloud.aws.region.static}")
 	private String region;
+	@Value("${cloud.aws.s3.endpoint}")
+	private String endpoint;
 
 	@Bean
 	public S3Client s3Client() {
 		return S3Client.builder()
+			.endpointOverride(URI.create(endpoint))
 			.region(Region.of(region))
 			.credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey)))
 			.build();
